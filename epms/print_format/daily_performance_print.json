@@ -1,0 +1,17 @@
+{
+ "align": "Left",
+ "creation": "2024-01-01 00:00:00.000000",
+ "custom_format": 1,
+ "default_print_font": "Source Sans Pro",
+ "doc_type": "Daily Performance",
+ "docstatus": 0,
+ "doctype": "Print Format",
+ "font_size": "Standard",
+ "idx": 0,
+ "module": "EPMS",
+ "name": "Daily Performance Print",
+ "normal_print": 0,
+ "owner": "Administrator",
+ "print_format_type": "Jinja",
+ "section_freeze": 0
+}

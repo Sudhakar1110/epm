@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_settings",
+  "auto_generate_scorecards",
+  "scorecard_day",
+  "notification_settings",
+  "send_daily_reminders",
+  "send_weekly_summary",
+  "send_monthly_summary",
+  "performance_threshold",
+  "low_performance_threshold",
+  "excellent_threshold",
+  "very_good_threshold",
+  "good_threshold",
+  "average_threshold"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_settings",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_generate_scorecards",
+   "fieldtype": "Check",
+   "label": "Auto Generate Monthly Scorecards"
+  },
+  {
+   "default": "1",
+   "fieldname": "scorecard_day",
+   "fieldtype": "Int",
+   "label": "Scorecard Generation Day (1-28)",
+   "max": 28,
+   "min": 1
+  },
+  {
+   "fieldname": "notification_settings",
+   "fieldtype": "Section Break",
+   "label": "Notification Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "send_daily_reminders",
+   "fieldtype": "Check",
+   "label": "Send Daily Reminders"
+  },
+  {
+   "default": "1",
+   "fieldname": "send_weekly_summary",
+   "fieldtype": "Check",
+   "label": "Send Weekly Summary"
+  },
+  {
+   "default": "1",
+   "fieldname": "send_monthly_summary",
+   "fieldtype": "Check",
+   "label": "Send Monthly Summary"
+  },
+  {
+   "fieldname": "performance_threshold",
+   "fieldtype": "Section Break",
+   "label": "Performance Thresholds"
+  },
+  {
+   "default": "60",
+   "fieldname": "low_performance_threshold",
+   "fieldtype": "Int",
+   "label": "Low Performance Threshold",
+   "max": 100,
+   "min": 0
+  },
+  {
+   "default": "90",
+   "fieldname": "excellent_threshold",
+   "fieldtype": "Int",
+   "label": "Excellent Threshold",
+   "max": 100,
+   "min": 0
+  },
+  {
+   "default": "80",
+   "fieldname": "very_good_threshold",
+   "fieldtype": "Int",
+   "label": "Very Good Threshold",
+   "max": 100,
+   "min": 0
+  },
+  {
+   "default": "70",
+   "fieldname": "good_threshold",
+   "fieldtype": "Int",
+   "label": "Good Threshold",
+   "max": 100,
+   "min": 0
+  },
+  {
+   "default": "60",
+   "fieldname": "average_threshold",
+   "fieldtype": "Int",
+   "label": "Average Threshold",
+   "max": 100,
+   "min": 0
+  }
+ ],
+ "index_web_search_for_payments": 0,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EPMS",
+ "name": "EPMS Settings",
+ "naming_rule": "By setting 'autoname' field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Founder",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

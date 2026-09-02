@@ -1,0 +1,20 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Performance Scorecard",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_submit",
+ "module": "EPMS",
+ "name": "Monthly Score Generated",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Monthly Score Generated - {{ doc.month }}/{{ doc.year }}",
+ "value_changed": "",
+ "value_changed_method": ""
+}

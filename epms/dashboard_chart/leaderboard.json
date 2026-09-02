@@ -1,0 +1,17 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "document_type": "Performance Scorecard",
+ "filters_json": "[[\"docstatus\",\"=\",1]]",
+ "group_by_field": "employee_name",
+ "name": "Leaderboard",
+ "module": "EPMS",
+ "owner": "Administrator",
+ "timespan": "Last Month",
+ "type": "Bar",
+ "value": "overall_score",
+ "x_axis": "employee_name",
+ "y_axis": "Sum",
+ "order_by": "overall_score desc",
+ "limit": 10
+}

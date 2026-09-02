@@ -1,0 +1,20 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Daily Performance",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_submit",
+ "module": "EPMS",
+ "name": "Daily Reminder",
+ "recipients": [
+  {
+   "receiver_by_role": "EPMS Team Member"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Daily Performance Reminder",
+ "value_changed": "",
+ "value_changed_method": ""
+}

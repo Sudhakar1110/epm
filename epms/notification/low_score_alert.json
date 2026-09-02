@@ -1,0 +1,20 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.overall_score < 60",
+ "document_type": "Performance Scorecard",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_submit",
+ "module": "EPMS",
+ "name": "Low Score Alert",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Low Score Alert - {{ doc.employee_name }}",
+ "value_changed": "",
+ "value_changed_method": ""
+}

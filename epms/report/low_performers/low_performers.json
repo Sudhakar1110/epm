@@ -1,0 +1,18 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Report",
+ "is_standard": "Yes",
+ "module": "EPMS",
+ "name": "Low Performers",
+ "owner": "Administrator",
+ "report_name": "Low Performers",
+ "report_type": "Query Report",
+ "roles": [
+  {
+   "role": "EPMS Founder"
+  },
+  {
+   "role": "EPMS Team Leader"
+  }
+ ]
+}

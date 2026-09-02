@@ -1,0 +1,21 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Performance Scorecard",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_submit",
+ "module": "EPMS",
+ "name": "Weekly Summary",
+ "recipients": [
+  {
+   "receiver_by_document_field": "team_leader",
+   "receiver_by_role": "EPMS Founder"
+  }
+ ],
+ "send_system_notification": 0,
+ "subject": "Weekly Performance Summary - {{ doc.team }}",
+ "value_changed": "",
+ "value_changed_method": ""
+}

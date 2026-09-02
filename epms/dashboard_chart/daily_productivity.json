@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "document_type": "Daily Performance",
+ "filters_json": "[[\"docstatus\",\"=\",1]]",
+ "group_by_field": "date",
+ "name": "Daily Productivity",
+ "module": "EPMS",
+ "owner": "Administrator",
+ "timespan": "Last Month",
+ "time_interval": "Daily",
+ "type": "Line",
+ "value": "completion_percentage",
+ "x_axis": "date",
+ "y_axis": "Average"
+}

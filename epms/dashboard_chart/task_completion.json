@@ -1,0 +1,14 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "document_type": "Daily Performance",
+ "filters_json": "[[\"docstatus\",\"=\",1]]",
+ "group_by_field": "task_status",
+ "name": "Task Completion",
+ "module": "EPMS",
+ "owner": "Administrator",
+ "timespan": "Last Month",
+ "type": "Pie",
+ "value": "task_status",
+ "y_axis": "Count"
+}

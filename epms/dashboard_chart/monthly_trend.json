@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "document_type": "Performance Scorecard",
+ "filters_json": "[[\"docstatus\",\"=\",1]]",
+ "group_by_field": "month",
+ "name": "Monthly Trend",
+ "module": "EPMS",
+ "owner": "Administrator",
+ "timespan": "Last Year",
+ "time_interval": "Monthly",
+ "type": "Line",
+ "value": "overall_score",
+ "x_axis": "month",
+ "y_axis": "Average"
+}

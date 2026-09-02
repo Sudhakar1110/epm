@@ -1,0 +1,342 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PERF-.YYYY.-",
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "performance_id",
+  "date",
+  "team",
+  "team_leader",
+  "employee",
+  "employee_name",
+  "project",
+  "module_epms",
+  "section_break_task",
+  "task_title",
+  "task_description",
+  "column_break_task",
+  "priority",
+  "task_status",
+  "work_type",
+  "section_break_hours",
+  "column_break_hours_1",
+  "expected_hours",
+  "actual_hours",
+  "column_break_hours_2",
+  "completion_percentage",
+  "section_break_rating",
+  "daily_rating",
+  "quality_score",
+  "column_break_rating",
+  "remarks",
+  "challenges",
+  "section_break_plan",
+  "next_day_plan",
+  "section_break_subtasks",
+  "subtasks",
+  "section_break_attachment",
+  "attachment",
+  "section_break_created",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "performance_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Performance ID",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Team",
+   "options": "Team",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "team.team_leader",
+   "fieldname": "team_leader",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Team Leader",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.full_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "label": "Project",
+   "options": "Project"
+  },
+  {
+   "fieldname": "module_epms",
+   "fieldtype": "Data",
+   "in_list_view": 0,
+   "label": "Module"
+  },
+  {
+   "fieldname": "section_break_task",
+   "fieldtype": "Section Break",
+   "label": "Task Details"
+  },
+  {
+   "fieldname": "task_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Task Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "task_description",
+   "fieldtype": "Small Text",
+   "label": "Task Description"
+  },
+  {
+   "fieldname": "column_break_task",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical",
+   "reqd": 1
+  },
+  {
+   "default": "In Progress",
+   "fieldname": "task_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Task Status",
+   "options": "Completed\nIn Progress\nPending\nBlocked",
+   "reqd": 1
+  },
+  {
+   "default": "Development",
+   "fieldname": "work_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Work Type",
+   "options": "Development\nBug Fix\nTesting\nMeeting\nResearch\nSupport\nDocumentation"
+  },
+  {
+   "fieldname": "section_break_hours",
+   "fieldtype": "Section Break",
+   "label": "Time Tracking"
+  },
+  {
+   "fieldname": "column_break_hours_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Expected Hours",
+   "reqd": 1
+  },
+  {
+   "fieldname": "actual_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Actual Hours",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_hours_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "completion_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Completion %",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_rating",
+   "fieldtype": "Section Break",
+   "label": "Rating & Quality"
+  },
+  {
+   "default": "5",
+   "fieldname": "daily_rating",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Daily Rating (1-10)",
+   "reqd": 1
+  },
+  {
+   "default": "5",
+   "fieldname": "quality_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quality Score",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_rating",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "challenges",
+   "fieldtype": "Small Text",
+   "label": "Challenges"
+  },
+  {
+   "fieldname": "section_break_plan",
+   "fieldtype": "Section Break",
+   "label": "Planning"
+  },
+  {
+   "fieldname": "next_day_plan",
+   "fieldtype": "Small Text",
+   "label": "Next Day Plan"
+  },
+  {
+   "fieldname": "section_break_subtasks",
+   "fieldtype": "Section Break",
+   "label": "Subtasks"
+  },
+  {
+   "fieldname": "subtasks",
+   "fieldtype": "Table",
+   "label": "Subtasks",
+   "options": "Daily Performance Subtask"
+  },
+  {
+   "fieldname": "section_break_attachment",
+   "fieldtype": "Section Break",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "section_break_created",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Daily Performance",
+   "print_hide": 1,
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "index_web_search_for_payments": 0,
+ "is_submittable": 1,
+ "links": [
+  {
+   "link_doctype": "Pending Task",
+   "link_fieldname": "parent"
+  }
+ ],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EPMS",
+ "name": "Daily Performance",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Founder",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 0,
+   "cancel": 1,
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Team Leader",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 0,
+   "cancel": 0,
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Team Member",
+   "share": 1,
+   "submit": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "performance_id,employee_name,task_title,team",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "task_title",
+ "track_changes": 1
+}

@@ -1,0 +1,20 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Pending Task",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_submit",
+ "module": "EPMS",
+ "name": "Pending Task Reminder",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Pending Task Reminder",
+ "value_changed": "",
+ "value_changed_method": ""
+}

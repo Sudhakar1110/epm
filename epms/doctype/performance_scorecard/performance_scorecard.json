@@ -1,0 +1,270 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SCORE-.YYYY.-",
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "team",
+  "month",
+  "year",
+  "section_break_stats",
+  "total_working_days",
+  "tasks_completed",
+  "pending_tasks",
+  "completed_percentage",
+  "section_break_scores",
+  "average_rating",
+  "average_quality",
+  "attendance_score",
+  "productivity_score",
+  "quality_score",
+  "section_break_overall",
+  "overall_score",
+  "final_grade",
+  "performance_status",
+  "section_break_remarks",
+  "remarks",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "User",
+   "reqd": 1,
+   "unique": 0
+  },
+  {
+   "fetch_from": "employee.full_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Team",
+   "options": "Team"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Month",
+   "options": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12",
+   "reqd": 1
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_stats",
+   "fieldtype": "Section Break",
+   "label": "Statistics"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_working_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Working Days",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "tasks_completed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Tasks Completed",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "pending_tasks",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Pending Tasks",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "completed_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Completed %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_scores",
+   "fieldtype": "Section Break",
+   "label": "Score Breakdown"
+  },
+  {
+   "default": "0",
+   "fieldname": "average_rating",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Average Rating",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "average_quality",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Average Quality",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "attendance_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Attendance Score",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "productivity_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Productivity Score",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "quality_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quality Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_overall",
+   "fieldtype": "Section Break",
+   "label": "Overall Performance"
+  },
+  {
+   "default": "0",
+   "fieldname": "overall_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Overall Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "final_grade",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Final Grade",
+   "read_only": 1
+  },
+  {
+   "fieldname": "performance_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Performance Status",
+   "options": "On Track\nNeeds Attention\nAt Risk",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_remarks",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Performance Scorecard",
+   "print_hide": 1,
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "index_web_search_for_payments": 0,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EPMS",
+ "name": "Performance Scorecard",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Founder",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 0,
+   "cancel": 0,
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Team Leader",
+   "share": 1,
+   "submit": 0,
+   "write": 0
+  },
+  {
+   "amend": 0,
+   "cancel": 0,
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "EPMS Team Member",
+   "share": 1,
+   "submit": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "employee_name,final_grade,performance_status",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}

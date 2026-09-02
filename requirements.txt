@@ -1,0 +1,3 @@
+# EPMS App Requirements
+# Note: frappe and erpnext are installed via bench, not pip
+# Do NOT add them here

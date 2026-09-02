@@ -1,0 +1,20 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Team",
+ "enabled": 1,
+ "event": "Method",
+ "method": "on_update",
+ "module": "EPMS",
+ "name": "Late Update Reminder",
+ "recipients": [
+  {
+   "receiver_by_role": "EPMS Team Leader"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Late Update Reminder - Daily Performance",
+ "value_changed": "",
+ "value_changed_method": ""
+}

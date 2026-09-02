@@ -1,0 +1,141 @@
+{
+ "charts": [],
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Workspace",
+ "extends_analytics": 0,
+ "extends_hr": 0,
+ "extends_stock": 0,
+ "icon": "octicon octicon-goal",
+ "is_hidden": 0,
+ "label": "Employee Performance Management",
+ "links": [
+  {
+   "type": "Link",
+   "link_type": "DocType",
+   "link_doctype": "Team",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "DocType",
+   "link_doctype": "Team Member Mapping",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "DocType",
+   "link_doctype": "Daily Performance",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "DocType",
+   "link_doctype": "Pending Task",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "DocType",
+   "link_doctype": "Performance Scorecard",
+   "onboard": 1
+  },
+  {
+   "type": "Separator",
+   "link_type": "Separator"
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Daily Performance Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Monthly Performance Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Employee Wise Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Team Wise Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Pending Task Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Top Performers",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Low Performers",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Monthly KPI Report",
+   "onboard": 1
+  },
+  {
+   "type": "Link",
+   "link_type": "Report",
+   "link_doctype": "Leaderboard Report",
+   "onboard": 1
+  }
+ ],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EPMS",
+ "name": "Employee Performance Management",
+ "owner": "Administrator",
+ "sequence_id": 1,
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_type": "DocType",
+   "link_doctype": "Team",
+   "label": "Teams"
+  },
+  {
+   "type": "DocType",
+   "link_type": "DocType",
+   "link_doctype": "Team Member Mapping",
+   "label": "Team Members"
+  },
+  {
+   "type": "DocType",
+   "link_type": "DocType",
+   "link_doctype": "Daily Performance",
+   "label": "Daily Performance"
+  },
+  {
+   "type": "DocType",
+   "link_type": "DocType",
+   "link_doctype": "Pending Task",
+   "label": "Pending Tasks"
+  },
+  {
+   "type": "DocType",
+   "link_type": "DocType",
+   "link_doctype": "Performance Scorecard",
+   "label": "Scorecards"
+  }
+ ],
+ "type": "Link",
+ "url": ""
+}
