@@ -133,25 +133,20 @@ has_permission = {
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
 }
 
-# Before Insert
-before_insert = {
-    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.before_insert",
-}
+# Before Install - Clean up any leftover module definitions
+before_install = "epms.employee_performance.setup.before_install"
 
-# After Insert
-after_insert = {
-    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.after_insert",
-}
+# After Install
+after_install = "epms.employee_performance.setup.after_install"
+
+# After Migrate
+after_migrate = "epms.employee_performance.setup.after_migrate"
 
 # Extend Bootinfo
 extend_bootinfo = "epms.employee_performance.utils.boot_session"
 
 # Notification Config
 notification_config = "epms.employee_performance.notification.get_notification_config"
-
-# Setup
-after_install = "epms.employee_performance.setup.after_install"
-after_migrate = "epms.employee_performance.setup.after_migrate"
 
 # Whitelisted Methods
 whitelisted_methods = [

@@ -2,6 +2,15 @@ import frappe
 from frappe import _
 
 
+def before_install():
+    """Run before app installation - clean up any leftover module definitions."""
+    try:
+        frappe.db.sql("DELETE FROM `tabModule Def` WHERE name = 'Employee Performance'")
+        frappe.db.commit()
+    except Exception:
+        pass
+
+
 def after_install():
     """Run after app installation."""
     create_roles()
