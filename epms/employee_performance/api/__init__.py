@@ -14,7 +14,6 @@ def get_employee_performance(employee, month=None, year=None):
     month = cint(month)
     year = cint(year)
 
-    # Get scorecard
     scorecard = frappe.db.get_value(
         "Performance Scorecard",
         {
@@ -26,7 +25,6 @@ def get_employee_performance(employee, month=None, year=None):
         as_dict=True,
     )
 
-    # Get daily performances
     first_day = get_first_day(f"{year}-{month:02d}-01")
     last_day = get_last_day(f"{year}-{month:02d}-01")
 
@@ -52,7 +50,6 @@ def get_employee_performance(employee, month=None, year=None):
         order_by="date desc",
     )
 
-    # Get pending tasks
     pending_tasks = frappe.get_all(
         "Pending Task",
         filters={

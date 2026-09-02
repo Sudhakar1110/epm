@@ -31,39 +31,39 @@ user_data_fields = [
 # Document Events
 doc_events = {
     "Daily Performance": {
-        "on_submit": "epms.epms.doctype.daily_performance.daily_performance.on_submit",
-        "on_cancel": "epms.epms.doctype.daily_performance.daily_performance.on_cancel",
-        "validate": "epms.epms.doctype.daily_performance.daily_performance.validate",
+        "on_submit": "epms.employee_performance.doctype.daily_performance.daily_performance.on_submit",
+        "on_cancel": "epms.employee_performance.doctype.daily_performance.daily_performance.on_cancel",
+        "validate": "epms.employee_performance.doctype.daily_performance.daily_performance.validate",
     },
     "Pending Task": {
-        "on_submit": "epms.epms.doctype.pending_task.pending_task.on_submit",
-        "on_cancel": "epms.epms.doctype.pending_task.pending_task.on_cancel",
+        "on_submit": "epms.employee_performance.doctype.pending_task.pending_task.on_submit",
+        "on_cancel": "epms.employee_performance.doctype.pending_task.pending_task.on_cancel",
     },
     "Performance Scorecard": {
-        "on_submit": "epms.epms.doctype.performance_scorecard.performance_scorecard.on_submit",
+        "on_submit": "epms.employee_performance.doctype.performance_scorecard.performance_scorecard.on_submit",
     },
     "Team Member Mapping": {
-        "on_update": "epms.epms.doctype.team_member_mapping.team_member_mapping.on_update",
+        "on_update": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.on_update",
     },
 }
 
 # Scheduler Events
 scheduler_events = {
     "daily": [
-        "epms.epms.tasks.daily_tasks",
-        "epms.epms.tasks.send_pending_task_reminders",
-        "epms.epms.tasks.send_late_update_reminders",
+        "epms.employee_performance.tasks.daily_tasks",
+        "epms.employee_performance.tasks.send_pending_task_reminders",
+        "epms.employee_performance.tasks.send_late_update_reminders",
     ],
     "daily_long": [
-        "epms.epms.tasks.recalculate_scorecards",
+        "epms.employee_performance.tasks.recalculate_scorecards",
     ],
     "weekly": [
-        "epms.epms.tasks.send_weekly_summary",
-        "epms.epms.tasks.send_low_performance_alerts",
+        "epms.employee_performance.tasks.send_weekly_summary",
+        "epms.employee_performance.tasks.send_low_performance_alerts",
     ],
     "monthly": [
-        "epms.epms.tasks.generate_monthly_scorecards",
-        "epms.epms.tasks.send_monthly_summary",
+        "epms.employee_performance.tasks.generate_monthly_scorecards",
+        "epms.employee_performance.tasks.send_monthly_summary",
     ],
 }
 
@@ -73,8 +73,8 @@ website_redirects = []
 # Jinja
 jinja = {
     "methods": [
-        "epms.epms.utils.get_employee_performance_summary",
-        "epms.epms.utils.get_team_summary",
+        "epms.employee_performance.utils.get_employee_performance_summary",
+        "epms.employee_performance.utils.get_team_summary",
     ],
 }
 
@@ -89,77 +89,77 @@ fixtures = [
     {
         "dt": "Custom Field",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
     {
         "dt": "Property Setter",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
     {
         "dt": "Notification",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
     {
         "dt": "Print Format",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
     {
         "dt": "Dashboard Chart",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
     {
         "dt": "Workspace",
         "filters": [
-            ["module", "=", "EPMS"],
+            ["module", "=", "Employee Performance"],
         ],
     },
 ]
 
 # Has Permission
 has_permission = {
-    "Daily Performance": "epms.epms.doctype.daily_performance.daily_performance.has_permission",
-    "Pending Task": "epms.epms.doctype.pending_task.pending_task.has_permission",
-    "Performance Scorecard": "epms.epms.doctype.performance_scorecard.performance_scorecard.has_permission",
-    "Team": "epms.epms.doctype.team.team.has_permission",
-    "Team Member Mapping": "epms.epms.doctype.team_member_mapping.team_member_mapping.has_permission",
+    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.has_permission",
+    "Pending Task": "epms.employee_performance.doctype.pending_task.pending_task.has_permission",
+    "Performance Scorecard": "epms.employee_performance.doctype.performance_scorecard.performance_scorecard.has_permission",
+    "Team": "epms.employee_performance.doctype.team.team.has_permission",
+    "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
 }
 
 # Before Insert
 before_insert = {
-    "Daily Performance": "epms.epms.doctype.daily_performance.daily_performance.before_insert",
+    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.before_insert",
 }
 
 # After Insert
 after_insert = {
-    "Daily Performance": "epms.epms.doctype.daily_performance.daily_performance.after_insert",
+    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.after_insert",
 }
 
 # Extend Bootinfo
-extend_bootinfo = "epms.epms.utils.boot_session"
+extend_bootinfo = "epms.employee_performance.utils.boot_session"
 
 # Notification Config
-notification_config = "epms.epms.notification.get_notification_config"
+notification_config = "epms.employee_performance.notification.get_notification_config"
 
 # Setup
-after_install = "epms.epms.setup.after_install"
-after_migrate = "epms.epms.setup.after_migrate"
+after_install = "epms.employee_performance.setup.after_install"
+after_migrate = "epms.employee_performance.setup.after_migrate"
 
 # Whitelisted Methods
 whitelisted_methods = [
-    "epms.epms.api.get_employee_performance",
-    "epms.epms.api.get_monthly_scorecard",
-    "epms.epms.api.get_team_performance",
-    "epms.epms.api.get_leaderboard",
-    "epms.epms.api.get_daily_performance_chart",
-    "epms.epms.api.get_monthly_trend_chart",
-    "epms.epms.api.get_performance_distribution",
+    "epms.employee_performance.api.get_employee_performance",
+    "epms.employee_performance.api.get_monthly_scorecard",
+    "epms.employee_performance.api.get_team_performance",
+    "epms.employee_performance.api.get_leaderboard",
+    "epms.employee_performance.api.get_daily_performance_chart",
+    "epms.employee_performance.api.get_monthly_trend_chart",
+    "epms.employee_performance.api.get_performance_distribution",
 ]

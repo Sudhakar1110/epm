@@ -58,9 +58,8 @@ class PendingTask(Document):
 
     def send_notification(self):
         """Send notification."""
-        from epms.epms.tasks import send_notification
+        from epms.employee_performance.tasks import send_notification
 
-        # Notify employee
         if self.employee:
             send_notification(
                 user=self.employee,
@@ -88,13 +87,10 @@ def has_permission(doc, user):
 
     user_roles = frappe.get_roles(user)
 
-    # Founder has full access
     if "EPMS Founder" in user_roles:
         return True
 
-    # Team leader can see their team's tasks
     if "EPMS Team Leader" in user_roles:
-        # Get team members
         team = frappe.db.get_value("Team", {"team_leader": user}, "name")
         if team:
             members = frappe.get_all(
@@ -104,7 +100,6 @@ def has_permission(doc, user):
             )
             return doc.employee in members
 
-    # Team member can only see their own tasks
     if "EPMS Team Member" in user_roles:
         return doc.employee == user
 

@@ -132,18 +132,16 @@ def get_team_summary(team):
 
 def calculate_productivity_score(tasks_completed, hours_worked, avg_completion_pct):
     """Calculate productivity score (0-100)."""
-    task_score = min(tasks_completed * 5, 40)  # Max 40 points for tasks
-    hours_score = min(hours_worked * 1.5, 30)  # Max 30 points for hours
-    completion_score = (avg_completion_pct / 100) * 30  # Max 30 points
-
+    task_score = min(tasks_completed * 5, 40)
+    hours_score = min(hours_worked * 1.5, 30)
+    completion_score = (avg_completion_pct / 100) * 30
     return min(task_score + hours_score + completion_score, 100)
 
 
 def calculate_quality_score(avg_rating, avg_quality):
     """Calculate quality score (0-100)."""
-    rating_score = (avg_rating / 10) * 60  # Max 60 points for rating
-    quality_score = (avg_quality / 10) * 40  # Max 40 points for quality
-
+    rating_score = (avg_rating / 10) * 60
+    quality_score = (avg_quality / 10) * 40
     return min(rating_score + quality_score, 100)
 
 

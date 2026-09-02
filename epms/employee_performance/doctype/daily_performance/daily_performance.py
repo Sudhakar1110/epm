@@ -24,10 +24,8 @@ class DailyPerformance(Document):
         """Validate hours worked."""
         if self.actual_hours and self.actual_hours > 24:
             frappe.throw(_("Hours worked cannot exceed 24"))
-
         if self.expected_hours and self.expected_hours > 24:
             frappe.throw(_("Expected hours cannot exceed 24"))
-
         if self.actual_hours and self.actual_hours < 0:
             frappe.throw(_("Actual hours cannot be negative"))
 
@@ -42,7 +40,6 @@ class DailyPerformance(Document):
         if self.daily_rating is not None:
             if self.daily_rating < 1 or self.daily_rating > 10:
                 frappe.throw(_("Daily rating must be between 1 and 10"))
-
         if self.quality_score is not None:
             if self.quality_score < 1 or self.quality_score > 10:
                 frappe.throw(_("Quality score must be between 1 and 10"))
@@ -78,7 +75,6 @@ class DailyPerformance(Document):
 
     def calculate_computed_fields(self):
         """Calculate computed fields."""
-        # Auto-set completion based on status
         if self.task_status == "Completed":
             self.completion_percentage = 100
         elif self.task_status == "Pending":
@@ -107,9 +103,8 @@ class DailyPerformance(Document):
 
     def send_notification(self):
         """Send notification on submit."""
-        from epms.epms.tasks import send_notification
+        from epms.employee_performance.tasks import send_notification
 
-        # Notify team leader
         if self.team_leader and self.team_leader != frappe.session.user:
             send_notification(
                 user=self.team_leader,
@@ -119,7 +114,6 @@ class DailyPerformance(Document):
                 reference_name=self.name,
             )
 
-        # Notify founders
         founders = frappe.get_all(
             "Has Role",
             filters={"role": "EPMS Founder", "parenttype": "User"},
@@ -169,16 +163,13 @@ def has_permission(doc, user):
 
     user_roles = frappe.get_roles(user)
 
-    # Founder has full access
     if "EPMS Founder" in user_roles:
         return True
 
-    # Team leader can see their team's performances
     if "EPMS Team Leader" in user_roles:
         team = frappe.db.get_value("Team", {"team_leader": user}, "name")
         return doc.team == team
 
-    # Team member can only see their own
     if "EPMS Team Member" in user_roles:
         return doc.employee == user
 

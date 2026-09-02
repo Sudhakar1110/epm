@@ -121,7 +121,7 @@ def send_weekly_summary():
             [
                 "count(name) as total_entries",
                 "avg(daily_rating) as avg_rating",
-                "sum(hours_worked_actual) as total_hours",
+                "sum(actual_hours) as total_hours",
             ],
             as_dict=True,
         )
@@ -286,8 +286,6 @@ def recalculate_scorecards():
 
 def send_monthly_summary():
     """Send monthly summary to all users."""
-    from epms.epms.utils import get_employee_performance_summary
-    
     current_month = getdate(nowdate()).month
     current_year = getdate(nowdate()).year
     

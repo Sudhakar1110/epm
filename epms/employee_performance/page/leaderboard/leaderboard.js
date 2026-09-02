@@ -8,7 +8,6 @@ frappe.pages['leaderboard'].on_page_load = function(wrapper) {
         single_column: true
     });
 
-    // Add filters
     page.add_field({
         fieldname: 'month',
         label: __('Month'),
@@ -40,12 +39,10 @@ frappe.pages['leaderboard'].on_page_load = function(wrapper) {
         }
     });
 
-    // Add refresh button
     page.add_button(__('Refresh'), function() {
         load_leaderboard();
     }, 'fa fa-refresh');
 
-    // Load leaderboard
     load_leaderboard();
 };
 
@@ -55,7 +52,7 @@ function load_leaderboard() {
     var team = cur_page.fields_dict.team.get_value();
 
     frappe.call({
-        method: 'epms.epms.page.leaderboard.leaderboard.get_leaderboard_data',
+        method: 'epms.employee_performance.page.leaderboard.leaderboard.get_leaderboard_data',
         args: {
             month: month,
             year: year,
@@ -80,7 +77,6 @@ function render_leaderboard(data) {
 
     var html = '<div class="row">';
 
-    // Top 3 podium
     html += '<div class="col-md-12 mb-4">';
     html += '<div class="card">';
     html += '<div class="card-header"><h5>🏆 Top Performers</h5></div>';
@@ -96,13 +92,12 @@ function render_leaderboard(data) {
 
     html += '</div></div></div>';
 
-    // Full leaderboard table
     html += '<div class="col-md-12">';
     html += '<div class="card">';
     html += '<div class="card-header"><h5>Full Leaderboard</h5></div>';
     html += '<div class="card-body">';
     html += '<table class="table table-striped table-hover">';
-    html += '<thead><tr><th>Rank</th><th>Employee</th><th>Team</th><th>Score</th><th>Grade</th><th>Tasks</th><th>Productivity</th><th>Quality</th><th>Attendance</th></tr></thead>';
+    html += '<thead><tr><th>Rank</th><th>Employee</th><th>Team</th><th>Score</th><th>Grade</th><th>Tasks</th></tr></thead>';
     html += '<tbody>';
 
     for (var i = 0; i < data.length; i++) {
@@ -113,15 +108,12 @@ function render_leaderboard(data) {
         else if (i === 2) rowClass = 'table-info';
 
         html += '<tr class="' + rowClass + '">';
-        html += '<td>' + row.medal + '</td>';
+        html += '<td>' + (i + 1) + '</td>';
         html += '<td><strong>' + row.employee_name + '</strong></td>';
         html += '<td>' + (row.team || '-') + '</td>';
         html += '<td><strong>' + row.overall_score + '</strong></td>';
         html += '<td>' + row.final_grade + '</td>';
         html += '<td>' + row.tasks_completed + '</td>';
-        html += '<td>' + row.productivity_score + '</td>';
-        html += '<td>' + row.quality_score + '</td>';
-        html += '<td>' + row.attendance_score + '</td>';
         html += '</tr>';
     }
 

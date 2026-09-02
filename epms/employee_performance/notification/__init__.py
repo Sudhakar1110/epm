@@ -5,7 +5,7 @@ from frappe import _
 def get_notification_config():
     """Return notification config for EPMS."""
     return {
-        "for_module": ["EPMS", "HR"],
+        "for_module": ["Employee Performance", "HR"],
         "sort_by": "modified",
         "sort_order": "desc",
         "filters": [
