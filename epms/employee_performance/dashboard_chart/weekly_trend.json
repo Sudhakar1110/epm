@@ -5,7 +5,7 @@
  "filters_json": "[[\"docstatus\",\"=\",1]]",
  "group_by_field": "date",
  "name": "Weekly Trend",
- "module": "EPMS",
+ "module": "Employee Performance",
  "owner": "Administrator",
  "timespan": "Last Week",
  "time_interval": "Daily",

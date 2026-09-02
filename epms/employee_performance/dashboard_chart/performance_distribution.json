@@ -5,7 +5,7 @@
  "filters_json": "[[\"docstatus\",\"=\",1]]",
  "group_by_field": "final_grade",
  "name": "Performance Distribution",
- "module": "EPMS",
+ "module": "Employee Performance",
  "owner": "Administrator",
  "timespan": "Last Month",
  "type": "Pie",

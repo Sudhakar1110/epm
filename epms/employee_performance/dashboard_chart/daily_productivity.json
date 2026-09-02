@@ -5,7 +5,7 @@
  "filters_json": "[[\"docstatus\",\"=\",1]]",
  "group_by_field": "date",
  "name": "Daily Productivity",
- "module": "EPMS",
+ "module": "Employee Performance",
  "owner": "Administrator",
  "timespan": "Last Month",
  "time_interval": "Daily",

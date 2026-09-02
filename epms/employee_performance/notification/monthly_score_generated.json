@@ -6,7 +6,7 @@
  "enabled": 1,
  "event": "Method",
  "method": "on_submit",
- "module": "EPMS",
+ "module": "Employee Performance",
  "name": "Monthly Score Generated",
  "recipients": [
   {

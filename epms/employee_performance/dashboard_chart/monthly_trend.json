@@ -5,7 +5,7 @@
  "filters_json": "[[\"docstatus\",\"=\",1]]",
  "group_by_field": "month",
  "name": "Monthly Trend",
- "module": "EPMS",
+ "module": "Employee Performance",
  "owner": "Administrator",
  "timespan": "Last Year",
  "time_interval": "Monthly",

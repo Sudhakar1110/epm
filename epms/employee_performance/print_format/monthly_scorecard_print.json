@@ -8,7 +8,7 @@
  "doctype": "Print Format",
  "font_size": "Standard",
  "idx": 0,
- "module": "EPMS",
+ "module": "Employee Performance",
  "name": "Monthly Scorecard Print",
  "normal_print": 0,
  "owner": "Administrator",
