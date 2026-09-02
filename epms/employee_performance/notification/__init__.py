@@ -5,27 +5,16 @@ from frappe import _
 def get_notification_config():
     """Return notification config for EPMS."""
     return {
-        "for_module": ["Employee Performance", "HR"],
-        "sort_by": "modified",
-        "sort_order": "desc",
-        "filters": [
-            {
-                "name": "Daily Performance",
-                "icon": "octicon octicon-checklist",
-                "color": "#5e64ff",
-                "link": "/app/daily-performance",
+        "for_doctype": {
+            "Daily Performance": {
+                "docstatus": 1,
             },
-            {
-                "name": "Pending Task",
-                "icon": "octicon octicon-alert",
-                "color": "#ff5858",
-                "link": "/app/pending-task",
+            "Pending Task": {
+                "current_status": ["in", ["Pending", "In Progress"]],
+                "docstatus": 1,
             },
-            {
-                "name": "Performance Scorecard",
-                "icon": "octicon octicon-graph",
-                "color": "#28a745",
-                "link": "/app/performance-scorecard",
+            "Performance Scorecard": {
+                "docstatus": 1,
             },
-        ],
+        },
     }
