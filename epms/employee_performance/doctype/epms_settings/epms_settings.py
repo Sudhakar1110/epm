@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 
 
-class EPMASettings(Document):
+class EPMSSettings(Document):
     def validate(self):
         self.validate_thresholds()
 
