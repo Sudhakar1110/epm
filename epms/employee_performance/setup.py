@@ -32,22 +32,16 @@ def create_roles():
             "role_name": "EPMS Founder",
             "desk_access": 1,
             "is_custom": 1,
-            "module_name": "Employee Performance",
-            "description": "Full access to Employee Performance Management System",
         },
         {
             "role_name": "EPMS Team Leader",
             "desk_access": 1,
             "is_custom": 1,
-            "module_name": "Employee Performance",
-            "description": "Manage team members and daily performance",
         },
         {
             "role_name": "EPMS Team Member",
             "desk_access": 1,
             "is_custom": 1,
-            "module_name": "Employee Performance",
-            "description": "View own performance and scorecard",
         },
     ]
 
