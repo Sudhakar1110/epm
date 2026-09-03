@@ -73,7 +73,7 @@ def fix_workspace_now():
 
 def _get_workspace_content():
     content = [
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Employee Performance</b></span>", "col": 12}},
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team Member Mapping", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Daily Performance", "col": 3}},
@@ -81,8 +81,8 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
         {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes &amp; Reports</b></span>", "col": 12}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "DocTypes", "col": 6}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Reports", "col": 6}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 6}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance Report", "col": 6}},
     ]
     return json.dumps(content)
 
