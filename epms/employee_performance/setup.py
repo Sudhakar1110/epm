@@ -27,18 +27,98 @@ def after_migrate():
 
 
 def fix_workspace_now():
-    """Run from bench console to force-create the workspace.
+    """Run from bench to diagnose and force-create the workspace.
 
     bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now
     """
-    create_module_def()
-    frappe.db.commit()
-    ensure_workspace_exists()
-    frappe.db.commit()
-    if frappe.db.exists("Workspace", "Employee Performance Management"):
-        frappe.logger().info("EPMS: Workspace is confirmed created!")
-    else:
-        frappe.logger().error("EPMS: Workspace STILL missing after fix!")
+    print("\n=== EPMS Workspace Diagnostics ===")
+
+    # Step 1: Check Module Def
+    module_def = frappe.db.exists("Module Def", "Employee Performance")
+    print(f"1. Module Def exists: {module_def}")
+    if not module_def:
+        print("   Creating Module Def...")
+        create_module_def()
+        frappe.db.commit()
+        module_def = frappe.db.exists("Module Def", "Employee Performance")
+        print(f"   Module Def after create: {module_def}")
+
+    # Step 2: Check for ANY workspace with similar names
+    all_ws = frappe.db.sql(
+        "SELECT name, module, is_hidden, public FROM `tabWorkspace`"
+    )
+    print(f"\n2. Total workspaces in DB: {len(all_ws)}")
+    for w in all_ws:
+        print(f"   - {w[0]} | module={w[1]} | hidden={w[2]} | public={w[3]}")
+
+    # Step 3: Check if our workspace exists
+    ws_exists = frappe.db.exists("Workspace", "Employee Performance Management")
+    print(f"\n3. Our workspace exists: {ws_exists}")
+
+    if not ws_exists:
+        # Step 4: Check if JSON file exists
+        json_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "workspace",
+            "employee_performance_management.json",
+        )
+        print(f"4. JSON path: {json_path}")
+        print(f"   JSON file exists: {os.path.exists(json_path)}")
+
+        if os.path.exists(json_path):
+            # Step 5: Try get_doc
+            print("\n5. Trying frappe.get_doc insert...")
+            try:
+                with open(json_path, "r") as f:
+                    ws_data = json.load(f)
+                ws_data["doctype"] = "Workspace"
+                ws_data["module"] = "Employee Performance"
+                ws_data["name"] = "Employee Performance Management"
+                ws = frappe.get_doc(ws_data)
+                ws.insert(ignore_permissions=True)
+                frappe.db.commit()
+                print("   SUCCESS via get_doc!")
+            except Exception as e:
+                print(f"   FAILED: {str(e)}")
+                frappe.log_error(f"EPMS get_doc failed: {str(e)}")
+
+                # Step 6: Try direct SQL
+                print("\n6. Trying direct SQL INSERT...")
+                try:
+                    content = json.dumps(ws_data.get("content", "[]"))
+                    links_json = json.dumps(ws_data.get("links", []))
+                    shortcuts_json = json.dumps(ws_data.get("shortcuts", []))
+                    frappe.db.sql(
+                        """INSERT INTO `tabWorkspace`
+                        (`name`, `module`, `label`, `title`, `doctype`,
+                         `is_hidden`, `public`, `custom`, `modified_by`, `owner`,
+                         `creation`, `modified`, `content`, `links`, `shortcuts`)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (
+                            "Employee Performance Management",
+                            "Employee Performance",
+                            "Employee Performance Management",
+                            "Employee Performance Management",
+                            "Workspace",
+                            0, 1, 0,
+                            "Administrator", "Administrator",
+                            "2024-01-01 00:00:00.000000",
+                            "2024-01-01 00:00:00.000000",
+                            content, links_json, shortcuts_json,
+                        ),
+                    )
+                    frappe.db.commit()
+                    print("   SUCCESS via SQL!")
+                except Exception as e2:
+                    print(f"   FAILED: {str(e2)}")
+                    frappe.log_error(f"EPMS SQL failed: {str(e2)}")
+
+    # Final check
+    final_check = frappe.db.exists("Workspace", "Employee Performance Management")
+    print(f"\n7. FINAL: Workspace exists = {final_check}")
+    if final_check:
+        print("   Workspace URL: /app/employee-performance-management")
+    print("=== Done ===")
 
 
 def create_module_def():
