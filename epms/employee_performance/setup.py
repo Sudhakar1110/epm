@@ -112,7 +112,7 @@ def fix_workspace_now():
                 "label": link.get("label", ""),
                 "onboard": link.get("onboard", 1),
                 "is_query_report": link.get("is_query_report", 0),
-                "type": "Link",
+                "type": link.get("type", "Link"),
             })
 
         # Add shortcuts from JSON
@@ -394,7 +394,7 @@ def ensure_workspace_exists():
                 "label": link.get("label", ""),
                 "onboard": link.get("onboard", 1),
                 "is_query_report": link.get("is_query_report", 0),
-                "type": "Link",
+                "type": link.get("type", "Link"),
             })
 
         for sc in ws_data.get("shortcuts", []):
