@@ -10,8 +10,9 @@ def _rand_id():
 
 
 def before_migrate():
-    """Ensure Module Def exists before migration."""
+    """Clean broken data and ensure Module Def exists before migration."""
     try:
+        clean_broken_workspaces()
         create_module_def()
         frappe.db.commit()
     except Exception:
@@ -40,9 +41,24 @@ def after_migrate():
         pass
 
 
+def clean_broken_workspaces():
+    """Delete workspaces with null/empty names that break the sidebar."""
+    try:
+        frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name IS NULL OR name = '' OR name = '0'")
+        frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent IS NULL OR parent = ''")
+        frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent IS NULL OR parent = ''")
+        frappe.db.commit()
+    except Exception:
+        pass
+
+
 def fix_workspace_now():
     """Run: bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now"""
     print("\n=== EPMS Workspace Fix ===")
+
+    # Step 0: Clean any broken workspace entries with null names
+    print("0. Cleaning broken workspaces (null/empty names)...")
+    clean_broken_workspaces()
 
     # Step 1: Ensure Module Def exists
     create_module_def()
@@ -66,11 +82,13 @@ def fix_workspace_now():
         "name": ws_name,
         "module": "Employee Performance",
         "label": ws_name,
+        "title": ws_name,
         "content": _get_workspace_content(),
         "is_hidden": 0,
         "public": 1,
         "docstatus": 0,
         "idx": 0,
+        "sequence_id": 1,
         "modified_by": "Administrator",
         "owner": "Administrator",
     }
