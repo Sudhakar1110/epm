@@ -1,18 +1,19 @@
 import frappe
 from frappe import _
+import os
+import json
 
 
 def before_migrate():
-    """Run before migration to ensure Module Def exists first
-    and remove any broken workspace so Frappe can re-sync from JSON."""
+    """Run before migration to ensure Module Def exists."""
     create_module_def()
-    _delete_stale_workspaces()
     frappe.db.commit()
 
 
 def after_install():
     """Run after app installation."""
     create_module_def()
+    ensure_workspace_exists()
     create_roles()
     setup_role_permissions()
     frappe.db.commit()
@@ -21,6 +22,7 @@ def after_install():
 def after_migrate():
     """Run after migration."""
     create_module_def()
+    ensure_workspace_exists()
     frappe.db.commit()
 
 
@@ -46,19 +48,36 @@ def create_module_def():
             frappe.log_error(f"EPMS: Failed to create Module Def: {str(e)}")
 
 
-def _delete_stale_workspaces():
-    """Delete ALL workspace entries for Employee Performance module
-    so bench migrate can re-sync cleanly from the JSON file."""
+def ensure_workspace_exists():
+    """Create workspace from JSON if it doesn't exist yet."""
+    workspace_name = "Employee Performance Management"
+
+    if frappe.db.exists("Workspace", workspace_name):
+        return
+
+    json_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "workspace",
+        "employee_performance_management.json",
+    )
+    if not os.path.exists(json_path):
+        frappe.log_error("EPMS: Workspace JSON not found at " + json_path)
+        return
+
     try:
-        frappe.db.sql(
-            "DELETE FROM `tabWorkspace` WHERE module = %s",
-            "Employee Performance",
-        )
-        frappe.logger().info(
-            "EPMS: Cleared workspace entries for fresh sync"
-        )
-    except Exception:
-        pass
+        with open(json_path, "r") as f:
+            ws_data = json.load(f)
+
+        ws_data["doctype"] = "Workspace"
+        ws_data["module"] = "Employee Performance"
+        ws_data["name"] = workspace_name
+
+        ws = frappe.get_doc(ws_data)
+        ws.insert(ignore_permissions=True)
+        frappe.db.commit()
+        frappe.logger().info("EPMS: Created workspace: " + workspace_name)
+    except Exception as e:
+        frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}")
 
 
 def create_roles():
