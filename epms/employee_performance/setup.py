@@ -128,31 +128,79 @@ def fix_workspace_now():
         ws_name = ws.name
         print(f"   Created workspace: {ws_name}")
 
-        # Insert number cards via SQL (ORM append doesn't work for these)
-        for nc in ws_data.get("number_cards", []):
-            try:
-                frappe.db.sql(
-                    """INSERT INTO `tabWorkspace Number Card`
-                    (`name`, `number_card`, `parent`, `parentfield`, `parenttype`,
-                     `docstatus`, `owner`, `modified_by`)
-                    VALUES (%s, %s, %s, 'number_cards', 'Workspace', 0, 'Administrator', 'Administrator')""",
-                    (_rand_id(), nc.get("number_card"), ws_name),
-                )
-            except Exception as e:
-                print(f"   Number Card '{nc}' failed: {e}")
+        # Insert number cards via SQL - detect correct column names
+        nc_cols = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Number Card`", as_list=True)
+        nc_col_names = [c[0] for c in nc_cols]
+        print(f"   Number Card columns: {nc_col_names}")
 
-        # Insert charts via SQL
-        for chart in ws_data.get("charts", []):
+        for nc in ws_data.get("number_cards", []):
+            nc_name = nc.get("number_card")
+            # Try possible column names
+            card_col = "number_card"
+            if "label" in nc_col_names:
+                card_col = "label"
+            elif "number_card_name" in nc_col_names:
+                card_col = "number_card_name"
+
+            nc_row = {
+                "name": _rand_id(),
+                "parent": ws_name,
+                "parentfield": "number_cards",
+                "parenttype": "Workspace",
+                "docstatus": 0,
+                "owner": "Administrator",
+                "modified_by": "Administrator",
+            }
+            if card_col in nc_col_names:
+                nc_row[card_col] = nc_name
+
             try:
+                filtered_nc = {k: v for k, v in nc_row.items() if k in nc_col_names}
+                cols_str_nc = ", ".join([f"`{k}`" for k in filtered_nc.keys()])
+                vals_str_nc = ", ".join(["%s"] * len(filtered_nc))
                 frappe.db.sql(
-                    """INSERT INTO `tabWorkspace Chart`
-                    (`name`, `chart`, `width`, `parent`, `parentfield`, `parenttype`,
-                     `docstatus`, `owner`, `modified_by`)
-                    VALUES (%s, %s, %s, %s, 'charts', 'Workspace', 0, 'Administrator', 'Administrator')""",
-                    (_rand_id(), chart.get("chart"), chart.get("width", "Half"), ws_name),
+                    f"INSERT INTO `tabWorkspace Number Card` ({cols_str_nc}) VALUES ({vals_str_nc})",
+                    list(filtered_nc.values()),
                 )
             except Exception as e:
-                print(f"   Chart '{chart}' failed: {e}")
+                print(f"   Number Card '{nc_name}' failed: {e}")
+
+        # Insert charts via SQL - detect correct column names
+        ch_cols = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Chart`", as_list=True)
+        ch_col_names = [c[0] for c in ch_cols]
+        print(f"   Chart columns: {ch_col_names}")
+
+        for chart in ws_data.get("charts", []):
+            chart_name = chart.get("chart")
+            chart_col = "chart"
+            if "label" in ch_col_names:
+                chart_col = "label"
+            elif "chart_name" in ch_col_names:
+                chart_col = "chart_name"
+
+            ch_row = {
+                "name": _rand_id(),
+                "width": chart.get("width", "Half"),
+                "parent": ws_name,
+                "parentfield": "charts",
+                "parenttype": "Workspace",
+                "docstatus": 0,
+                "owner": "Administrator",
+                "modified_by": "Administrator",
+            }
+            if chart_col in ch_col_names:
+                ch_row[chart_col] = chart_name
+
+            try:
+                filtered_ch = {k: v for k, v in ch_row.items() if k in ch_col_names}
+                cols_str_ch = ", ".join([f"`{k}`" for k in filtered_ch.keys()])
+                vals_str_ch = ", ".join(["%s"] * len(filtered_ch))
+                frappe.db.sql(
+                    f"INSERT INTO `tabWorkspace Chart` ({cols_str_ch}) VALUES ({vals_str_ch})",
+                    list(filtered_ch.values()),
+                )
+            except Exception as e:
+                print(f"   Chart '{chart_name}' failed: {e}")
 
         frappe.db.commit()
     except Exception as e:
@@ -163,13 +211,8 @@ def fix_workspace_now():
 
     # Step 4: Force clear ALL caches
     frappe.clear_cache()
-    frappe.clear_document_cache("Workspace", ws_name)
-    frappe.client.delete_cache("Workspace", ws_name)
     try:
-        frappe.cache().delete_value("workspace:{0}".format(ws_name))
-        frappe.cache().delete_value("workspace_list")
-        frappe.cache().delete_value("desk_sidebar")
-        frappe.cache().delete_value("app_modules")
+        frappe.clear_document_cache("Workspace", ws_name)
     except Exception:
         pass
     print("\n3. Verification:")
