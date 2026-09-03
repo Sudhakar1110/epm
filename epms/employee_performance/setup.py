@@ -123,6 +123,19 @@ def fix_workspace_now():
                 "label": sc.get("label", ""),
             })
 
+        # Add number cards from JSON
+        for nc in ws_data.get("number_cards", []):
+            ws.append("number_cards", {
+                "number_card": nc.get("number_card"),
+            })
+
+        # Add charts from JSON
+        for chart in ws_data.get("charts", []):
+            ws.append("charts", {
+                "chart": chart.get("chart"),
+                "width": chart.get("width", "Half"),
+            })
+
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         ws_name = ws.name
@@ -138,7 +151,10 @@ def fix_workspace_now():
     print("\n3. Verification:")
     final_links = frappe.db.count("Workspace Link", {"parent": ws_name})
     final_scs = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
+    final_nc = frappe.db.count("Workspace Number Card", {"parent": ws_name})
+    final_ch = frappe.db.count("Workspace Chart", {"parent": ws_name})
     print(f"   Links: {final_links}, Shortcuts: {final_scs}")
+    print(f"   Number Cards: {final_nc}, Charts: {final_ch}")
     print(f"   URL: /app/employee-performance-management")
     print("=== Done ===")
 
@@ -214,12 +230,41 @@ def _create_workspace_sql(ws_name, json_path):
         except Exception:
             pass
 
+    # Add number cards
+    for nc in ws_data.get("number_cards", []):
+        try:
+            frappe.db.sql(
+                """INSERT INTO `tabWorkspace Number Card`
+                (`name`, `number_card`, `parent`, `parentfield`, `parenttype`,
+                 `docstatus`, `owner`, `modified_by`)
+                VALUES (%s, %s, %s, 'number_cards', 'Workspace', 0, 'Administrator', 'Administrator')""",
+                (_rand_id(), nc.get("number_card"), ws_name),
+            )
+        except Exception:
+            pass
+
+    # Add charts
+    for chart in ws_data.get("charts", []):
+        try:
+            frappe.db.sql(
+                """INSERT INTO `tabWorkspace Chart`
+                (`name`, `chart`, `width`, `parent`, `parentfield`, `parenttype`,
+                 `docstatus`, `owner`, `modified_by`)
+                VALUES (%s, %s, %s, %s, 'charts', 'Workspace', 0, 'Administrator', 'Administrator')""",
+                (_rand_id(), chart.get("chart"), chart.get("width", "Half"), ws_name),
+            )
+        except Exception:
+            pass
+
     frappe.db.commit()
     frappe.clear_cache()
 
     final_links = frappe.db.count("Workspace Link", {"parent": ws_name})
     final_scs = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
+    final_nc = frappe.db.count("Workspace Number Card", {"parent": ws_name})
+    final_ch = frappe.db.count("Workspace Chart", {"parent": ws_name})
     print(f"   Links: {final_links}, Shortcuts: {final_scs}")
+    print(f"   Number Cards: {final_nc}, Charts: {final_ch}")
     print(f"   URL: /app/employee-performance-management")
     print("=== Done ===")
 
@@ -273,11 +318,21 @@ def ensure_workspace_exists():
                 "label": sc.get("label", ""),
             })
 
+        for nc in ws_data.get("number_cards", []):
+            ws.append("number_cards", {
+                "number_card": nc.get("number_card"),
+            })
+
+        for chart in ws_data.get("charts", []):
+            ws.append("charts", {
+                "chart": chart.get("chart"),
+                "width": chart.get("width", "Half"),
+            })
+
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         frappe.clear_cache()
     except Exception:
-        # SQL fallback
         _create_workspace_sql("Employee Performance Management", json_path)
 
 
