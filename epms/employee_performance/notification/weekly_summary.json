@@ -5,6 +5,8 @@
  "document_type": "Performance Scorecard",
  "enabled": 1,
  "event": "Method",
+ "message": "Weekly performance summary for team {{ doc.team }}.",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Weekly Summary",

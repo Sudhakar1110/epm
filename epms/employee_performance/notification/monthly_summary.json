@@ -5,6 +5,8 @@
  "document_type": "Performance Scorecard",
  "enabled": 1,
  "event": "Method",
+ "message": "Monthly performance summary for {{ doc.month }}/{{ doc.year }} is available.",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Monthly Summary",

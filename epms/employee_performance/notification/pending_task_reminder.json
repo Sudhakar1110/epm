@@ -5,6 +5,8 @@
  "document_type": "Pending Task",
  "enabled": 1,
  "event": "Method",
+ "message": "You have a pending task: {{ doc.task }}",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Pending Task Reminder",

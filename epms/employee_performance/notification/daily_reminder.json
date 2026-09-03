@@ -5,6 +5,8 @@
  "document_type": "Daily Performance",
  "enabled": 1,
  "event": "Method",
+ "message": "Reminder: Please submit your daily performance update for {{ doc.date }}.",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Daily Reminder",

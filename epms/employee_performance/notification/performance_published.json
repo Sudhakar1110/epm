@@ -5,6 +5,8 @@
  "document_type": "Performance Scorecard",
  "enabled": 1,
  "event": "Method",
+ "message": "Your performance scorecard for {{ doc.month }}/{{ doc.year }} has been published.",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Performance Published",

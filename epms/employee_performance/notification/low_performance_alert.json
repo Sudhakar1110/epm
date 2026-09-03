@@ -5,6 +5,8 @@
  "document_type": "Performance Scorecard",
  "enabled": 1,
  "event": "Method",
+ "message": "Low performance alert for {{ doc.employee_name }}. Please review.",
+ "message_type": "Markdown",
  "method": "on_submit",
  "module": "Employee Performance",
  "name": "Low Performance Alert",

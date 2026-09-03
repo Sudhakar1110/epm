@@ -5,6 +5,8 @@
  "document_type": "Team",
  "enabled": 1,
  "event": "Method",
+ "message": "Your daily performance update for {{ doc.date }} is overdue. Please submit it at the earliest.",
+ "message_type": "Markdown",
  "method": "on_update",
  "module": "Employee Performance",
  "name": "Late Update Reminder",
