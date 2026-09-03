@@ -5,11 +5,15 @@ from frappe.utils import getdate, nowdate, cint, flt
 
 def boot_session(bootinfo):
     """Add EPMS data to boot session via extend_bootinfo hook."""
-    bootinfo.epms_roles = get_user_roles()
-    bootinfo.epms_teams = get_user_teams()
-    bootinfo.epms_is_founder = has_role("EPMS Founder")
-    bootinfo.epms_is_team_leader = has_role("EPMS Team Leader")
-    bootinfo.epms_is_team_member = has_role("EPMS Team Member")
+    try:
+        bootinfo.epms_roles = get_user_roles()
+        bootinfo.epms_teams = get_user_teams()
+        bootinfo.epms_is_founder = has_role("EPMS Founder")
+        bootinfo.epms_is_team_leader = has_role("EPMS Team Leader")
+        bootinfo.epms_is_team_member = has_role("EPMS Team Member")
+    except Exception:
+        # Never break the desk if EPMS data fails to load
+        pass
 
 
 def get_user_roles():
@@ -29,34 +33,40 @@ def get_user_teams():
     user = frappe.session.user
     teams = []
 
-    if has_role("EPMS Founder"):
-        teams = frappe.get_all("Team", fields=["name", "team_name"])
-    elif has_role("EPMS Team Leader"):
-        teams = frappe.get_all(
-            "Team",
-            filters={"team_leader": user},
-            fields=["name", "team_name"],
-        )
-    elif has_role("EPMS Team Member"):
-        team_names = frappe.get_all(
-            "Team Member Mapping",
-            filters={"user": user, "status": "Active"},
-            pluck="team",
-        )
-        if team_names:
+    try:
+        if has_role("EPMS Founder"):
+            teams = frappe.get_all("Team", fields=["name", "team_name"])
+        elif has_role("EPMS Team Leader"):
             teams = frappe.get_all(
                 "Team",
-                filters={"name": ["in", team_names]},
+                filters={"team_leader": user},
                 fields=["name", "team_name"],
             )
+        elif has_role("EPMS Team Member"):
+            team_names = frappe.get_all(
+                "Team Member Mapping",
+                filters={"user": user, "status": "Active"},
+                pluck="team",
+            )
+            if team_names:
+                teams = frappe.get_all(
+                    "Team",
+                    filters={"name": ["in", team_names]},
+                    fields=["name", "team_name"],
+                )
+    except Exception:
+        pass
 
     return teams
 
 
 def has_role(role):
     """Check if current user has a role."""
-    user_roles = frappe.get_roles(frappe.session.user)
-    return role in user_roles
+    try:
+        user_roles = frappe.get_roles(frappe.session.user)
+        return role in user_roles
+    except Exception:
+        return False
 
 
 def get_employee_performance_summary(employee, month=None, year=None):
