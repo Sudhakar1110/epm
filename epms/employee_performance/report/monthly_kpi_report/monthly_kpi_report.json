@@ -5,14 +5,12 @@
  "module": "Employee Performance",
  "name": "Monthly KPI Report",
  "owner": "Administrator",
+ "ref_doctype": "Daily Performance",
  "report_name": "Monthly KPI Report",
  "report_type": "Script Report",
  "roles": [
-  {
-   "role": "EPMS Founder"
-  },
-  {
-   "role": "EPMS Team Leader"
-  }
+  {"role": "EPMS Founder"},
+  {"role": "EPMS Team Leader"},
+  {"role": "EPMS Team Member"}
  ]
 }

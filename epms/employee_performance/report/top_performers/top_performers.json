@@ -5,14 +5,12 @@
  "module": "Employee Performance",
  "name": "Top Performers",
  "owner": "Administrator",
+ "ref_doctype": "Performance Scorecard",
  "report_name": "Top Performers",
  "report_type": "Script Report",
  "roles": [
-  {
-   "role": "EPMS Founder"
-  },
-  {
-   "role": "EPMS Team Leader"
-  }
+  {"role": "EPMS Founder"},
+  {"role": "EPMS Team Leader"},
+  {"role": "EPMS Team Member"}
  ]
 }
