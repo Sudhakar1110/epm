@@ -33,61 +33,171 @@ def fix_workspace_now():
     """
     print("\n=== EPMS Workspace Fix ===")
 
-    # Delete existing empty workspace and recreate
-    if frappe.db.exists("Workspace", "Employee Performance Management"):
-        print("Deleting existing empty workspace...")
-        frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name = %s", "Employee Performance Management")
-        frappe.db.commit()
+    # First, show content format of an existing workspace for reference
+    existing = frappe.db.sql(
+        "SELECT name, content FROM `tabWorkspace` WHERE name = 'Home'",
+        as_dict=True,
+    )
+    if existing:
+        print(f"\nHome workspace content format:\n{existing[0].content[:1500]}\n")
+
+    # Delete existing workspace and recreate
+    frappe.db.sql(
+        "DELETE FROM `tabWorkspace` WHERE name = %s",
+        "Employee Performance Management",
+    )
+    frappe.db.commit()
 
     ensure_workspace_exists()
 
     final = frappe.db.exists("Workspace", "Employee Performance Management")
-    print(f"Workspace exists: {final}")
+    print(f"\nWorkspace exists: {final}")
     if final:
         ws = frappe.get_doc("Workspace", "Employee Performance Management")
-        content_preview = ws.content[:200] if ws.content else "EMPTY"
-        print(f"Content preview: {content_preview}...")
+        content_len = len(ws.content) if ws.content else 0
+        print(f"Content length: {content_len} chars")
         print(f"URL: /app/employee-performance-management")
     print("=== Done ===")
 
 
 def _get_workspace_content():
-    """Build the workspace content JSON with all links and shortcuts."""
-    return json.dumps([
-        {"type": "header", "data": {"text": "Employee Performance Management", "orientation": "left"}},
-        {"type": "shortcut", "data": {"shortcut_name": "Team", "type": "DocType"}},
-        {"type": "shortcut", "data": {"shortcut_name": "Team Member Mapping", "type": "DocType"}},
-        {"type": "shortcut", "data": {"shortcut_name": "Daily Performance", "type": "DocType"}},
-        {"type": "shortcut", "data": {"shortcut_name": "Pending Task", "type": "DocType"}},
-        {"type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "type": "DocType"}},
-        {"type": "header", "data": {"text": "Quick Links", "orientation": "left"}},
-        {"type": "link", "data": {"link_type": "DocType", "link_to": "Team", "label": "Teams"}},
-        {"type": "link", "data": {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members"}},
-        {"type": "link", "data": {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"}},
-        {"type": "link", "data": {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks"}},
-        {"type": "link", "data": {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards"}},
-        {"type": "header", "data": {"text": "Reports", "orientation": "left"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report"}},
-        {"type": "link", "data": {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"}},
-    ])
-
-
-def _get_shortcuts():
-    """Build shortcuts JSON."""
-    return json.dumps([
-        {"type": "DocType", "link_to": "Team", "label": "Teams"},
-        {"type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members"},
-        {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
-        {"type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks"},
-        {"type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards"},
-    ])
+    """Build workspace content JSON matching Frappe v15 format."""
+    content = [
+        {
+            "type": "header",
+            "data": {
+                "text": "Employee Performance Management",
+                "orientation": "left",
+            },
+        },
+        {
+            "type": "card",
+            "data": {
+                "card_name": "DocTypes",
+                "col": 1,
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "DocType",
+                "link_to": "Team",
+                "label": "Teams",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "DocType",
+                "link_to": "Team Member Mapping",
+                "label": "Team Members",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "DocType",
+                "link_to": "Daily Performance",
+                "label": "Daily Performance",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "DocType",
+                "link_to": "Pending Task",
+                "label": "Pending Tasks",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "DocType",
+                "link_to": "Performance Scorecard",
+                "label": "Scorecards",
+            },
+        },
+        {
+            "type": "header",
+            "data": {
+                "text": "Reports",
+                "orientation": "left",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Daily Performance Report",
+                "label": "Daily Performance Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Monthly Performance Report",
+                "label": "Monthly Performance Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Employee Wise Report",
+                "label": "Employee Wise Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Team Wise Report",
+                "label": "Team Wise Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Pending Task Report",
+                "label": "Pending Task Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Top Performers",
+                "label": "Top Performers",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Low Performers",
+                "label": "Low Performers",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Monthly KPI Report",
+                "label": "Monthly KPI Report",
+            },
+        },
+        {
+            "type": "link",
+            "data": {
+                "link_type": "Report",
+                "link_to": "Leaderboard Report",
+                "label": "Leaderboard Report",
+            },
+        },
+    ]
+    return json.dumps(content)
 
 
 def _build_workspace_row():
@@ -118,28 +228,7 @@ def _build_workspace_row():
         "idx": 0,
     }
 
-    # Only include columns that exist in the table
     return {k: v for k, v in data.items() if k in col_names}
-
-
-def create_module_def():
-    """Ensure the Employee Performance Module Def exists."""
-    if not frappe.db.exists("Module Def", "Employee Performance"):
-        try:
-            frappe.get_doc({
-                "doctype": "Module Def",
-                "module_name": "Employee Performance",
-                "app_name": "epms",
-                "label": "Employee Performance",
-                "color": "#28a745",
-                "icon": "octicon octicon-goal",
-                "description": "Employee Performance Management System",
-                "type": "Module",
-                "custom": 0,
-            }).insert(ignore_permissions=True)
-            frappe.logger().info("EPMS: Created Module Def for Employee Performance")
-        except Exception as e:
-            frappe.log_error(f"EPMS: Failed to create Module Def: {str(e)}")
 
 
 def ensure_workspace_exists():
@@ -161,6 +250,25 @@ def ensure_workspace_exists():
         frappe.logger().info("EPMS: Created workspace with full content")
     except Exception as e:
         frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}")
+
+
+def create_module_def():
+    """Ensure the Employee Performance Module Def exists."""
+    if not frappe.db.exists("Module Def", "Employee Performance"):
+        try:
+            frappe.get_doc({
+                "doctype": "Module Def",
+                "module_name": "Employee Performance",
+                "app_name": "epms",
+                "label": "Employee Performance",
+                "color": "#28a745",
+                "icon": "octicon octicon-goal",
+                "description": "Employee Performance Management System",
+                "type": "Module",
+                "custom": 0,
+            }).insert(ignore_permissions=True)
+        except Exception as e:
+            frappe.log_error(f"EPMS: Failed to create Module Def: {str(e)}")
 
 
 def create_roles():
