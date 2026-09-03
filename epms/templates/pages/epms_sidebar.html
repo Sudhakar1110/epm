@@ -1,9 +1,12 @@
-{# Sidebar macro - included in each page #}
+{# EPMS Portal Sidebar - included in each page #}
 <aside class="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-brand">
             <div class="sidebar-logo">EP</div>
-            <div class="sidebar-brand-text"><h3>Employee</h3><span>Performance Portal</span></div>
+            <div class="sidebar-brand-text">
+                <h3>Employee</h3>
+                <span>Performance Portal</span>
+            </div>
         </div>
         <button class="sidebar-bell" title="Notifications">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -17,17 +20,42 @@
         </div>
     </div>
     <nav class="sidebar-nav">
-        <a href="/epms" class="nav-item {% if active_page=='dashboard' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
-        <a href="/epms/my-day" class="nav-item {% if active_page=='my-day' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>My Day</a>
-        <a href="/epms/teams" class="nav-item {% if active_page=='teams' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Teams</a>
-        <a href="/epms/performance" class="nav-item {% if active_page=='performance' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Performance</a>
-        <a href="/epms/tasks" class="nav-item {% if active_page=='tasks' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks</a>
-        <a href="/epms/scorecards" class="nav-item {% if active_page=='scorecards' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Scorecards</a>
-        <a href="/epms/reports" class="nav-item {% if active_page=='reports' %}active{% endif %}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>Reports</a>
+        <a href="/epms" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+        </a>
+        <a href="/epms/my-day" class="nav-item {% if active_page == 'my-day' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            My Day
+        </a>
+        <a href="/epms/teams" class="nav-item {% if active_page == 'teams' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            Teams
+        </a>
+        <a href="/epms/performance" class="nav-item {% if active_page == 'performance' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Performance
+        </a>
+        <a href="/epms/tasks" class="nav-item {% if active_page == 'tasks' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Tasks
+            {% if pending_count %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
+        </a>
+        <a href="/epms/scorecards" class="nav-item {% if active_page == 'scorecards' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Scorecards
+        </a>
+        <a href="/epms/reports" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
+            Reports
+        </a>
     </nav>
     <div class="sidebar-user">
         <div class="user-avatar">{{ user_initial }}</div>
-        <div class="user-info"><div class="user-name">{{ user_name }}</div><div class="user-role">{{ user_role }}</div></div>
-        <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        <div class="user-info">
+            <div class="user-name">{{ user_name }}</div>
+            <div class="user-role">{{ user_role }}</div>
+        </div>
+        <svg class="user-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </div>
 </aside>

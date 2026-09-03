@@ -1,50 +1,51 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "tasks" %}
-
-{% block content %}
-<div class="epms-page-header" style="display:flex;justify-content:space-between;align-items:center;">
-    <div>
-        <h1>Tasks</h1>
-        <p>All pending and in-progress tasks.</p>
-    </div>
-    <a href="/app/pending-task/new" class="epms-btn epms-btn-primary" target="_blank"><i class="octicon octicon-plus"></i> New Task</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPMS Portal — Tasks</title>
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body>
+<div class="layout">
+    {% include "epms_sidebar.html" %}
+    <main class="main-content">
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div><h1>Tasks</h1><p>Manage and track all pending tasks across teams.</p></div>
+        </div>
+        <div class="tab-group">
+            <button class="tab-btn active" onclick="filterTasks('all',this)">All</button>
+            <button class="tab-btn" onclick="filterTasks('Pending',this)">Pending</button>
+            <button class="tab-btn" onclick="filterTasks('In Progress',this)">In Progress</button>
+            <button class="tab-btn" onclick="filterTasks('Completed',this)">Completed</button>
+        </div>
+        <div style="margin-bottom:20px"><input type="text" placeholder="Search tasks..." style="padding:10px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;width:320px;font-family:'Inter',sans-serif" onkeyup="searchTasks(this.value)"></div>
+        <div class="card" style="padding:0">
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="list-item" style="padding:18px 24px" data-status="{{ task.status }}" data-name="{{ task.subject|lower }}">
+                    <div class="list-item-left">
+                        <div class="list-item-checkbox {% if task.status == 'Completed' %}checked{% endif %}"></div>
+                        <div class="list-item-info">
+                            <div class="item-title">{{ task.subject }}</div>
+                            <div class="item-meta">{% if task.team %}{{ task.team }} &middot; {% endif %}{% if task.assigned_to %}{{ task.assigned_to }} &middot; {% endif %}{% if task.due_date %}<span class="due">Due {{ task.due_date }}</span>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="list-item-right"><span class="badge {{ task.priority_class }}">{{ task.priority }}</span><span class="badge {{ task.status_class }}">{{ task.status }}</span></div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p>No tasks found</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
 </div>
-
-<div class="epms-filter-tabs">
-    <button class="epms-filter-tab active" onclick="filterTasks('all',this)">All</button>
-    <button class="epms-filter-tab" onclick="filterTasks('Pending',this)">Pending</button>
-    <button class="epms-filter-tab" onclick="filterTasks('In Progress',this)">In Progress</button>
-    <button class="epms-filter-tab" onclick="filterTasks('Completed',this)">Completed</button>
-    <button class="epms-filter-tab" onclick="filterTasks('Blocked',this)">Blocked</button>
-</div>
-
-<div class="epms-card epms-card-full">
-    <div id="tasks-list"><div class="epms-empty"><p>Loading...</p></div></div>
-</div>
-
 <script>
-var allTasks = [];
-frappe.ready(function() {
-    frappe.call({ method: 'epms.employee_performance.api.get_portal_tasks', callback: function(r) {
-        allTasks = r.message || [];
-        renderTasks(allTasks);
-    }});
-});
-function filterTasks(status, el) {
-    document.querySelectorAll('.epms-filter-tab').forEach(function(t){t.classList.remove('active');});
-    el.classList.add('active');
-    renderTasks(status==='all'?allTasks:allTasks.filter(function(t){return t.current_status===status;}));
-}
-function renderTasks(tasks) {
-    if (!tasks.length) { document.getElementById('tasks-list').innerHTML='<div class="epms-empty"><i class="octicon octicon-checklist"></i><p>No tasks found</p></div>'; return; }
-    let html='<table class="epms-table"><thead><tr><th>Task</th><th>Employee</th><th>Due Date</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
-    tasks.forEach(function(t){
-        let sc=t.current_status==='Completed'?'success':t.current_status==='Blocked'?'danger':'warning';
-        let pc=t.priority==='Critical'?'danger':t.priority==='High'?'warning':'info';
-        html+='<tr><td><strong>'+t.task+'</strong></td><td>'+t.employee_name+'</td><td>'+(t.expected_completion||'-')+'</td><td><span class="epms-badge epms-badge-'+pc+'">'+t.priority+'</span></td><td><span class="epms-badge epms-badge-'+sc+'">'+t.current_status+'</span></td></tr>';
-    });
-    html+='</tbody></table>';
-    document.getElementById('tasks-list').innerHTML=html;
-}
+function filterTasks(s,b){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.list-item[data-status]').forEach(i=>{i.style.display=(s==='all'||i.dataset.status===s)?'':'none'})}
+function searchTasks(q){q=q.toLowerCase();document.querySelectorAll('.list-item[data-name]').forEach(i=>{i.style.display=i.dataset.name.includes(q)?'':'none'})}
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
 </script>
-{% endblock %}
+</body>
+</html>

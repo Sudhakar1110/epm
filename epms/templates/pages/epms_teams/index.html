@@ -1,30 +1,52 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "teams" %}
-
-{% block content %}
-<div class="epms-page-header">
-    <h1>Teams</h1>
-    <p>All teams across the organization.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPMS Portal — Teams</title>
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body>
+<div class="layout">
+    {% include "epms_sidebar.html" %}
+    <main class="main-content">
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div><h1>Teams</h1><p>All teams across the organization.</p></div>
+        </div>
+        <div class="tab-group">
+            <button class="tab-btn active" onclick="filterTeams('all',this)">All</button>
+            <button class="tab-btn" onclick="filterTeams('Active',this)">Active</button>
+            <button class="tab-btn" onclick="filterTeams('Inactive',this)">Inactive</button>
+        </div>
+        <div style="margin-bottom:20px"><input type="text" placeholder="Search teams..." style="padding:10px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;width:320px;font-family:'Inter',sans-serif" id="teamSearch" onkeyup="searchTeams(this.value)"></div>
+        <div class="card" style="padding:0">
+            {% if teams %}
+                {% for team in teams %}
+                <div class="list-item" style="padding:18px 24px" data-status="{{ team.status }}" data-name="{{ team.team_name|lower }}">
+                    <div class="list-item-left">
+                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(0,212,170,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <svg width="20" height="20" fill="none" stroke="#00d4aa" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="list-item-info">
+                            <div class="item-title">{{ team.team_name }}</div>
+                            <div class="item-meta">{% if team.team_leader %}Leader: {{ team.team_leader }} &middot; {% endif %}{{ team.member_count }} member{{ 's' if team.member_count != 1 }}</div>
+                        </div>
+                    </div>
+                    <div class="list-item-right"><span class="badge {{ 'green' if team.status == 'Active' else 'gray' }}">{{ team.status }}</span></div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <p>No teams found</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
 </div>
-
-<div class="epms-card epms-card-full">
-    <div id="teams-list"><div class="epms-empty"><p>Loading...</p></div></div>
-</div>
-
 <script>
-frappe.ready(function() {
-    frappe.call({ method: 'epms.employee_performance.api.get_portal_teams', callback: function(r) {
-        if (r.message && r.message.length) {
-            let html = '<table class="epms-table"><thead><tr><th>Team</th><th>Leader</th><th>Members</th><th>Status</th></tr></thead><tbody>';
-            r.message.forEach(function(t) {
-                html += '<tr><td><strong>'+t.team_name+'</strong></td><td>'+(t.team_leader||'-')+'</td><td>'+(t.total_members||0)+'</td><td><span class="epms-badge epms-badge-success">'+t.status+'</span></td></tr>';
-            });
-            html += '</tbody></table>';
-            document.getElementById('teams-list').innerHTML = html;
-        } else {
-            document.getElementById('teams-list').innerHTML = '<div class="epms-empty"><i class="octicon octicon-organization"></i><p>No teams found</p></div>';
-        }
-    }});
-});
+function filterTeams(s,b){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.list-item[data-status]').forEach(i=>{i.style.display=(s==='all'||i.dataset.status===s)?'':'none'})}
+function searchTeams(q){q=q.toLowerCase();document.querySelectorAll('.list-item[data-name]').forEach(i=>{i.style.display=i.dataset.name.includes(q)?'':'none'})}
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
 </script>
-{% endblock %}
+</body>
+</html>
