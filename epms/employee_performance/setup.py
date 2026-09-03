@@ -163,11 +163,22 @@ def fix_workspace_now():
     print(f"   Shortcut columns: {sc_col_names}")
 
     shortcuts_data = [
+        # DocType shortcuts
         {"link_to": "Team", "type": "DocType", "label": "Team", "idx": 1},
         {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping", "idx": 2},
         {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance", "idx": 3},
         {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task", "idx": 4},
         {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard", "idx": 5},
+        # Report shortcuts
+        {"link_to": "Daily Performance Report", "type": "Report", "label": "Daily Performance Report", "idx": 6},
+        {"link_to": "Monthly Performance Report", "type": "Report", "label": "Monthly Performance Report", "idx": 7},
+        {"link_to": "Employee Wise Report", "type": "Report", "label": "Employee Wise Report", "idx": 8},
+        {"link_to": "Team Wise Report", "type": "Report", "label": "Team Wise Report", "idx": 9},
+        {"link_to": "Pending Task Report", "type": "Report", "label": "Pending Task Report", "idx": 10},
+        {"link_to": "Top Performers", "type": "Report", "label": "Top Performers", "idx": 11},
+        {"link_to": "Low Performers", "type": "Report", "label": "Low Performers", "idx": 12},
+        {"link_to": "Monthly KPI Report", "type": "Report", "label": "Monthly KPI Report", "idx": 13},
+        {"link_to": "Leaderboard Report", "type": "Report", "label": "Leaderboard Report", "idx": 14},
     ]
 
     inserted_scs = 0
@@ -212,10 +223,10 @@ def fix_workspace_now():
 
 
 def _get_workspace_content():
-    """Content with shortcuts and links directly embedded (Frappe v15 renders links from content JSON)."""
+    """Content with all items as shortcuts (the only type that reliably renders)."""
     content = [
-        # Shortcuts section
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
+        # DocTypes section
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team Member Mapping", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Daily Performance", "col": 3}},
@@ -223,28 +234,17 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
         # Spacer
         {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        # DocTypes header
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes</b></span>", "col": 12}},
-        # DocType links embedded in content
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Team", "label": "Teams"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Member Mapping"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Task"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Performance Scorecard"}},
-        # Spacer
-        {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        # Reports header
+        # Reports section
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Reports</b></span>", "col": 12}},
-        # Report links embedded in content
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report"}},
-        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Daily Performance Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Monthly Performance Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Employee Wise Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team Wise Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Pending Task Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Top Performers", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Low Performers", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Monthly KPI Report", "col": 3}},
+        {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Leaderboard Report", "col": 3}},
     ]
     return json.dumps(content)
 
@@ -294,6 +294,15 @@ def ensure_workspace_exists():
             {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance"},
             {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task"},
             {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"},
+            {"link_to": "Daily Performance Report", "type": "Report", "label": "Daily Performance Report"},
+            {"link_to": "Monthly Performance Report", "type": "Report", "label": "Monthly Performance Report"},
+            {"link_to": "Employee Wise Report", "type": "Report", "label": "Employee Wise Report"},
+            {"link_to": "Team Wise Report", "type": "Report", "label": "Team Wise Report"},
+            {"link_to": "Pending Task Report", "type": "Report", "label": "Pending Task Report"},
+            {"link_to": "Top Performers", "type": "Report", "label": "Top Performers"},
+            {"link_to": "Low Performers", "type": "Report", "label": "Low Performers"},
+            {"link_to": "Monthly KPI Report", "type": "Report", "label": "Monthly KPI Report"},
+            {"link_to": "Leaderboard Report", "type": "Report", "label": "Leaderboard Report"},
         ]:
             row = dict(sc)
             row["name"] = _rand_id()
