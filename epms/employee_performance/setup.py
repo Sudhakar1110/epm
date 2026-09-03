@@ -1,6 +1,5 @@
 import frappe
 from frappe import _
-import os
 import json
 import random
 import string
@@ -11,11 +10,13 @@ def _rand_id():
 
 
 def before_migrate():
+    """Ensure Module Def exists before migration."""
     create_module_def()
     frappe.db.commit()
 
 
 def after_install():
+    """Run after app installation."""
     create_module_def()
     ensure_workspace_exists()
     create_roles()
@@ -24,105 +25,117 @@ def after_install():
 
 
 def after_migrate():
+    """Run after migration."""
     create_module_def()
     ensure_workspace_exists()
     frappe.db.commit()
 
 
 def fix_workspace_now():
-    """bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now"""
+    """Run: bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now"""
     print("\n=== EPMS Workspace Fix ===")
 
-    # Delete everything
-    frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = %s", "Employee Performance Management")
-    frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = %s", "Employee Performance Management")
-    frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name = %s", "Employee Performance Management")
+    # Step 1: Ensure Module Def exists
+    create_module_def()
     frappe.db.commit()
 
+    # Step 2: Delete existing broken workspace
     ws_name = "Employee Performance Management"
+    frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = %s", ws_name)
+    frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = %s", ws_name)
+    frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name = %s", ws_name)
+    frappe.db.commit()
+    print("Cleaned existing workspace data.")
 
-    # Create workspace through ORM with minimal fields
-    print("\n1. Creating workspace via frappe.get_doc...")
-    ws = None
+    # Step 3: Create workspace via ORM using label (not title!)
+    print("\n1. Creating workspace...")
     try:
         ws = frappe.get_doc({
             "doctype": "Workspace",
             "module": "Employee Performance",
-            "title": ws_name,
+            "label": ws_name,
         })
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         ws_name = ws.name
-        print(f"   Created workspace: {ws.name}")
+        print(f"   Created: {ws_name}")
     except Exception as e:
         print(f"   ORM failed: {e}")
-        # Fallback: SQL
-        try:
-            content = _get_workspace_content()
-            frappe.db.sql(
-                """INSERT INTO `tabWorkspace`
-                (`name`, `module`, `title`, `label`, `content`,
-                 `is_hidden`, `public`, `docstatus`, `idx`,
-                 `modified_by`, `owner`, `creation`, `modified`)
-                VALUES (%s, %s, %s, %s, %s, 0, 1, 0, 0,
-                        'Administrator', 'Administrator',
-                        NOW(), NOW())""",
-                (ws_name, "Employee Performance", ws_name, ws_name, content),
-            )
-            frappe.db.commit()
-            print(f"   Created workspace via SQL: {ws_name}")
-        except Exception as e2:
-            print(f"   SQL also failed: {e2}")
-            frappe.log_error(f"EPMS: {str(e2)}")
-            return
+        # SQL fallback with only columns that exist
+        cols = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace`", as_list=True)
+        col_names = [c[0] for c in cols]
+        insert_cols = {
+            "name": ws_name,
+            "module": "Employee Performance",
+            "label": ws_name,
+            "is_hidden": 0,
+            "public": 1,
+            "docstatus": 0,
+            "idx": 0,
+            "modified_by": "Administrator",
+            "owner": "Administrator",
+        }
+        filtered = {k: v for k, v in insert_cols.items() if k in col_names}
+        cols_str = ", ".join([f"`{k}`" for k in filtered.keys()])
+        vals_str = ", ".join(["%s"] * len(filtered))
+        frappe.db.sql(
+            f"INSERT INTO `tabWorkspace` ({cols_str}) VALUES ({vals_str})",
+            list(filtered.values()),
+        )
+        frappe.db.commit()
+        print(f"   Created via SQL: {ws_name}")
 
-    # Update content
-    print("\n2. Setting workspace content...")
+    # Step 4: Set content JSON with card blocks
+    print("\n2. Setting content with shortcuts and card sections...")
     content = _get_workspace_content()
     frappe.db.set_value("Workspace", ws_name, "content", content)
     frappe.db.commit()
 
-    # Add links
-    print("\n3. Adding links via frappe.get_doc...")
-    ws = frappe.get_doc("Workspace", ws_name)
-    links_data = [
-        {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link"},
-        {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link"},
-        {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link"},
-        {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link"},
-        {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-        {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
-    ]
+    # Step 5: Add links via ORM
+    print("\n3. Adding links via ORM...")
+    try:
+        ws = frappe.get_doc("Workspace", ws_name)
 
-    for link in links_data:
-        ws.append("links", link)
+        links_data = [
+            {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link"},
+            {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link"},
+            {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link"},
+            {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link"},
+            {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+            {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        ]
+        for link in links_data:
+            ws.append("links", link)
 
-    # Add shortcuts
-    print("4. Adding shortcuts via frappe.get_doc...")
-    shortcuts_data = [
-        {"link_to": "Team", "type": "DocType", "label": "Team"},
-        {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping"},
-        {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance"},
-        {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task"},
-        {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"},
-    ]
+        # Step 6: Add shortcuts via ORM
+        print("4. Adding shortcuts via ORM...")
+        shortcuts_data = [
+            {"link_to": "Team", "type": "DocType", "label": "Team"},
+            {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping"},
+            {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance"},
+            {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task"},
+            {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"},
+        ]
+        for sc in shortcuts_data:
+            ws.append("shortcuts", sc)
 
-    for sc in shortcuts_data:
-        ws.append("shortcuts", sc)
+        ws.save(ignore_permissions=True)
+        frappe.db.commit()
+        frappe.clear_cache()
+        print("   Saved workspace with links and shortcuts.")
+    except Exception as e:
+        print(f"   ORM append failed: {e}")
+        frappe.log_error(f"EPMS: {str(e)}")
 
-    ws.save(ignore_permissions=True)
-    frappe.db.commit()
-    frappe.clear_cache()
-
-    # Verify
+    # Step 7: Verify
     print("\n5. Verification:")
     link_count = frappe.db.count("Workspace Link", {"parent": ws_name})
     sc_count = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
@@ -132,57 +145,82 @@ def fix_workspace_now():
 
 
 def _get_workspace_content():
-    """Content matching Frappe v15 format - no card blocks, just shortcuts."""
+    """Content matching Frappe v15 format with shortcuts AND card blocks for links."""
     content = [
+        # Shortcuts section
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team Member Mapping", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Daily Performance", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Pending Task", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
+        # Spacer
+        {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
+        # Reports & Masters section with cards
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Reports &amp; Masters</b></span>", "col": 12}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 4}},
     ]
     return json.dumps(content)
 
 
 def ensure_workspace_exists():
+    """Create workspace if it doesn't exist."""
     if frappe.db.exists("Workspace", "Employee Performance Management"):
+        # Check if it has links, if not populate it
+        link_count = frappe.db.count("Workspace Link", {"parent": "Employee Performance Management"})
+        if link_count == 0:
+            _populate_workspace("Employee Performance Management")
         return
 
     ws_name = "Employee Performance Management"
+    create_module_def()
 
-    # Try ORM first
+    # Try ORM first with label (not title!)
     try:
         ws = frappe.get_doc({
             "doctype": "Workspace",
             "module": "Employee Performance",
-            "title": ws_name,
+            "label": ws_name,
         })
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         ws_name = ws.name
-    except Exception as e:
-        # Fallback: SQL
+    except Exception:
+        # SQL fallback
         try:
-            content = _get_workspace_content()
+            cols = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace`", as_list=True)
+            col_names = [c[0] for c in cols]
+            insert_cols = {
+                "name": ws_name,
+                "module": "Employee Performance",
+                "label": ws_name,
+                "is_hidden": 0,
+                "public": 1,
+                "docstatus": 0,
+                "idx": 0,
+                "modified_by": "Administrator",
+                "owner": "Administrator",
+            }
+            filtered = {k: v for k, v in insert_cols.items() if k in col_names}
+            cols_str = ", ".join([f"`{k}`" for k in filtered.keys()])
+            vals_str = ", ".join(["%s"] * len(filtered))
             frappe.db.sql(
-                """INSERT INTO `tabWorkspace`
-                (`name`, `module`, `title`, `label`, `content`,
-                 `is_hidden`, `public`, `docstatus`, `idx`,
-                 `modified_by`, `owner`, `creation`, `modified`)
-                VALUES (%s, %s, %s, %s, %s, 0, 1, 0, 0,
-                        'Administrator', 'Administrator',
-                        NOW(), NOW())""",
-                (ws_name, "Employee Performance", ws_name, ws_name, _get_workspace_content()),
+                f"INSERT INTO `tabWorkspace` ({cols_str}) VALUES ({vals_str})",
+                list(filtered.values()),
             )
             frappe.db.commit()
-        except Exception as e2:
-            frappe.log_error(f"EPMS: Failed to create workspace: {str(e2)}")
+        except Exception:
             return
 
-    # Now add links and shortcuts via ORM
+    _populate_workspace(ws_name)
+
+
+def _populate_workspace(ws_name):
+    """Add links and shortcuts to workspace via ORM."""
     try:
         ws = frappe.get_doc("Workspace", ws_name)
         ws.content = _get_workspace_content()
+
         for link in [
             {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link"},
             {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link"},
@@ -200,6 +238,7 @@ def ensure_workspace_exists():
             {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
         ]:
             ws.append("links", link)
+
         for sc in [
             {"link_to": "Team", "type": "DocType", "label": "Team"},
             {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping"},
@@ -208,6 +247,7 @@ def ensure_workspace_exists():
             {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"},
         ]:
             ws.append("shortcuts", sc)
+
         ws.save(ignore_permissions=True)
         frappe.db.commit()
         frappe.clear_cache()
