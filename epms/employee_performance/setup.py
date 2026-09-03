@@ -33,25 +33,20 @@ def fix_workspace_now():
     """bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now"""
     print("\n=== EPMS Workspace Fix ===")
 
-    # Show actual columns for child tables
-    for tbl in ["tabWorkspace Link", "tabWorkspace Shortcut"]:
-        cols = frappe.db.sql(f"SHOW COLUMNS FROM `{tbl}`", as_dict=True)
-        print(f"\n{tbl} columns: {[c.Field for c in cols]}")
+    # Show how Accounting workspace defines its cards and links
+    acct = frappe.db.sql(
+        "SELECT content FROM `tabWorkspace` WHERE name = 'Accounting'", as_dict=True
+    )
+    if acct:
+        print(f"\nAccounting workspace content:\n{acct[0].content[:2000]}\n")
 
-    # Show a full Home link row to see all fields
-    home_link = frappe.db.sql(
-        "SELECT * FROM `tabWorkspace Link` WHERE parent = 'Home' LIMIT 1",
+    acct_links = frappe.db.sql(
+        "SELECT type, link_type, link_to, label, idx FROM `tabWorkspace Link` WHERE parent = 'Accounting' LIMIT 5",
         as_dict=True,
     )
-    if home_link:
-        print(f"\nHome link full row: {dict(home_link[0])}")
-
-    home_sc = frappe.db.sql(
-        "SELECT * FROM `tabWorkspace Shortcut` WHERE parent = 'Home' LIMIT 1",
-        as_dict=True,
-    )
-    if home_sc:
-        print(f"\nHome shortcut full row: {dict(home_sc[0])}")
+    print(f"Accounting links sample:")
+    for l in acct_links:
+        print(f"  type={l.type}, link_type={l.link_type}, link_to={l.link_to}, label={l.label}, idx={l.idx}")
 
     # Delete and recreate
     frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = %s", "Employee Performance Management")
@@ -72,6 +67,7 @@ def fix_workspace_now():
 
 
 def _get_workspace_content():
+    """Content matching Frappe v15 format - cards group links by card_name."""
     content = [
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
@@ -80,34 +76,32 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Pending Task", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
         {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes &amp; Reports</b></span>", "col": 12}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 6}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance Report", "col": 6}},
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Masters &amp; Reports</b></span>", "col": 12}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 4}},
     ]
     return json.dumps(content)
 
 
 def _insert_links(ws_name):
-    """Insert links using only columns that exist."""
     link_cols_info = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Link`", as_dict=True)
     link_col_names = [c.Field for c in link_cols_info]
     print(f"\nUsing link columns: {link_col_names}")
 
     links = [
-        {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
-        {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": ""},
+        {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
+        {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
     ]
 
     count = 0
@@ -136,17 +130,16 @@ def _insert_links(ws_name):
 
 
 def _insert_shortcuts(ws_name):
-    """Insert shortcuts using only columns that exist."""
     sc_cols_info = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Shortcut`", as_dict=True)
     sc_col_names = [c.Field for c in sc_cols_info]
     print(f"\nUsing shortcut columns: {sc_col_names}")
 
     shortcuts = [
-        {"link_to": "Team", "type": "DocType", "label": "Team", "color": "#28a745"},
-        {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping", "color": "#28a745"},
-        {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance", "color": "#28a745"},
-        {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task", "color": "#28a745"},
-        {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard", "color": "#28a745"},
+        {"link_to": "Team", "type": "DocType", "label": "Team", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
+        {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
+        {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
+        {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
+        {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
     ]
 
     count = 0
