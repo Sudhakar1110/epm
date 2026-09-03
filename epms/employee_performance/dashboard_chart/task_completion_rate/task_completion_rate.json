@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "name": "Task Completion Rate",
+ "chart_name": "Task Completion Rate",
+ "module": "Employee Performance",
+ "chart_type": "Donut",
+ "document_type": "Daily Performance",
+ "filters_json": "[[\"Daily Performance\",\"docstatus\",\"=\",\"1\",false]]",
+ "group_by_field": "task_status",
+ "group_by_type": "Count",
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "color": "#28a745",
+ "filters_set": []
+}

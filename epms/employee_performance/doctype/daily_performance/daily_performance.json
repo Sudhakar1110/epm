@@ -13,6 +13,8 @@
   "employee",
   "employee_name",
   "project",
+  "department",
+  "designation",
   "module_epms",
   "section_break_task",
   "task_title",
@@ -40,6 +42,7 @@
   "section_break_attachment",
   "attachment",
   "section_break_created",
+  "workflow_state",
   "amended_from"
  ],
  "fields": [
@@ -101,6 +104,22 @@
    "in_list_view": 0,
    "label": "Project",
    "options": "Project"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "in_standard_filter": 1,
+   "label": "Designation",
+   "options": "Designation"
   },
   {
    "fieldname": "module_epms",
@@ -261,6 +280,16 @@
   {
    "fieldname": "section_break_created",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "label": "Workflow State",
+   "options": "Draft\nSubmitted\nReviewed",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",

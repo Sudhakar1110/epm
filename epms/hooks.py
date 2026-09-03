@@ -56,6 +56,7 @@ scheduler_events = {
     "weekly": [
         "epms.employee_performance.tasks.send_weekly_summary",
         "epms.employee_performance.tasks.send_low_performance_alerts",
+        "epms.employee_performance.tasks.send_email_reports",
     ],
     "monthly": [
         "epms.employee_performance.tasks.generate_monthly_scorecards",
@@ -112,7 +113,30 @@ fixtures = [
             ["module", "=", "Employee Performance"],
         ],
     },
-
+    {
+        "dt": "Number Card",
+        "filters": [
+            ["module", "=", "Employee Performance"],
+        ],
+    },
+    {
+        "dt": "Dashboard",
+        "filters": [
+            ["module", "=", "Employee Performance"],
+        ],
+    },
+    {
+        "dt": "Workflow",
+        "filters": [
+            ["module", "=", "Employee Performance"],
+        ],
+    },
+    {
+        "dt": "Kanban Board",
+        "filters": [
+            ["module", "=", "Employee Performance"],
+        ],
+    },
 ]
 
 # Has Permission

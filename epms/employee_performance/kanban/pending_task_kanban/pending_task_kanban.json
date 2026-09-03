@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Kanban Board",
+ "name": "Pending Task Kanban",
+ "module": "Employee Performance",
+ "reference_doctype": "Patient Task",
+ "field_name": "current_status",
+ "kanban_board_name": "Pending Task Kanban",
+ "filters": "[[\"Pending Task\",\"docstatus\",\"=\",\"1\",false]]",
+ "columns": [
+  {"column_name": "Pending", "status": "Pending", "indicator": "orange"},
+  {"column_name": "In Progress", "status": "In Progress", "indicator": "blue"},
+  {"column_name": "Completed", "status": "Completed", "indicator": "green"},
+  {"column_name": "Blocked", "status": "Blocked", "indicator": "red"}
+ ]
+}

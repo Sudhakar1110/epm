@@ -362,6 +362,39 @@ def send_monthly_score_generated(employee, scorecard_name):
     )
 
 
+def send_email_reports():
+    """Send weekly/monthly email reports to team leaders and founders."""
+    frappe.logger().info("EPMS: Sending email reports")
+
+    # Get founders
+    founders = frappe.get_all(
+        "Has Role",
+        filters={"role": "EPMS Founder", "parenttype": "User"},
+        pluck="parent",
+    )
+
+    # Get team leaders
+    team_leaders = frappe.get_all(
+        "Team",
+        filters={"status": "Active"},
+        fields=["name", "team_name", "team_leader"],
+    )
+
+    recipients = list(set(founders + [t.team_leader for t in team_leaders if t.team_leader]))
+
+    for user in recipients:
+        try:
+            frappe.sendmail(
+                recipients=[user],
+                subject="EPMS Weekly Performance Report",
+                message="<h3>Employee Performance Management System - Weekly Report</h3>"
+                        "<p>Please check your workspace for the latest performance data.</p>"
+                        "<p><a href='/app/employee-performance-management'>Open EPMS Workspace</a></p>",
+            )
+        except Exception as e:
+            frappe.log_error(f"EPMS Email Error: {str(e)}")
+
+
 def send_notification(user, subject, message, reference_doctype=None, reference_name=None):
     """Send notification to a user."""
     if not user:

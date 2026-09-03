@@ -1,6 +1,10 @@
 {
- "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>DocTypes</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"DocType\",\"col\":4}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Report\",\"col\":4}}]",
+ "charts": [
+  {"chart": "Monthly Performance Trend", "width": "Half"},
+  {"chart": "Task Completion Rate", "width": "Half"},
+  {"chart": "Score Distribution", "width": "Half"}
+ ],
+ "content": "[{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Teams\",\"col\":3}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Members\",\"col\":3}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending Tasks Count\",\"col\":3}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Average Score\",\"col\":3}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>DocTypes</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"DocType\",\"col\":4}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Report\",\"col\":4}}]",
  "custom": 0,
  "custom_blocks": [],
  "doctype": "Workspace",
@@ -25,13 +29,19 @@
   {"type": "Link", "link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1},
   {"type": "Link", "link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1},
   {"type": "Link", "link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1},
-  {"type": "Link", "link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1}
+  {"type": "Link", "link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Daily Summary Report", "label": "Daily Summary Report", "is_query_report": 1, "onboard": 1}
  ],
  "modified": "2024-01-01 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Employee Performance",
  "name": "Employee Performance Management",
- "number_cards": [],
+ "number_cards": [
+  {"number_card": "Total Teams"},
+  {"number_card": "Active Members"},
+  {"number_card": "Pending Tasks Count"},
+  {"number_card": "Average Score"}
+ ],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
@@ -52,7 +62,8 @@
   {"type": "Report", "link_to": "Top Performers", "label": "Top Performers"},
   {"type": "Report", "link_to": "Low Performers", "label": "Low Performers"},
   {"type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report"},
-  {"type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"}
+  {"type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"},
+  {"type": "Report", "link_to": "Daily Summary Report", "label": "Daily Summary Report"}
  ],
  "title": "Employee Performance Management",
  "category": "Modules"

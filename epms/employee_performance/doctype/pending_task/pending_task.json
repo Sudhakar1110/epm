@@ -8,6 +8,9 @@
  "field_order": [
   "employee",
   "employee_name",
+  "team",
+  "department",
+  "designation",
   "task",
   "assigned_date",
   "expected_completion",
@@ -38,6 +41,30 @@
    "in_list_view": 1,
    "label": "Employee Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Team",
+   "options": "Team"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 0,
+   "in_standard_filter": 1,
+   "label": "Designation",
+   "options": "Designation"
   },
   {
    "fieldname": "task",
