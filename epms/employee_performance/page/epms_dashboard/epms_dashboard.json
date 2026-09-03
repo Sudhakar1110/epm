@@ -1,0 +1,11 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Page",
+ "module": "Employee Performance",
+ "name": "epms-dashboard",
+ "owner": "Administrator",
+ "page_name": "epms-dashboard",
+ "title": "Employee Performance Dashboard",
+ "icon": "octicon octicon-graph",
+ "system_page": 0
+}

@@ -133,9 +133,6 @@ has_permission = {
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
 }
 
-# Before Install - Clean up any leftover module definitions
-before_install = "epms.employee_performance.setup.before_install"
-
 # After Install
 after_install = "epms.employee_performance.setup.after_install"
 

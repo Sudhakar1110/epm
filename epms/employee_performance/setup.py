@@ -2,17 +2,9 @@ import frappe
 from frappe import _
 
 
-def before_install():
-    """Run before app installation - clean up any leftover module definitions."""
-    try:
-        frappe.db.sql("DELETE FROM `tabModule Def` WHERE name = 'Employee Performance'")
-        frappe.db.commit()
-    except Exception:
-        pass
-
-
 def after_install():
     """Run after app installation."""
+    create_module_def()
     create_roles()
     setup_role_permissions()
     frappe.db.commit()
@@ -20,9 +12,32 @@ def after_install():
 
 def after_migrate():
     """Run after migration."""
+    create_module_def()
     create_roles()
     setup_role_permissions()
     frappe.db.commit()
+
+
+def create_module_def():
+    """Ensure the Employee Performance Module Def exists."""
+    if not frappe.db.exists("Module Def", "Employee Performance"):
+        try:
+            frappe.get_doc(
+                {
+                    "doctype": "Module Def",
+                    "module_name": "Employee Performance",
+                    "app_name": "epms",
+                    "label": "Employee Performance",
+                    "color": "#28a745",
+                    "icon": "octicon octicon-goal",
+                    "description": "Employee Performance Management System",
+                    "type": "Module",
+                    "custom": 0,
+                }
+            ).insert(ignore_permissions=True)
+            frappe.logger().info("EPMS: Created Module Def for Employee Performance")
+        except Exception as e:
+            frappe.log_error(f"EPMS: Failed to create Module Def: {str(e)}")
 
 
 def create_roles():
