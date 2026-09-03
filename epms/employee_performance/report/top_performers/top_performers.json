@@ -6,7 +6,7 @@
  "name": "Top Performers",
  "owner": "Administrator",
  "report_name": "Top Performers",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "EPMS Founder"

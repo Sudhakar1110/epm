@@ -6,7 +6,7 @@
  "name": "Low Performers",
  "owner": "Administrator",
  "report_name": "Low Performers",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "EPMS Founder"
