@@ -2,30 +2,15 @@
 {% set active_page = "performance" %}
 
 {% block content %}
-<div class="epms-page-header">
-    <h1>Performance</h1>
-    <p>View daily performance entries across the team.</p>
-</div>
+<div class="epms-page-header"><h1>Performance</h1><p>Performance entries across the team.</p></div>
+<div class="epms-card epms-card-full"><div id="perf-box"><div class="empty"><p>Loading...</p></div></div></div>
+{% endblock %}
 
-<div class="epms-card epms-card-full">
-    <div id="performance-list"><div class="epms-empty"><p>Loading...</p></div></div>
-</div>
-
+{% block scripts %}
 <script>
-frappe.ready(function() {
-    frappe.call({ method: 'epms.employee_performance.api.get_portal_scorecards', callback: function(r) {
-        if (r.message && r.message.length) {
-            let html = '<table class="epms-table"><thead><tr><th>Employee</th><th>Team</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead><tbody>';
-            r.message.forEach(function(s) {
-                let scoreClass = s.overall_score>=80?'success':s.overall_score>=60?'warning':'danger';
-                html += '<tr><td><strong>'+s.employee_name+'</strong></td><td>'+(s.team||'-')+'</td><td><span class="epms-badge epms-badge-'+scoreClass+'">'+(s.overall_score||0).toFixed(1)+'</span></td><td>'+(s.final_grade||'-')+'</td><td><span class="epms-badge epms-badge-info">'+(s.performance_status||'-')+'</span></td></tr>';
-            });
-            html += '</tbody></table>';
-            document.getElementById('performance-list').innerHTML = html;
-        } else {
-            document.getElementById('performance-list').innerHTML = '<div class="epms-empty"><i class="octicon octicon-star"></i><p>No performance data yet</p></div>';
-        }
-    }});
+epms_call('epms.employee_performance.api.get_portal_scorecards', {}, function(r) {
+    if(r&&r.length) { var h='<table class="epms-table"><thead><tr><th>Employee</th><th>Team</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead><tbody>'; r.forEach(function(s){ var sc=s.overall_score>=80?'success':s.overall_score>=60?'warning':'danger'; h+='<tr><td><strong>'+s.employee_name+'</strong></td><td>'+(s.team||'-')+'</td><td><span class="badge badge-'+sc+'">'+(s.overall_score||0).toFixed(1)+'</span></td><td>'+(s.final_grade||'-')+'</td><td><span class="badge badge-info">'+(s.performance_status||'-')+'</span></td></tr>'; }); h+='</tbody></table>'; document.getElementById('perf-box').innerHTML=h; }
+    else document.getElementById('perf-box').innerHTML='<div class="empty"><p>No data yet</p></div>';
 });
 </script>
 {% endblock %}

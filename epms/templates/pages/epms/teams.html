@@ -2,29 +2,15 @@
 {% set active_page = "teams" %}
 
 {% block content %}
-<div class="epms-page-header">
-    <h1>Teams</h1>
-    <p>All teams across the organization.</p>
-</div>
+<div class="epms-page-header"><h1>Teams</h1><p>All teams across the organization.</p></div>
+<div class="epms-card epms-card-full"><div id="teams-box"><div class="empty"><p>Loading...</p></div></div></div>
+{% endblock %}
 
-<div class="epms-card epms-card-full">
-    <div id="teams-list"><div class="epms-empty"><p>Loading...</p></div></div>
-</div>
-
+{% block scripts %}
 <script>
-frappe.ready(function() {
-    frappe.call({ method: 'epms.employee_performance.api.get_portal_teams', callback: function(r) {
-        if (r.message && r.message.length) {
-            let html = '<table class="epms-table"><thead><tr><th>Team</th><th>Leader</th><th>Members</th><th>Status</th></tr></thead><tbody>';
-            r.message.forEach(function(t) {
-                html += '<tr><td><strong>'+t.team_name+'</strong></td><td>'+(t.team_leader||'-')+'</td><td>'+(t.total_members||0)+'</td><td><span class="epms-badge epms-badge-success">'+t.status+'</span></td></tr>';
-            });
-            html += '</tbody></table>';
-            document.getElementById('teams-list').innerHTML = html;
-        } else {
-            document.getElementById('teams-list').innerHTML = '<div class="epms-empty"><i class="octicon octicon-organization"></i><p>No teams found</p></div>';
-        }
-    }});
+epms_call('epms.employee_performance.api.get_portal_teams', {}, function(r) {
+    if(r&&r.length) { var h='<table class="epms-table"><thead><tr><th>Team</th><th>Leader</th><th>Members</th><th>Status</th></tr></thead><tbody>'; r.forEach(function(t){ h+='<tr><td><strong>'+t.team_name+'</strong></td><td>'+(t.team_leader||'-')+'</td><td>'+(t.total_members||0)+'</td><td><span class="badge badge-success">'+t.status+'</span></td></tr>'; }); h+='</tbody></table>'; document.getElementById('teams-box').innerHTML=h; }
+    else document.getElementById('teams-box').innerHTML='<div class="empty"><p>No teams found</p></div>';
 });
 </script>
 {% endblock %}

@@ -2,61 +2,17 @@
 {% set active_page = "reports" %}
 
 {% block content %}
-<div class="epms-page-header">
-    <h1>Reports</h1>
-    <p>All available reports and analytics.</p>
-</div>
-
-<div class="epms-reports-grid">
-    <a href="/query-report/Daily Performance Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Daily Performance</h4>
-        <p>View daily performance entries</p>
-    </a>
-    <a href="/query-report/Monthly Performance Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Monthly Performance</h4>
-        <p>View monthly scorecards</p>
-    </a>
-    <a href="/query-report/Employee Wise Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Employee Wise</h4>
-        <p>View employee performance</p>
-    </a>
-    <a href="/query-report/Team Wise Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Team Wise</h4>
-        <p>View team performance</p>
-    </a>
-    <a href="/query-report/Pending Task Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Pending Tasks</h4>
-        <p>View pending task report</p>
-    </a>
-    <a href="/query-report/Top Performers" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Top Performers</h4>
-        <p>View top performers</p>
-    </a>
-    <a href="/query-report/Low Performers" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Low Performers</h4>
-        <p>View low performers</p>
-    </a>
-    <a href="/query-report/Monthly KPI Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Monthly KPI</h4>
-        <p>View KPI report</p>
-    </a>
-    <a href="/query-report/Leaderboard Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Leaderboard</h4>
-        <p>View leaderboard</p>
-    </a>
-    <a href="/query-report/Daily Summary Report" target="_blank" class="epms-report-card">
-        <i class="octicon octicon-file-text"></i>
-        <h4>Daily Summary</h4>
-        <p>View daily summary</p>
-    </a>
+<div class="epms-page-header"><h1>Reports</h1><p>All available reports and analytics.</p></div>
+<div class="reports-grid">
+    <a href="/query-report/Daily Performance Report" target="_blank" class="report-card"><i>📊</i><h4>Daily Performance</h4><p>View daily entries</p></a>
+    <a href="/query-report/Monthly Performance Report" target="_blank" class="report-card"><i>📈</i><h4>Monthly Performance</h4><p>View monthly scorecards</p></a>
+    <a href="/query-report/Employee Wise Report" target="_blank" class="report-card"><i>👤</i><h4>Employee Wise</h4><p>View employee data</p></a>
+    <a href="/query-report/Team Wise Report" target="_blank" class="report-card"><i>👥</i><h4>Team Wise</h4><p>View team data</p></a>
+    <a href="/query-report/Pending Task Report" target="_blank" class="report-card"><i>📋</i><h4>Pending Tasks</h4><p>View pending tasks</p></a>
+    <a href="/query-report/Top Performers" target="_blank" class="report-card"><i>🏆</i><h4>Top Performers</h4><p>View top performers</p></a>
+    <a href="/query-report/Low Performers" target="_blank" class="report-card"><i>📉</i><h4>Low Performers</h4><p>View low performers</p></a>
+    <a href="/query-report/Monthly KPI Report" target="_blank" class="report-card"><i>📊</i><h4>Monthly KPI</h4><p>View KPI report</p></a>
+    <a href="/query-report/Leaderboard Report" target="_blank" class="report-card"><i>🏅</i><h4>Leaderboard</h4><p>View leaderboard</p></a>
+    <a href="/query-report/Daily Summary Report" target="_blank" class="report-card"><i>📋</i><h4>Daily Summary</h4><p>View daily summary</p></a>
 </div>
 {% endblock %}
