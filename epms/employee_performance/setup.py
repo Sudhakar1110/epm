@@ -46,34 +46,18 @@ def fix_workspace_now():
     try:
         ws = frappe.get_doc({
             "doctype": "Workspace",
+            "name": ws_name,
             "module": "Employee Performance",
             "title": ws_name,
+            "label": ws_name,
         })
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         print(f"   Created workspace: {ws.name}")
     except Exception as e:
         print(f"   ORM failed: {e}")
-        # Fallback: SQL with minimal columns
-        print("   Trying SQL fallback...")
-        try:
-            content = _get_workspace_content()
-            frappe.db.sql(
-                """INSERT INTO `tabWorkspace`
-                (`name`, `module`, `title`, `label`, `content`,
-                 `is_hidden`, `public`, `docstatus`, `idx`,
-                 `modified_by`, `owner`, `creation`, `modified`)
-                VALUES (%s, %s, %s, %s, %s, 0, 1, 0, 0,
-                        'Administrator', 'Administrator',
-                        NOW(), NOW())""",
-                (ws_name, "Employee Performance", ws_name, ws_name, content),
-            )
-            frappe.db.commit()
-            print(f"   Created workspace via SQL")
-        except Exception as e2:
-            print(f"   SQL also failed: {e2}")
-            frappe.log_error(f"EPMS: {str(e2)}")
-            return
+        frappe.log_error(f"EPMS: {str(e)}")
+        return
 
     # Update content
     print("\n2. Setting workspace content...")
@@ -131,7 +115,7 @@ def fix_workspace_now():
 
 
 def _get_workspace_content():
-    """Content matching Frappe v15 format."""
+    """Content matching Frappe v15 format - no card blocks, just shortcuts."""
     content = [
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
@@ -139,11 +123,6 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Daily Performance", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Pending Task", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
-        {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes &amp; Reports</b></span>", "col": 12}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "DocTypes", "col": 4}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Reports", "col": 4}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "More Reports", "col": 4}},
     ]
     return json.dumps(content)
 
