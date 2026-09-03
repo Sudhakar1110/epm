@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>DocTypes</b></span>\",\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Member Mapping\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Daily Performance\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Task\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Performance Scorecard\",\"col\":3}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Daily Performance Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Monthly Performance Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee Wise Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Wise Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Task Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Top Performers\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Low Performers\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Monthly KPI Report\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leaderboard Report\",\"col\":3}}]",
+ "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>DocTypes</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"DocTypes\",\"col\":4}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "custom": 0,
  "custom_blocks": [],
  "doctype": "Workspace",
@@ -11,117 +11,21 @@
  "is_hidden": 0,
  "label": "Employee Performance Management",
  "links": [
-  {
-   "type": "Link",
-   "link_type": "DocType",
-   "link_to": "Team",
-   "label": "Teams",
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "DocType",
-   "link_to": "Team Member Mapping",
-   "label": "Team Members",
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "DocType",
-   "link_to": "Daily Performance",
-   "label": "Daily Performance",
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "DocType",
-   "link_to": "Pending Task",
-   "label": "Pending Tasks",
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "DocType",
-   "link_to": "Performance Scorecard",
-   "label": "Scorecards",
-   "onboard": 1
-  },
-  {
-   "type": "Separator",
-   "link_type": "Separator"
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Daily Performance Report",
-   "label": "Daily Performance Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Monthly Performance Report",
-   "label": "Monthly Performance Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Employee Wise Report",
-   "label": "Employee Wise Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Team Wise Report",
-   "label": "Team Wise Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Pending Task Report",
-   "label": "Pending Task Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Top Performers",
-   "label": "Top Performers",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Low Performers",
-   "label": "Low Performers",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Monthly KPI Report",
-   "label": "Monthly KPI Report",
-   "is_query_report": 1,
-   "onboard": 1
-  },
-  {
-   "type": "Link",
-   "link_type": "Report",
-   "link_to": "Leaderboard Report",
-   "label": "Leaderboard Report",
-   "is_query_report": 1,
-   "onboard": 1
-  }
+  {"type": "Link", "link_type": "DocType", "link_to": "Team", "label": "Team", "onboard": 1},
+  {"type": "Link", "link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Member Mapping", "onboard": 1},
+  {"type": "Link", "link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1},
+  {"type": "Link", "link_type": "DocType", "link_to": "Pending Task", "label": "Pending Task", "onboard": 1},
+  {"type": "Link", "link_type": "DocType", "link_to": "Performance Scorecard", "label": "Performance Scorecard", "onboard": 1},
+  {"type": "Separator", "link_type": "Separator"},
+  {"type": "Link", "link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1},
+  {"type": "Link", "link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1}
  ],
  "modified": "2024-01-01 00:00:00.000000",
  "modified_by": "Administrator",
@@ -135,76 +39,20 @@
  "roles": [],
  "sequence_id": 1,
  "shortcuts": [
-  {
-   "type": "DocType",
-   "link_to": "Team",
-   "label": "Team"
-  },
-  {
-   "type": "DocType",
-   "link_to": "Team Member Mapping",
-   "label": "Team Member Mapping"
-  },
-  {
-   "type": "DocType",
-   "link_to": "Daily Performance",
-   "label": "Daily Performance"
-  },
-  {
-   "type": "DocType",
-   "link_to": "Pending Task",
-   "label": "Pending Task"
-  },
-  {
-   "type": "DocType",
-   "link_to": "Performance Scorecard",
-   "label": "Performance Scorecard"
-  },
-  {
-   "type": "Report",
-   "link_to": "Daily Performance Report",
-   "label": "Daily Performance Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Monthly Performance Report",
-   "label": "Monthly Performance Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Employee Wise Report",
-   "label": "Employee Wise Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Team Wise Report",
-   "label": "Team Wise Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Pending Task Report",
-   "label": "Pending Task Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Top Performers",
-   "label": "Top Performers"
-  },
-  {
-   "type": "Report",
-   "link_to": "Low Performers",
-   "label": "Low Performers"
-  },
-  {
-   "type": "Report",
-   "link_to": "Monthly KPI Report",
-   "label": "Monthly KPI Report"
-  },
-  {
-   "type": "Report",
-   "link_to": "Leaderboard Report",
-   "label": "Leaderboard Report"
-  }
+  {"type": "DocType", "link_to": "Team", "label": "Team"},
+  {"type": "DocType", "link_to": "Team Member Mapping", "label": "Team Member Mapping"},
+  {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
+  {"type": "DocType", "link_to": "Pending Task", "label": "Pending Task"},
+  {"type": "DocType", "link_to": "Performance Scorecard", "label": "Performance Scorecard"},
+  {"type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report"},
+  {"type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report"},
+  {"type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report"},
+  {"type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report"},
+  {"type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report"},
+  {"type": "Report", "link_to": "Top Performers", "label": "Top Performers"},
+  {"type": "Report", "link_to": "Low Performers", "label": "Low Performers"},
+  {"type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report"},
+  {"type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"}
  ],
  "title": "Employee Performance Management",
  "category": "Modules"
