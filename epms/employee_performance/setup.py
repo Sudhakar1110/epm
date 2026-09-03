@@ -33,41 +33,105 @@ def fix_workspace_now():
     """bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now"""
     print("\n=== EPMS Workspace Fix ===")
 
-    # Show how Accounting workspace defines its cards and links
-    acct = frappe.db.sql(
-        "SELECT content FROM `tabWorkspace` WHERE name = 'Accounting'", as_dict=True
-    )
-    if acct:
-        print(f"\nAccounting workspace content:\n{acct[0].content[:2000]}\n")
-
-    acct_links = frappe.db.sql(
-        "SELECT type, link_type, link_to, label, idx FROM `tabWorkspace Link` WHERE parent = 'Accounting' LIMIT 5",
-        as_dict=True,
-    )
-    print(f"Accounting links sample:")
-    for l in acct_links:
-        print(f"  type={l.type}, link_type={l.link_type}, link_to={l.link_to}, label={l.label}, idx={l.idx}")
-
-    # Delete and recreate
+    # Delete everything
     frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = %s", "Employee Performance Management")
     frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = %s", "Employee Performance Management")
     frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name = %s", "Employee Performance Management")
     frappe.db.commit()
 
-    ensure_workspace_exists()
+    ws_name = "Employee Performance Management"
 
-    final = frappe.db.exists("Workspace", "Employee Performance Management")
-    print(f"\nFinal: Workspace exists = {final}")
-    if final:
-        link_count = frappe.db.count("Workspace Link", {"parent": "Employee Performance Management"})
-        sc_count = frappe.db.count("Workspace Shortcut", {"parent": "Employee Performance Management"})
-        print(f"Links: {link_count}, Shortcuts: {sc_count}")
-        print(f"URL: /app/employee-performance-management")
+    # Create workspace through ORM with minimal fields
+    print("\n1. Creating workspace via frappe.get_doc...")
+    try:
+        ws = frappe.get_doc({
+            "doctype": "Workspace",
+            "module": "Employee Performance",
+            "title": ws_name,
+        })
+        ws.insert(ignore_permissions=True)
+        frappe.db.commit()
+        print(f"   Created workspace: {ws.name}")
+    except Exception as e:
+        print(f"   ORM failed: {e}")
+        # Fallback: SQL with minimal columns
+        print("   Trying SQL fallback...")
+        try:
+            content = _get_workspace_content()
+            frappe.db.sql(
+                """INSERT INTO `tabWorkspace`
+                (`name`, `module`, `title`, `label`, `content`,
+                 `is_hidden`, `public`, `docstatus`, `idx`,
+                 `modified_by`, `owner`, `creation`, `modified`)
+                VALUES (%s, %s, %s, %s, %s, 0, 1, 0, 0,
+                        'Administrator', 'Administrator',
+                        NOW(), NOW())""",
+                (ws_name, "Employee Performance", ws_name, ws_name, content),
+            )
+            frappe.db.commit()
+            print(f"   Created workspace via SQL")
+        except Exception as e2:
+            print(f"   SQL also failed: {e2}")
+            frappe.log_error(f"EPMS: {str(e2)}")
+            return
+
+    # Update content
+    print("\n2. Setting workspace content...")
+    content = _get_workspace_content()
+    frappe.db.set_value("Workspace", ws_name, "content", content)
+    frappe.db.commit()
+
+    # Add links
+    print("\n3. Adding links via frappe.get_doc...")
+    ws = frappe.get_doc("Workspace", ws_name)
+    links_data = [
+        {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link"},
+        {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link"},
+        {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link"},
+        {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link"},
+        {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+        {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link"},
+    ]
+
+    for link in links_data:
+        ws.append("links", link)
+
+    # Add shortcuts
+    print("4. Adding shortcuts via frappe.get_doc...")
+    shortcuts_data = [
+        {"link_to": "Team", "type": "DocType", "label": "Team"},
+        {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping"},
+        {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance"},
+        {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task"},
+        {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"},
+    ]
+
+    for sc in shortcuts_data:
+        ws.append("shortcuts", sc)
+
+    ws.save(ignore_permissions=True)
+    frappe.db.commit()
+    frappe.clear_cache()
+
+    # Verify
+    print("\n5. Verification:")
+    link_count = frappe.db.count("Workspace Link", {"parent": ws_name})
+    sc_count = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
+    print(f"   Links: {link_count}, Shortcuts: {sc_count}")
+    print(f"   URL: /app/employee-performance-management")
     print("=== Done ===")
 
 
 def _get_workspace_content():
-    """Content matching Frappe v15 format - cards group links by card_name."""
+    """Content matching Frappe v15 format."""
     content = [
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Team", "col": 3}},
@@ -76,124 +140,12 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Pending Task", "col": 3}},
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
         {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Masters &amp; Reports</b></span>", "col": 12}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 4}},
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes &amp; Reports</b></span>", "col": 12}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "DocTypes", "col": 4}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "Reports", "col": 4}},
+        {"id": _rand_id(), "type": "card", "data": {"card_name": "More Reports", "col": 4}},
     ]
     return json.dumps(content)
-
-
-def _insert_links(ws_name):
-    link_cols_info = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Link`", as_dict=True)
-    link_col_names = [c.Field for c in link_cols_info]
-    print(f"\nUsing link columns: {link_col_names}")
-
-    links = [
-        {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "is_query_report": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-        {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link", "dependencies": "", "description": "", "hidden": 0, "link_count": 0, "only_for": None, "icon": None, "report_ref_doctype": None},
-    ]
-
-    count = 0
-    for idx, link in enumerate(links, 1):
-        row = {
-            "name": _rand_id(),
-            "parent": ws_name,
-            "parenttype": "Workspace",
-            "parentfield": "links",
-            "docstatus": 0,
-            "idx": idx,
-            **link,
-        }
-        row = {k: v for k, v in row.items() if k in link_col_names}
-        cols = ", ".join([f"`{k}`" for k in row.keys()])
-        ph = ", ".join(["%s"] * len(row))
-        try:
-            frappe.db.sql(f"INSERT INTO `tabWorkspace Link` ({cols}) VALUES ({ph})", list(row.values()))
-            count += 1
-        except Exception as e:
-            print(f"  Link insert error: {e}")
-            frappe.log_error(f"EPMS link insert error: {str(e)}")
-
-    print(f"Inserted {count}/{len(links)} links")
-    return count
-
-
-def _insert_shortcuts(ws_name):
-    sc_cols_info = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace Shortcut`", as_dict=True)
-    sc_col_names = [c.Field for c in sc_cols_info]
-    print(f"\nUsing shortcut columns: {sc_col_names}")
-
-    shortcuts = [
-        {"link_to": "Team", "type": "DocType", "label": "Team", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
-        {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
-        {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
-        {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
-        {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard", "color": None, "icon": None, "url": None, "doc_view": None, "kanban_board": None, "restrict_to_domain": None, "report_ref_doctype": None, "stats_filter": None, "format": None},
-    ]
-
-    count = 0
-    for idx, sc in enumerate(shortcuts, 1):
-        row = {
-            "name": _rand_id(),
-            "parent": ws_name,
-            "parenttype": "Workspace",
-            "parentfield": "shortcuts",
-            "docstatus": 0,
-            "idx": idx,
-            **sc,
-        }
-        row = {k: v for k, v in row.items() if k in sc_col_names}
-        cols = ", ".join([f"`{k}`" for k in row.keys()])
-        ph = ", ".join(["%s"] * len(row))
-        try:
-            frappe.db.sql(f"INSERT INTO `tabWorkspace Shortcut` ({cols}) VALUES ({ph})", list(row.values()))
-            count += 1
-        except Exception as e:
-            print(f"  Shortcut insert error: {e}")
-            frappe.log_error(f"EPMS shortcut insert error: {str(e)}")
-
-    print(f"Inserted {count}/{len(shortcuts)} shortcuts")
-    return count
-
-
-def _build_workspace_row():
-    columns = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace`", as_dict=True)
-    col_names = [c.Field for c in columns]
-
-    data = {
-        "name": "Employee Performance Management",
-        "label": "Employee Performance Management",
-        "title": "Employee Performance Management",
-        "module": "Employee Performance",
-        "icon": "octicon octicon-goal",
-        "indicator_color": "green",
-        "is_hidden": 0,
-        "public": 1,
-        "for_user": "",
-        "modified_by": "Administrator",
-        "owner": "Administrator",
-        "creation": "2024-01-01 00:00:00.000000",
-        "modified": "2024-01-01 00:00:00.000000",
-        "content": _get_workspace_content(),
-        "sequence_id": 1,
-        "parent_page": "",
-        "hide_custom": 0,
-        "restrict_to_domain": "",
-        "docstatus": 0,
-        "idx": 0,
-    }
-    return {k: v for k, v in data.items() if k in col_names}
 
 
 def ensure_workspace_exists():
@@ -201,21 +153,41 @@ def ensure_workspace_exists():
         return
 
     ws_name = "Employee Performance Management"
-    data = _build_workspace_row()
-    cols = ", ".join([f"`{k}`" for k in data.keys()])
-    placeholders = ", ".join(["%s"] * len(data))
-
     try:
-        frappe.db.sql(f"INSERT INTO `tabWorkspace` ({cols}) VALUES ({placeholders})", list(data.values()))
+        ws = frappe.get_doc({
+            "doctype": "Workspace",
+            "module": "Employee Performance",
+            "title": ws_name,
+        })
+        ws.insert(ignore_permissions=True)
         frappe.db.commit()
+
+        ws = frappe.get_doc("Workspace", ws_name)
+        ws.content = _get_workspace_content()
+        ws.append("links", {"link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("links", {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report", "is_query_report": 1, "onboard": 1, "type": "Link"})
+        ws.append("shortcuts", {"link_to": "Team", "type": "DocType", "label": "Team"})
+        ws.append("shortcuts", {"link_to": "Team Member Mapping", "type": "DocType", "label": "Team Member Mapping"})
+        ws.append("shortcuts", {"link_to": "Daily Performance", "type": "DocType", "label": "Daily Performance"})
+        ws.append("shortcuts", {"link_to": "Pending Task", "type": "DocType", "label": "Pending Task"})
+        ws.append("shortcuts", {"link_to": "Performance Scorecard", "type": "DocType", "label": "Performance Scorecard"})
+        ws.save(ignore_permissions=True)
+        frappe.db.commit()
+        frappe.clear_cache()
     except Exception as e:
         frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}")
-        return
-
-    _insert_links(ws_name)
-    _insert_shortcuts(ws_name)
-    frappe.db.commit()
-    frappe.clear_cache()
 
 
 def create_module_def():
