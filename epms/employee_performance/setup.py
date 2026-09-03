@@ -113,6 +113,7 @@ def _insert_links(ws_name):
     count = 0
     for idx, link in enumerate(links, 1):
         row = {
+            "name": _rand_id(),
             "parent": ws_name,
             "parenttype": "Workspace",
             "parentfield": "links",
@@ -151,6 +152,7 @@ def _insert_shortcuts(ws_name):
     count = 0
     for idx, sc in enumerate(shortcuts, 1):
         row = {
+            "name": _rand_id(),
             "parent": ws_name,
             "parenttype": "Workspace",
             "parentfield": "shortcuts",
