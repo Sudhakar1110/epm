@@ -1,61 +1,100 @@
-{# EPMS Portal Sidebar - included in each page #}
 <aside class="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <div class="sidebar-logo">EP</div>
-            <div class="sidebar-brand-text">
-                <h3>Employee</h3>
+    <div class="sidebar-head">
+        <div class="brand">
+            <div class="brand-logo">EP</div>
+            <div class="brand-text">
+                <strong>Employee</strong>
                 <span>Performance Portal</span>
             </div>
         </div>
-        <button class="sidebar-bell" title="Notifications">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-        </button>
+        <a class="icon-btn bell" href="/app" title="Open ERP">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="bell-dot"></span>
+        </a>
     </div>
+
     <div class="sidebar-search">
-        <div class="search-box">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search...">
-            <span class="search-kbd">Ctrl K</span>
+        <div class="search-field">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search…" aria-label="Search">
+            <kbd>Ctrl K</kbd>
         </div>
     </div>
+
     <nav class="sidebar-nav">
         <a href="/epms" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            Dashboard
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Dashboard</span>
         </a>
         <a href="/epms/my-day" class="nav-item {% if active_page == 'my-day' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            My Day
+            <span>My Day</span>
         </a>
         <a href="/epms/teams" class="nav-item {% if active_page == 'teams' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-            Teams
+            <span>Teams</span>
         </a>
         <a href="/epms/performance" class="nav-item {% if active_page == 'performance' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            Performance
+            <span>Performance</span>
         </a>
         <a href="/epms/tasks" class="nav-item {% if active_page == 'tasks' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-            Tasks
-            {% if pending_count %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
+            <span>Tasks</span>
+            {% if pending_count %}<span class="nav-count">{{ pending_count }}</span>{% endif %}
         </a>
         <a href="/epms/scorecards" class="nav-item {% if active_page == 'scorecards' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-            Scorecards
+            <span>Scorecards</span>
         </a>
         <a href="/epms/reports" class="nav-item {% if active_page == 'reports' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
-            Reports
+            <span>Reports</span>
         </a>
     </nav>
-    <div class="sidebar-user">
-        <div class="user-avatar">{{ user_initial }}</div>
-        <div class="user-info">
-            <div class="user-name">{{ user_name }}</div>
-            <div class="user-role">{{ user_role }}</div>
+
+    <div class="sidebar-foot">
+        <div class="user-card">
+            <div class="avatar avatar-sm">{{ user_initial }}</div>
+            <div class="user-meta">
+                <strong>{{ user_name }}</strong>
+                <span>{{ user_role }}</span>
+            </div>
+            <a class="icon-btn" href="/app" title="Open Desk">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </a>
+            <button class="icon-btn" id="epms-logout" title="Logout" type="button">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            </button>
         </div>
-        <svg class="user-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </div>
 </aside>
+
+<script>
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        var el = document.querySelector('.search-field input');
+        if (el) el.focus();
+    }
+});
+
+(function () {
+    var logoutBtn = document.getElementById('epms-logout');
+    if (!logoutBtn) return;
+    logoutBtn.addEventListener('click', function () {
+        function readCookie(name) {
+            var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : '';
+        }
+        fetch('/api/method/logout', {
+            method: 'POST',
+            headers: { 'X-Frappe-CSRF-Token': readCookie('csrf_token') }
+        }).then(function () {
+            window.location.href = '/login';
+        }).catch(function () {
+            window.location.href = '/api/method/logout';
+        });
+    });
+})();
+</script>

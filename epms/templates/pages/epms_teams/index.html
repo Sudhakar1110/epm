@@ -1,52 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPMS Portal — Teams</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams · EPMS Portal</title>
     <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
 </head>
-<body>
-<div class="layout">
-    {% include "epms_sidebar.html" %}
-    <main class="main-content">
-        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
-            <div><h1>Teams</h1><p>All teams across the organization.</p></div>
-        </div>
-        <div class="tab-group">
-            <button class="tab-btn active" onclick="filterTeams('all',this)">All</button>
-            <button class="tab-btn" onclick="filterTeams('Active',this)">Active</button>
-            <button class="tab-btn" onclick="filterTeams('Inactive',this)">Inactive</button>
-        </div>
-        <div style="margin-bottom:20px"><input type="text" placeholder="Search teams..." style="padding:10px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;width:320px;font-family:'Inter',sans-serif" id="teamSearch" onkeyup="searchTeams(this.value)"></div>
-        <div class="card" style="padding:0">
-            {% if teams %}
-                {% for team in teams %}
-                <div class="list-item" style="padding:18px 24px" data-status="{{ team.status }}" data-name="{{ team.team_name|lower }}">
-                    <div class="list-item-left">
-                        <div style="width:42px;height:42px;border-radius:10px;background:rgba(0,212,170,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <svg width="20" height="20" fill="none" stroke="#00d4aa" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                        </div>
-                        <div class="list-item-info">
-                            <div class="item-title">{{ team.team_name }}</div>
-                            <div class="item-meta">{% if team.team_leader %}Leader: {{ team.team_leader }} &middot; {% endif %}{{ team.member_count }} member{{ 's' if team.member_count != 1 }}</div>
-                        </div>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Teams</h1>
+                    <p class="page-subtitle">Every team, its leader and the people who keep it moving.</p>
+                </div>
+                <div class="head-actions">
+                    <a class="btn btn-primary" href="/app/team/new" target="_blank" rel="noopener">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        New Team
+                    </a>
+                </div>
+            </header>
+
+            <section class="stat-grid stat-grid-3">
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
                     </div>
-                    <div class="list-item-right"><span class="badge {{ 'green' if team.status == 'Active' else 'gray' }}">{{ team.status }}</span></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Active Teams</span>
+                        <span class="stat-value">{{ total_teams }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Members</span>
+                        <span class="stat-value">{{ total_members }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Avg Members</span>
+                        <span class="stat-value">{{ (total_members / total_teams)|round|int if total_teams else 0 }}</span>
+                    </div>
+                </div>
+            </section>
+
+            {% if teams %}
+            <section class="teams-grid">
+                {% for t in teams %}
+                <div class="team-card">
+                    <div class="team-card-top">
+                        <div class="avatar avatar-md avatar-tone-{{ loop.index % 6 }}">{{ (t.team_name or 'T')[:1] }}</div>
+                        <div class="team-card-name">
+                            <strong>{{ t.team_name }}</strong>
+                            <span><span class="badge b-green">Active</span></span>
+                        </div>
+                        <span class="team-members-count">{{ t.member_count }} members</span>
+                    </div>
+                    {% if t.description %}
+                    <p class="team-desc">{{ t.description }}</p>
+                    {% endif %}
+                    <div class="team-meta-row">
+                        <span class="team-leader">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {{ t.leader_name or 'No leader' }}
+                        </span>
+                    </div>
+                    <div class="team-card-foot">
+                        {% if t.member_preview %}
+                        <div class="avatar-stack">
+                            {% for m in t.member_preview %}
+                            <span class="avatar avatar-xs avatar-tone-{{ loop.index % 6 }}">{{ (m or '?')[:1] }}</span>
+                            {% endfor %}
+                            {% if t.extra_members %}
+                            <span class="avatar avatar-xs avatar-more">+{{ t.extra_members }}</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="muted small">No active members yet</span>
+                        {% endif %}
+                        <a class="link" href="/app/team/{{ t.name }}" target="_blank" rel="noopener">Open team</a>
+                    </div>
                 </div>
                 {% endfor %}
+            </section>
             {% else %}
-                <div class="empty-state">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    <p>No teams found</p>
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <p>No active teams yet. Create your first team to get started.</p>
+                    <a class="btn btn-primary" href="/app/team/new" target="_blank" rel="noopener">Create a team</a>
                 </div>
+            </div>
             {% endif %}
+
         </div>
     </main>
 </div>
-<script>
-function filterTeams(s,b){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.list-item[data-status]').forEach(i=>{i.style.display=(s==='all'||i.dataset.status===s)?'':'none'})}
-function searchTeams(q){q=q.toLowerCase();document.querySelectorAll('.list-item[data-name]').forEach(i=>{i.style.display=i.dataset.name.includes(q)?'':'none'})}
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
-</script>
 </body>
 </html>

@@ -3,132 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPMS Portal — Dashboard</title>
+    <title>Dashboard · EPMS Portal</title>
     <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
 </head>
-<body>
-<div class="layout">
-    {% include "epms_sidebar.html" %}
-    <main class="main-content">
-        <div class="page-header">
-            <h1>Welcome back, {{ user_name }}</h1>
-            <p>Your performance at a glance.</p>
-        </div>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon green"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-                <div class="stat-info"><div class="stat-label">Total Teams</div><div class="stat-value">{{ total_teams }}</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-                <div class="stat-info"><div class="stat-label">Active Members</div><div class="stat-value">{{ active_members }}</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon orange"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-                <div class="stat-info"><div class="stat-label">Pending Tasks</div><div class="stat-value">{{ pending_tasks }}</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-                <div class="stat-info"><div class="stat-label">Avg Score</div><div class="stat-value">{{ avg_score }}</div></div>
-            </div>
-        </div>
+    <main class="portal-main">
+        <div class="page-wrap">
 
-        <div class="content-grid">
-            <div class="card">
-                <div class="card-header"><h3>Today's Tasks</h3><a href="/epms/tasks">View All</a></div>
-                {% if today_tasks %}
-                    {% for task in today_tasks %}
-                    <div class="list-item">
-                        <div class="list-item-left">
-                            <div class="list-item-checkbox {% if task.status == 'Completed' %}checked{% endif %}"></div>
-                            <div class="list-item-info">
-                                <div class="item-title">{{ task.subject }}</div>
-                                <div class="item-meta">
-                                    {% if task.team %}{{ task.team }} &middot; {% endif %}
-                                    {% if task.due_date %}<span class="due">Due {{ task.due_date }}</span>{% endif %}
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Welcome back, {{ user_name }}</h1>
+                    <p class="page-subtitle">Here is what is happening across your teams today.</p>
+                </div>
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        {{ date_label }}
+                    </span>
+                </div>
+            </header>
+
+            <section class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Teams</span>
+                        <span class="stat-value">{{ total_teams }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Active Members</span>
+                        <span class="stat-value">{{ active_members }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Open Tasks</span>
+                        <span class="stat-value">{{ pending_tasks }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Avg Score</span>
+                        <span class="stat-value">{{ avg_score }}<small>%</small></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid-2">
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Open Tasks</h3>
+                        <a class="link" href="/epms/tasks">View all</a>
+                    </div>
+                    <div class="card-body pad-sm">
+                        {% if open_tasks %}
+                            {% for task in open_tasks %}
+                            <div class="row-item">
+                                <span class="status-dot s-{{ task.status_class }}"></span>
+                                <div class="row-main">
+                                    <a class="row-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                    <div class="row-meta">
+                                        {% if task.employee_name %}{{ task.employee_name }} · {% endif %}
+                                        {% if task.team %}{{ task.team }} · {% endif %}
+                                        {% if task.expected_completion %}
+                                            <span class="{% if task.is_overdue %}text-danger{% endif %}">Due {{ task.expected_completion }}</span>
+                                        {% else %}
+                                            No due date
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row-right">
+                                    <span class="badge {{ task.priority_class }}">{{ task.priority or '—' }}</span>
+                                    <span class="badge {{ task.status_class }}">{{ task.current_status }}</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="list-item-right"><span class="badge {{ task.priority_class }}">{{ task.priority }}</span></div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p>No pending tasks for today</p>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="card">
-                <div class="card-header"><h3>Recent Performance</h3><a href="/epms/performance">View All</a></div>
-                {% if recent_scores %}
-                    {% for s in recent_scores %}
-                    <div class="list-item">
-                        <div class="list-item-left">
-                            <div class="list-item-info">
-                                <div class="item-title">{{ s.employee_name or s.team }}</div>
-                                <div class="item-meta">{{ s.month }} &middot; {{ s.department or 'N/A' }}</div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty">
+                                <div class="empty-icon icon-teal">
+                                    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <p>No open tasks right now — everything is under control!</p>
                             </div>
-                        </div>
-                        <div class="list-item-right"><span class="badge {{ s.grade_class }}">{{ s.total_score }}% - {{ s.grade }}</span></div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state">
-                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                        <p>No recent performance data</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="content-grid">
-            <div class="card">
-                <div class="card-header"><h3>Top Performers</h3></div>
-                {% if top_performers %}
-                    {% for p in top_performers %}
-                    <div class="performer-row">
-                        <div class="performer-rank {{ p.rank_class }}">{{ p.rank }}</div>
-                        <div class="performer-info"><div class="performer-name">{{ p.name }}</div><div class="performer-team">{{ p.team }}</div></div>
-                        <div class="performer-score">{{ p.score }}%</div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty-state"><p>No performance data yet</p></div>
-                {% endif %}
-            </div>
-            <div class="card">
-                <div class="card-header"><h3>Quick Links</h3></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                    <a href="/epms/my-day" class="report-card">
-                        <div class="report-card-icon stat-icon green"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
-                        <h4>My Day</h4><p>Today's tasks</p>
-                    </a>
-                    <a href="/epms/teams" class="report-card">
-                        <div class="report-card-icon stat-icon blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-                        <h4>Teams</h4><p>Manage teams</p>
-                    </a>
-                    <a href="/epms/scorecards" class="report-card">
-                        <div class="report-card-icon stat-icon purple"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
-                        <h4>Scorecards</h4><p>Monthly scores</p>
-                    </a>
-                    <a href="/epms/reports" class="report-card">
-                        <div class="report-card-icon stat-icon orange"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg></div>
-                        <h4>Reports</h4><p>View reports</p>
-                    </a>
                 </div>
-            </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Top Performers</h3>
+                        <span class="chip">{{ month_label }}</span>
+                    </div>
+                    <div class="card-body pad-sm">
+                        {% if top_performers %}
+                            {% for p in top_performers %}
+                            <div class="row-item">
+                                <span class="rank-badge {{ p.rank_class }}">{{ p.rank }}</span>
+                                <div class="avatar avatar-sm">{{ (p.employee_name or '?')[:1] }}</div>
+                                <div class="row-main">
+                                    <a class="row-title" href="/app/performance-scorecard/{{ p.name }}" target="_blank" rel="noopener">{{ p.employee_name or 'Unnamed' }}</a>
+                                    <div class="row-meta">{{ p.team or '—' }}</div>
+                                </div>
+                                <div class="row-right right-col">
+                                    <span class="score">{{ p.overall_score }}<small>%</small></span>
+                                    <span class="badge {{ p.grade_class }}">{{ p.final_grade }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty">
+                                <div class="empty-icon icon-purple">
+                                    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4m-6-9a6 6 0 0112 0c0 3.5-2 5-2 5h-8s-2-1.5-2-5"/></svg>
+                                </div>
+                                <p>No scorecards published for {{ month_label }} yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid-2">
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Recent Scorecards</h3>
+                        <a class="link" href="/epms/scorecards">View all</a>
+                    </div>
+                    <div class="card-body pad-sm">
+                        {% if recent_scorecards %}
+                            {% for s in recent_scorecards %}
+                            <div class="row-item">
+                                <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
+                                <div class="row-main">
+                                    <span class="row-title">{{ s.employee_name or 'Unnamed' }}</span>
+                                    <div class="row-meta">{{ s.team or '—' }} · {{ s.month }}/{{ s.year }}</div>
+                                </div>
+                                <div class="row-right right-col">
+                                    <span class="score">{{ s.overall_score }}<small>%</small></span>
+                                    <span class="badge {{ s.grade_class }}">{{ s.final_grade }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty">
+                                <div class="empty-icon icon-blue">
+                                    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                                </div>
+                                <p>Published scorecards will appear here.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Quick Links</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="tile-grid">
+                            <a class="tile" href="/epms/my-day">
+                                <span class="tile-icon icon-teal"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+                                <strong>My Day</strong><span>Your tasks today</span>
+                            </a>
+                            <a class="tile" href="/epms/teams">
+                                <span class="tile-icon icon-blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
+                                <strong>Teams</strong><span>Browse teams</span>
+                            </a>
+                            <a class="tile" href="/epms/scorecards">
+                                <span class="tile-icon icon-purple"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+                                <strong>Scorecards</strong><span>Monthly scores</span>
+                            </a>
+                            <a class="tile" href="/epms/reports">
+                                <span class="tile-icon icon-amber"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg></span>
+                                <strong>Reports</strong><span>Analytics &amp; reports</span>
+                            </a>
+                        </div>
+                        <div class="quick-links">
+                            <a class="link" href="/epms/performance">Performance overview</a>
+                            <a class="link" href="/app" target="_blank" rel="noopener">Open ERP desk</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 </div>
-<script>
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        document.querySelector('.search-box input').focus();
-    }
-});
-</script>
 </body>
 </html>

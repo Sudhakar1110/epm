@@ -1,48 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPMS Portal — Scorecards</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scorecards · EPMS Portal</title>
     <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
 </head>
-<body>
-<div class="layout">
-    {% include "epms_sidebar.html" %}
-    <main class="main-content">
-        <div class="page-header"><h1>Scorecards</h1><p>Monthly performance scorecards for all team members.</p></div>
-        <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center">
-            <input type="month" class="date-input" value="{{ current_month }}" onchange="filterByMonth(this.value)">
-            <div class="tab-group">
-                <button class="tab-btn active" onclick="filterGrade('all',this)">All</button>
-                <button class="tab-btn" onclick="filterGrade('A',this)">Grade A</button>
-                <button class="tab-btn" onclick="filterGrade('B',this)">Grade B</button>
-                <button class="tab-btn" onclick="filterGrade('C',this)">Grade C</button>
-                <button class="tab-btn" onclick="filterGrade('D',this)">Grade D</button>
-            </div>
-        </div>
-        <div class="card" style="padding:0">
-            {% if scorecards %}
-            <table class="data-table">
-                <thead><tr><th>Employee</th><th>Team</th><th>Department</th><th>Month</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead>
-                <tbody>
-                    {% for sc in scorecards %}
-                    <tr data-month="{{ sc.month }}" data-grade="{{ sc.grade }}"><td style="font-weight:500">{{ sc.employee_name or 'N/A' }}</td><td>{{ sc.team or 'N/A' }}</td><td>{{ sc.department or 'N/A' }}</td><td>{{ sc.month }}</td><td><span style="font-weight:600">{{ sc.total_score }}%</span></td><td><span class="badge {{ sc.grade_class }}">{{ sc.grade }}</span></td><td><span class="badge {{ 'green' if sc.status == 'Published' else 'gray' }}">{{ sc.status }}</span></td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-                <div class="empty-state">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-                    <p>No scorecards found</p>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Scorecards</h1>
+                    <p class="page-subtitle">Detailed monthly scorecards for every member.</p>
                 </div>
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        {{ month_label }}
+                    </span>
+                </div>
+            </header>
+
+            {% if grade_buckets %}
+            <div class="bucket-row">
+                {% for b in grade_buckets %}
+                <span class="bucket"><span class="badge {{ b.grade_class }}">{{ b.grade }}</span><strong>{{ b.count }}</strong></span>
+                {% endfor %}
+            </div>
             {% endif %}
+
+            {% if scorecards %}
+            <section class="score-grid">
+                {% for s in scorecards %}
+                <div class="score-card">
+                    <div class="score-card-head">
+                        <div class="cell-user">
+                            <div class="avatar avatar-md avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
+                            <div>
+                                <a class="table-title" href="/app/performance-scorecard/{{ s.name }}" target="_blank" rel="noopener">{{ s.employee_name or 'Unnamed' }}</a>
+                                <div class="cell-sub">{{ s.team or 'No team' }}</div>
+                            </div>
+                        </div>
+                        <span class="badge {{ s.grade_class }}">{{ s.final_grade or '—' }}</span>
+                    </div>
+
+                    <div class="score-card-mid">
+                        <div class="ring" style="--p: {{ s.overall_score }}">
+                            <div class="ring-inner">
+                                <strong>{{ s.overall_score }}<small>%</small></strong>
+                                <span>Overall</span>
+                            </div>
+                        </div>
+                        <div class="score-bars">
+                            <div class="meter-row">
+                                <span>Attendance</span>
+                                <div class="meter"><i class="m-teal" style="width: {{ s.attendance_score }}%"></i></div>
+                                <strong>{{ s.attendance_score|round|int }}%</strong>
+                            </div>
+                            <div class="meter-row">
+                                <span>Productivity</span>
+                                <div class="meter"><i class="m-blue" style="width: {{ s.productivity_score }}%"></i></div>
+                                <strong>{{ s.productivity_score|round|int }}%</strong>
+                            </div>
+                            <div class="meter-row">
+                                <span>Quality</span>
+                                <div class="meter"><i class="m-purple" style="width: {{ s.quality_score }}%"></i></div>
+                                <strong>{{ s.quality_score|round|int }}%</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="score-card-foot">
+                        <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> {{ s.tasks_completed or 0 }} completed</span>
+                        <span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l2.5 2.5"/><circle cx="12" cy="12" r="10"/></svg> {{ s.pending_tasks or 0 }} pending</span>
+                        <span class="status-pill {{ s.status_class }}">{{ s.performance_status or '—' }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+            {% else %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <p>No scorecards published for {{ month_label }} yet.</p>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
     </main>
 </div>
-<script>
-function filterByMonth(m){document.querySelectorAll('.data-table tbody tr').forEach(r=>{r.style.display=(!m||r.dataset.month===m)?'':'none'})}
-function filterGrade(g,b){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.data-table tbody tr').forEach(r=>{r.style.display=(g==='all'||r.dataset.grade===g)?'':'none'})}
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
-</script>
 </body>
 </html>

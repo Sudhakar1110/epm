@@ -202,3 +202,152 @@ def get_performance_status(score):
         return "Needs Attention"
     else:
         return "At Risk"
+
+
+# ------------------------------------------------------------
+# Portal page helpers (used by templates/pages/*/index.py)
+# ------------------------------------------------------------
+
+PRIORITY_CLASS_MAP = {
+    "Low": "b-gray",
+    "Medium": "b-blue",
+    "High": "b-amber",
+    "Critical": "b-red",
+}
+
+TASK_STATUS_CLASS_MAP = {
+    "Pending": "b-amber",
+    "In Progress": "b-blue",
+    "Completed": "b-green",
+    "Blocked": "b-red",
+}
+
+GRADE_CLASS_MAP = {
+    "Excellent": "b-teal",
+    "Very Good": "b-green",
+    "Good": "b-blue",
+    "Average": "b-amber",
+    "Needs Improvement": "b-red",
+}
+
+PERF_STATUS_CLASS_MAP = {
+    "On Track": "b-green",
+    "Needs Attention": "b-amber",
+    "At Risk": "b-red",
+}
+
+
+def portal_login_redirect():
+    """Redirect guests to the login page."""
+    if frappe.session.user == "Guest":
+        frappe.local.flags.redirect_location = "/login"
+        raise frappe.Redirect
+
+
+def portal_user_role():
+    """Human readable role for the current user."""
+    if has_role("EPMS Founder"):
+        return "Founder"
+    if has_role("EPMS Team Leader"):
+        return "Team Leader"
+    return "Team Member"
+
+
+def portal_setup_common(context):
+    """Populate context keys shared by every portal page."""
+    user = frappe.get_doc("User", frappe.session.user)
+    user_name = user.full_name or frappe.session.user
+    context.user_name = user_name
+    context.user_initial = (user_name[:1] or "U").upper()
+    context.user_role = portal_user_role()
+    context.date_label = frappe.utils.formatdate(nowdate(), "EEEE, d MMMM yyyy")
+    context.pending_count = frappe.db.count(
+        "Pending Task",
+        filters={"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1},
+    )
+    context.no_cache = 1
+
+
+def portal_annotate_task(row):
+    """Add display/class helpers to a Pending Task dict."""
+    row = row or {}
+    row["priority_class"] = PRIORITY_CLASS_MAP.get(row.get("priority"), "b-gray")
+    row["status_class"] = TASK_STATUS_CLASS_MAP.get(row.get("current_status"), "b-gray")
+    due = row.get("expected_completion")
+    row["is_overdue"] = bool(due and str(due) < str(nowdate()))
+    return row
+
+
+def portal_annotate_scorecard(row):
+    """Add display/class helpers to a Performance Scorecard dict."""
+    row = row or {}
+    row["overall_score"] = flt(row.get("overall_score"), 1)
+    row["grade_class"] = GRADE_CLASS_MAP.get(row.get("final_grade"), "b-gray")
+    row["status_class"] = PERF_STATUS_CLASS_MAP.get(row.get("performance_status"), "b-gray")
+    row["attendance_score"] = flt(row.get("attendance_score"), 0)
+    row["productivity_score"] = flt(row.get("productivity_score"), 0)
+    row["quality_score"] = flt(row.get("quality_score"), 0)
+    return row
+
+
+def portal_open_tasks(filters=None, limit=None):
+    """Open (Pending/In Progress) tasks for portal pages."""
+    base = {"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1}
+    if filters:
+        base.update(filters)
+    tasks = frappe.get_all(
+        "Pending Task",
+        filters=base,
+        fields=[
+            "name",
+            "task",
+            "employee_name",
+            "team",
+            "assigned_date",
+            "expected_completion",
+            "priority",
+            "current_status",
+        ],
+        order_by="expected_completion asc",
+    )
+    if limit:
+        tasks = tasks[:limit]
+    return [portal_annotate_task(t) for t in tasks]
+
+
+def portal_current_scorecards(order_by="overall_score desc", limit=None):
+    """Scorecards for the current month/year."""
+    scorecards = frappe.get_all(
+        "Performance Scorecard",
+        filters={
+            "month": getdate(nowdate()).month,
+            "year": getdate(nowdate()).year,
+            "docstatus": 1,
+        },
+        fields=[
+            "name",
+            "employee_name",
+            "team",
+            "month",
+            "year",
+            "overall_score",
+            "final_grade",
+            "performance_status",
+            "attendance_score",
+            "productivity_score",
+            "quality_score",
+            "tasks_completed",
+            "pending_tasks",
+        ],
+        order_by=order_by,
+    )
+    if limit:
+        scorecards = scorecards[:limit]
+    return [portal_annotate_scorecard(s) for s in scorecards]
+
+
+def portal_month_label(month=None, year=None):
+    """Human readable label like 'September 2026'."""
+    month = month or getdate(nowdate()).month
+    year = year or getdate(nowdate()).year
+    return frappe.utils.formatdate(f"{cint(year)}-{cint(month):02d}-01", "MMMM yyyy")

@@ -1,47 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPMS Portal — Performance</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance · EPMS Portal</title>
     <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
 </head>
-<body>
-<div class="layout">
-    {% include "epms_sidebar.html" %}
-    <main class="main-content">
-        <div class="page-header"><h1>Performance</h1><p>Track and monitor employee performance across teams.</p></div>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon green"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="stat-info"><div class="stat-label">Total Scorecards</div><div class="stat-value">{{ total_scorecards }}</div></div></div>
-            <div class="stat-card"><div class="stat-icon blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div><div class="stat-info"><div class="stat-label">Avg Score</div><div class="stat-value">{{ avg_score }}%</div></div></div>
-            <div class="stat-card"><div class="stat-icon orange"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5l9-11h-7l2-5-9 11h7z"/></svg></div><div class="stat-info"><div class="stat-label">Top Score</div><div class="stat-value">{{ top_score }}%</div></div></div>
-            <div class="stat-card"><div class="stat-icon red"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="stat-info"><div class="stat-label">Low Score</div><div class="stat-value">{{ low_score }}%</div></div></div>
-        </div>
-        <div class="card" style="padding:0;overflow:hidden">
-            <div style="padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between">
-                <h3 style="font-size:16px;font-weight:600">Performance Scorecards</h3>
-                <input type="month" class="date-input" value="{{ current_month }}" onchange="filterByMonth(this.value)">
-            </div>
-            {% if scorecards %}
-            <table class="data-table">
-                <thead><tr><th>Employee</th><th>Team</th><th>Month</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead>
-                <tbody>
-                    {% for sc in scorecards %}
-                    <tr><td style="font-weight:500">{{ sc.employee_name or 'N/A' }}</td><td>{{ sc.team or 'N/A' }}</td><td>{{ sc.month }}</td><td><span style="font-weight:600">{{ sc.total_score }}%</span></td><td><span class="badge {{ sc.grade_class }}">{{ sc.grade }}</span></td><td><span class="badge {{ 'green' if sc.status == 'Published' else 'gray' }}">{{ sc.status }}</span></td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-                <div class="empty-state">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    <p>No performance data found</p>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Performance</h1>
+                    <p class="page-subtitle">Monthly performance scorecards across every team.</p>
                 </div>
-            {% endif %}
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        {{ month_label }}
+                    </span>
+                </div>
+            </header>
+
+            <section class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Scorecards</span>
+                        <span class="stat-value">{{ total_scorecards }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Average Score</span>
+                        <span class="stat-value">{{ avg_score }}<small>%</small></span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 21h8m-4-4v4m-6-9a6 6 0 0112 0c0 3.5-2 5-2 5h-8s-2-1.5-2-5"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Highest Score</span>
+                        <span class="stat-value">{{ top_score }}<small>%</small></span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Needs Attention</span>
+                        <span class="stat-value">{{ attention_count }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="table-card">
+                {% if scorecards %}
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Team</th>
+                                <th class="num">Attendance</th>
+                                <th class="num">Productivity</th>
+                                <th class="num">Quality</th>
+                                <th class="num">Overall</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in scorecards %}
+                            <tr>
+                                <td>
+                                    <div class="cell-user">
+                                        <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
+                                        <div>
+                                            <a class="table-title" href="/app/performance-scorecard/{{ s.name }}" target="_blank" rel="noopener">{{ s.employee_name or 'Unnamed' }}</a>
+                                            <div class="cell-sub">{{ s.tasks_completed or 0 }} done · {{ s.pending_tasks or 0 }} pending</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ s.team or '—' }}</td>
+                                <td class="num">{{ s.attendance_score|round|int }}%</td>
+                                <td class="num">{{ s.productivity_score|round|int }}%</td>
+                                <td class="num">{{ s.quality_score|round|int }}%</td>
+                                <td class="num">
+                                    <div class="score-cell">
+                                        <span class="score-cell-bar"><i style="width: {{ s.overall_score }}%"></i></span>
+                                        <strong>{{ s.overall_score }}%</strong>
+                                    </div>
+                                </td>
+                                <td><span class="badge {{ s.grade_class }}">{{ s.final_grade or '—' }}</span></td>
+                                <td>
+                                    <span class="status-pill {{ s.status_class }}">
+                                        <span class="status-dot s-{{ s.status_class }}"></span>
+                                        {{ s.performance_status or '—' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <p>No scorecards published for {{ month_label }} yet.</p>
+                    <a class="btn btn-outline" href="/app/performance-scorecard/new" target="_blank" rel="noopener">Create scorecard</a>
+                </div>
+                {% endif %}
+            </div>
+
         </div>
     </main>
 </div>
-<script>
-function filterByMonth(m){document.querySelectorAll('.data-table tbody tr').forEach(r=>{r.style.display=(!m||r.children[2].textContent.includes(m))?'':'none'})}
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
-</script>
 </body>
 </html>

@@ -1,51 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPMS Portal — Tasks</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks · EPMS Portal</title>
     <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
 </head>
-<body>
-<div class="layout">
-    {% include "epms_sidebar.html" %}
-    <main class="main-content">
-        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
-            <div><h1>Tasks</h1><p>Manage and track all pending tasks across teams.</p></div>
-        </div>
-        <div class="tab-group">
-            <button class="tab-btn active" onclick="filterTasks('all',this)">All</button>
-            <button class="tab-btn" onclick="filterTasks('Pending',this)">Pending</button>
-            <button class="tab-btn" onclick="filterTasks('In Progress',this)">In Progress</button>
-            <button class="tab-btn" onclick="filterTasks('Completed',this)">Completed</button>
-        </div>
-        <div style="margin-bottom:20px"><input type="text" placeholder="Search tasks..." style="padding:10px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;width:320px;font-family:'Inter',sans-serif" onkeyup="searchTasks(this.value)"></div>
-        <div class="card" style="padding:0">
-            {% if tasks %}
-                {% for task in tasks %}
-                <div class="list-item" style="padding:18px 24px" data-status="{{ task.status }}" data-name="{{ task.subject|lower }}">
-                    <div class="list-item-left">
-                        <div class="list-item-checkbox {% if task.status == 'Completed' %}checked{% endif %}"></div>
-                        <div class="list-item-info">
-                            <div class="item-title">{{ task.subject }}</div>
-                            <div class="item-meta">{% if task.team %}{{ task.team }} &middot; {% endif %}{% if task.assigned_to %}{{ task.assigned_to }} &middot; {% endif %}{% if task.due_date %}<span class="due">Due {{ task.due_date }}</span>{% endif %}</div>
-                        </div>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Tasks</h1>
+                    <p class="page-subtitle">All open tasks across teams, sorted by due date.</p>
+                </div>
+                <div class="head-actions">
+                    <a class="btn btn-primary" href="/app/pending-task/new" target="_blank" rel="noopener">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        New Task
+                    </a>
+                </div>
+            </header>
+
+            <section class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
                     </div>
-                    <div class="list-item-right"><span class="badge {{ task.priority_class }}">{{ task.priority }}</span><span class="badge {{ task.status_class }}">{{ task.status }}</span></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Open</span>
+                        <span class="stat-value">{{ open_tasks }}</span>
+                    </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <p>No tasks found</p>
+                <div class="stat-card">
+                    <div class="stat-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Overdue</span>
+                        <span class="stat-value">{{ overdue_tasks }}</span>
+                    </div>
                 </div>
-            {% endif %}
+                <div class="stat-card">
+                    <div class="stat-icon icon-red">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8a2 2 0 001.9 1.4h6.2l-5 3.6a2 2 0 00-.7 2.2l1.9 5.8-5-3.6a2 2 0 00-2.3 0l-5 3.6 1.9-5.8a2 2 0 00-.7-2.2L2 10.2h6.2a2 2 0 001.9-1.4z"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">High / Critical</span>
+                        <span class="stat-value">{{ high_priority }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value">{{ completed_tasks }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="table-card">
+                {% if tasks %}
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Assigned to</th>
+                                <th>Team</th>
+                                <th>Due</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td>
+                                    <a class="table-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                    {% if task.is_overdue %}<span class="badge b-red">Overdue</span>{% endif %}
+                                </td>
+                                <td>{{ task.employee_name or '—' }}</td>
+                                <td>{{ task.team or '—' }}</td>
+                                <td class="{% if task.is_overdue %}text-danger{% endif %}">{{ task.expected_completion or '—' }}</td>
+                                <td><span class="badge {{ task.priority_class }}">{{ task.priority or '—' }}</span></td>
+                                <td><span class="badge {{ task.status_class }}">{{ task.current_status or '—' }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon icon-green">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p>No open tasks at the moment.</p>
+                </div>
+                {% endif %}
+            </div>
+
         </div>
     </main>
 </div>
-<script>
-function filterTasks(s,b){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.list-item[data-status]').forEach(i=>{i.style.display=(s==='all'||i.dataset.status===s)?'':'none'})}
-function searchTasks(q){q=q.toLowerCase();document.querySelectorAll('.list-item[data-name]').forEach(i=>{i.style.display=i.dataset.name.includes(q)?'':'none'})}
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});
-</script>
 </body>
 </html>
