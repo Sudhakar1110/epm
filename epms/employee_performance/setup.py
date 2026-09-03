@@ -209,25 +209,39 @@ def fix_workspace_now():
         _create_workspace_sql(ws_name, json_path)
         return
 
-    # Step 4: Force clear ALL caches
-    frappe.clear_cache()
-    try:
-        frappe.clear_document_cache("Workspace", ws_name)
-    except Exception:
-        pass
+    # Step 4: Verify DB state
     print("\n3. Verification:")
     final_links = frappe.db.count("Workspace Link", {"parent": ws_name})
     final_scs = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
     final_nc = frappe.db.count("Workspace Number Card", {"parent": ws_name})
     final_ch = frappe.db.count("Workspace Chart", {"parent": ws_name})
-    # Verify content
     content = frappe.db.get_value("Workspace", ws_name, "content")
+    label = frappe.db.get_value("Workspace", ws_name, "label")
+    module = frappe.db.get_value("Workspace", ws_name, "module")
+    is_hidden = frappe.db.get_value("Workspace", ws_name, "is_hidden")
+    public = frappe.db.get_value("Workspace", ws_name, "public")
+    print(f"   Label: {label}")
+    print(f"   Module: {module}")
+    print(f"   Is Hidden: {is_hidden}, Public: {public}")
     print(f"   Links: {final_links}, Shortcuts: {final_scs}")
     print(f"   Number Cards: {final_nc}, Charts: {final_ch}")
     print(f"   Content length: {len(content) if content else 0} chars")
-    print(f"   Content preview: {content[:200] if content else 'EMPTY'}...")
+
+    # Step 5: Force clear ALL caches
+    frappe.clear_cache()
+
+    # Step 6: Reload workspace via ORM and save again to ensure Frappe indexes it
+    try:
+        ws = frappe.get_doc("Workspace", ws_name)
+        ws.save(ignore_permissions=True)
+        frappe.db.commit()
+        print("   Re-saved workspace via ORM.")
+    except Exception as e:
+        print(f"   Re-save failed: {e}")
+
+    frappe.clear_cache()
+
     print(f"   URL: /app/employee-performance-management")
-    print("\nIMPORTANT: Clear browser cache too! Press Ctrl+Shift+R")
     print("=== Done ===")
 
 
