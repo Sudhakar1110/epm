@@ -123,23 +123,38 @@ def fix_workspace_now():
                 "label": sc.get("label", ""),
             })
 
-        # Add number cards from JSON
-        for nc in ws_data.get("number_cards", []):
-            ws.append("number_cards", {
-                "number_card": nc.get("number_card"),
-            })
-
-        # Add charts from JSON
-        for chart in ws_data.get("charts", []):
-            ws.append("charts", {
-                "chart": chart.get("chart"),
-                "width": chart.get("width", "Half"),
-            })
-
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
         ws_name = ws.name
         print(f"   Created workspace: {ws_name}")
+
+        # Insert number cards via SQL (ORM append doesn't work for these)
+        for nc in ws_data.get("number_cards", []):
+            try:
+                frappe.db.sql(
+                    """INSERT INTO `tabWorkspace Number Card`
+                    (`name`, `number_card`, `parent`, `parentfield`, `parenttype`,
+                     `docstatus`, `owner`, `modified_by`)
+                    VALUES (%s, %s, %s, 'number_cards', 'Workspace', 0, 'Administrator', 'Administrator')""",
+                    (_rand_id(), nc.get("number_card"), ws_name),
+                )
+            except Exception as e:
+                print(f"   Number Card '{nc}' failed: {e}")
+
+        # Insert charts via SQL
+        for chart in ws_data.get("charts", []):
+            try:
+                frappe.db.sql(
+                    """INSERT INTO `tabWorkspace Chart`
+                    (`name`, `chart`, `width`, `parent`, `parentfield`, `parenttype`,
+                     `docstatus`, `owner`, `modified_by`)
+                    VALUES (%s, %s, %s, %s, 'charts', 'Workspace', 0, 'Administrator', 'Administrator')""",
+                    (_rand_id(), chart.get("chart"), chart.get("width", "Half"), ws_name),
+                )
+            except Exception as e:
+                print(f"   Chart '{chart}' failed: {e}")
+
+        frappe.db.commit()
     except Exception as e:
         print(f"   frappe.new_doc failed: {e}")
         print("   Falling back to SQL...")
