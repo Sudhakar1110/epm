@@ -37,97 +37,82 @@ def fix_workspace_now():
     module_def = frappe.db.exists("Module Def", "Employee Performance")
     print(f"1. Module Def exists: {module_def}")
     if not module_def:
-        print("   Creating Module Def...")
         create_module_def()
         frappe.db.commit()
-        module_def = frappe.db.exists("Module Def", "Employee Performance")
-        print(f"   Module Def after create: {module_def}")
 
     # Step 2: Check existing workspaces
     all_ws = frappe.db.sql(
-        "SELECT name, module, is_hidden, public FROM `tabWorkspace`"
+        "SELECT name, module FROM `tabWorkspace`", as_dict=True
     )
     print(f"\n2. Total workspaces in DB: {len(all_ws)}")
-    for w in all_ws:
-        print(f"   - {w[0]} | module={w[1]} | hidden={w[2]} | public={w[3]}")
 
-    # Step 3: Check our workspace
+    # Step 3: Show actual table columns
+    columns = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace`", as_dict=True)
+    col_names = [c.Field for c in columns]
+    print(f"\n3. Actual tabWorkspace columns: {col_names}")
+
+    # Step 4: Check our workspace
     ws_exists = frappe.db.exists("Workspace", "Employee Performance Management")
-    print(f"\n3. Our workspace exists: {ws_exists}")
+    print(f"\n4. Our workspace exists: {ws_exists}")
 
     if not ws_exists:
-        print("\n4. Creating workspace with minimal fields...")
-        try:
-            ws = frappe.get_doc({
-                "doctype": "Workspace",
-                "module": "Employee Performance",
-                "title": "Employee Performance Management",
-                "label": "Employee Performance Management",
-                "icon": "octicon octicon-goal",
-                "indicator_color": "green",
-                "category": "Modules",
-                "is_hidden": 0,
-                "public": 1,
-                "links": [
-                    {"type": "Link", "link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1},
-                    {"type": "Link", "link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1},
-                    {"type": "Link", "link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1},
-                    {"type": "Link", "link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1},
-                    {"type": "Link", "link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1},
-                    {"type": "Separator", "link_type": "Separator"},
-                    {"type": "Link", "link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Report", "is_query_report": 1, "onboard": 1},
-                    {"type": "Link", "link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Report", "is_query_report": 1, "onboard": 1},
-                ],
-                "shortcuts": [
-                    {"type": "DocType", "link_to": "Team", "label": "Teams"},
-                    {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
-                    {"type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks"},
-                    {"type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards"},
-                ],
-            })
-            ws.insert(ignore_permissions=True)
-            frappe.db.commit()
-            print("   SUCCESS via frappe.get_doc!")
-        except Exception as e:
-            print(f"   get_doc FAILED: {str(e)}")
-            frappe.log_error(f"EPMS get_doc failed: {str(e)}")
+        # Build INSERT using only columns that actually exist
+        insert_data = {
+            "name": "Employee Performance Management",
+            "module": "Employee Performance",
+            "title": "Employee Performance Management",
+        }
 
-            # Fallback: SQL INSERT (without doctype column)
-            print("\n5. Trying direct SQL INSERT...")
-            try:
-                frappe.db.sql(
-                    """INSERT INTO `tabWorkspace`
-                    (`name`, `module`, `label`, `title`, `icon`,
-                     `indicator_color`, `category`, `is_hidden`, `public`,
-                     `custom`, `modified_by`, `owner`, `for_user`,
-                     `creation`, `modified`, `content`, `links`, `shortcuts`,
-                     `charts`, `number_cards`, `custom_blocks`, `roles`,
-                     `sequence_id`, `parent_page`, `hide_custom`, `quick_lists`)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                            %s, %s, %s)""",
-                    (
-                        "Employee Performance Management",
-                        "Employee Performance",
-                        "Employee Performance Management",
-                        "Employee Performance Management",
-                        "octicon octicon-goal",
-                        "green",
-                        "Modules",
-                        0, 1, 0,
-                        "Administrator", "Administrator", "",
-                        "2024-01-01 00:00:00.000000",
-                        "2024-01-01 00:00:00.000000",
-                        "[]", "[]", "[]",
-                        "[]", "[]", "[]", "[]",
-                        1, "", 0, "[]",
-                    ),
-                )
-                frappe.db.commit()
-                print("   SUCCESS via SQL!")
-            except Exception as e2:
-                print(f"   SQL FAILED: {str(e2)}")
-                frappe.log_error(f"EPMS SQL failed: {str(e2)}")
+        # Add optional fields only if column exists
+        optional = {
+            "label": "Employee Performance Management",
+            "icon": "octicon octicon-goal",
+            "indicator_color": "green",
+            "is_hidden": 0,
+            "public": 1,
+            "for_user": "",
+            "custom": 0,
+            "modified_by": "Administrator",
+            "owner": "Administrator",
+            "creation": "2024-01-01 00:00:00.000000",
+            "modified": "2024-01-01 00:00:00.000000",
+            "content": "[]",
+            "links": "[]",
+            "shortcuts": "[]",
+            "charts": "[]",
+            "number_cards": "[]",
+            "custom_blocks": "[]",
+            "roles": "[]",
+            "sequence_id": 1,
+            "parent_page": "",
+            "hide_custom": 0,
+            "quick_lists": "[]",
+            "category": "Modules",
+            "extends_another_page": 0,
+            "restrict_to_domain": "",
+            "pin_to_top": 0,
+            "pin_to_bottom": 0,
+        }
+
+        for key, val in optional.items():
+            if key in col_names:
+                insert_data[key] = val
+
+        cols = ", ".join([f"`{k}`" for k in insert_data.keys()])
+        placeholders = ", ".join(["%s"] * len(insert_data))
+        vals = list(insert_data.values())
+
+        print(f"\n5. Inserting workspace with columns: {list(insert_data.keys())}")
+        try:
+            frappe.db.sql(
+                f"INSERT INTO `tabWorkspace` ({cols}) VALUES ({placeholders})",
+                vals,
+            )
+            frappe.db.commit()
+            print("   SUCCESS via SQL!")
+        except Exception as e:
+            print(f"   SQL FAILED: {str(e)}")
+            frappe.log_error(f"EPMS SQL failed: {str(e)}")
 
     # Final check
     final_check = frappe.db.exists("Workspace", "Employee Performance Management")
@@ -164,38 +149,62 @@ def ensure_workspace_exists():
     workspace_name = "Employee Performance Management"
 
     if frappe.db.exists("Workspace", workspace_name):
-        frappe.logger().info("EPMS: Workspace already exists")
         return
 
+    # Get actual table columns
+    columns = frappe.db.sql("SHOW COLUMNS FROM `tabWorkspace`", as_dict=True)
+    col_names = [c.Field for c in columns]
+
+    # Build data using only columns that exist
+    insert_data = {
+        "name": workspace_name,
+        "module": "Employee Performance",
+        "title": workspace_name,
+    }
+
+    optional = {
+        "label": workspace_name,
+        "icon": "octicon octicon-goal",
+        "indicator_color": "green",
+        "is_hidden": 0,
+        "public": 1,
+        "for_user": "",
+        "custom": 0,
+        "modified_by": "Administrator",
+        "owner": "Administrator",
+        "creation": "2024-01-01 00:00:00.000000",
+        "modified": "2024-01-01 00:00:00.000000",
+        "content": "[]",
+        "links": "[]",
+        "shortcuts": "[]",
+        "charts": "[]",
+        "number_cards": "[]",
+        "custom_blocks": "[]",
+        "roles": "[]",
+        "sequence_id": 1,
+        "parent_page": "",
+        "hide_custom": 0,
+        "quick_lists": "[]",
+        "category": "Modules",
+        "extends_another_page": 0,
+        "restrict_to_domain": "",
+        "pin_to_top": 0,
+        "pin_to_bottom": 0,
+    }
+
+    for key, val in optional.items():
+        if key in col_names:
+            insert_data[key] = val
+
+    cols = ", ".join([f"`{k}`" for k in insert_data.keys()])
+    placeholders = ", ".join(["%s"] * len(insert_data))
+    vals = list(insert_data.values())
+
     try:
-        ws = frappe.get_doc({
-            "doctype": "Workspace",
-            "module": "Employee Performance",
-            "title": "Employee Performance Management",
-            "label": "Employee Performance Management",
-            "icon": "octicon octicon-goal",
-            "indicator_color": "green",
-            "category": "Modules",
-            "is_hidden": 0,
-            "public": 1,
-            "links": [
-                {"type": "Link", "link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1},
-                {"type": "Link", "link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1},
-                {"type": "Link", "link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1},
-                {"type": "Link", "link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1},
-                {"type": "Link", "link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1},
-                {"type": "Separator", "link_type": "Separator"},
-                {"type": "Link", "link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Report", "is_query_report": 1, "onboard": 1},
-                {"type": "Link", "link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Report", "is_query_report": 1, "onboard": 1},
-            ],
-            "shortcuts": [
-                {"type": "DocType", "link_to": "Team", "label": "Teams"},
-                {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
-                {"type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks"},
-                {"type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards"},
-            ],
-        })
-        ws.insert(ignore_permissions=True)
+        frappe.db.sql(
+            f"INSERT INTO `tabWorkspace` ({cols}) VALUES ({placeholders})",
+            vals,
+        )
         frappe.db.commit()
         frappe.logger().info("EPMS: Created workspace: " + workspace_name)
     except Exception as e:
