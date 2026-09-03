@@ -286,3 +286,84 @@ def get_performance_distribution(month=None, year=None):
         "labels": list(distribution.keys()),
         "values": list(distribution.values()),
     }
+
+
+# Portal API Endpoints
+
+@frappe.whitelist()
+def get_portal_stats():
+    """Get portal dashboard stats."""
+    teams = frappe.db.count("Team", {"status": "Active"})
+    members = frappe.db.count("Team Member Mapping", {"status": "Active"})
+    pending_tasks = frappe.db.count("Pending Task", {
+        "current_status": ["in", ["Pending", "In Progress"]],
+        "docstatus": 1,
+    })
+    avg_score = frappe.db.get_value(
+        "Performance Scorecard",
+        {"month": getdate(nowdate()).month, "year": getdate(nowdate()).year, "docstatus": 1},
+        "avg(overall_score)",
+    )
+    return {
+        "teams": teams or 0,
+        "members": members or 0,
+        "pending_tasks": pending_tasks or 0,
+        "avg_score": round(flt(avg_score, 1) if avg_score else 0, 1),
+    }
+
+
+@frappe.whitelist()
+def get_portal_teams():
+    """Get all teams for portal."""
+    return frappe.get_all(
+        "Team",
+        filters={"status": "Active"},
+        fields=["name", "team_name", "team_leader", "total_members", "status"],
+        order_by="team_name asc",
+    )
+
+
+@frappe.whitelist()
+def get_portal_scorecards():
+    """Get current month scorecards for portal."""
+    return frappe.get_all(
+        "Performance Scorecard",
+        filters={
+            "month": getdate(nowdate()).month,
+            "year": getdate(nowdate()).year,
+            "docstatus": 1,
+        },
+        fields=["employee_name", "team", "overall_score", "final_grade", "performance_status"],
+        order_by="overall_score desc",
+    )
+
+
+@frappe.whitelist()
+def get_portal_tasks():
+    """Get pending tasks for portal."""
+    return frappe.get_all(
+        "Pending Task",
+        filters={
+            "current_status": ["in", ["Pending", "In Progress"]],
+            "docstatus": 1,
+        },
+        fields=["task", "employee_name", "expected_completion", "priority", "current_status"],
+        order_by="expected_completion asc",
+        limit_page_length=20,
+    )
+
+
+@frappe.whitelist()
+def get_portal_top_performers():
+    """Get top performers for portal dashboard."""
+    return frappe.get_all(
+        "Performance Scorecard",
+        filters={
+            "month": getdate(nowdate()).month,
+            "year": getdate(nowdate()).year,
+            "docstatus": 1,
+        },
+        fields=["employee_name", "overall_score", "final_grade"],
+        order_by="overall_score desc",
+        limit_page_length=10,
+    )

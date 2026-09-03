@@ -172,4 +172,14 @@ whitelisted_methods = [
     "epms.employee_performance.api.get_daily_performance_chart",
     "epms.employee_performance.api.get_monthly_trend_chart",
     "epms.employee_performance.api.get_performance_distribution",
+    "epms.employee_performance.api.get_portal_stats",
+    "epms.employee_performance.api.get_portal_teams",
+    "epms.employee_performance.api.get_portal_scorecards",
+    "epms.employee_performance.api.get_portal_tasks",
+    "epms.employee_performance.api.get_portal_top_performers",
+]
+
+# Website
+website_route_rules = [
+    {"from_route": "/epms_portal", "to_route": "epms_portal"},
 ]
