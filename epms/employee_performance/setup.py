@@ -1,5 +1,13 @@
 import frappe
 from frappe import _
+import os
+import json
+
+
+def before_migrate():
+    """Run before migration to ensure Module Def exists first."""
+    create_module_def()
+    frappe.db.commit()
 
 
 def after_install():
@@ -14,8 +22,6 @@ def after_migrate():
     """Run after migration."""
     create_module_def()
     sync_workspace()
-    create_roles()
-    setup_role_permissions()
     frappe.db.commit()
 
 
@@ -43,15 +49,16 @@ def create_module_def():
 
 def sync_workspace():
     """Ensure the workspace is created from JSON if it doesn't exist."""
-    import json
-    import os
-
     workspace_name = "Employee Performance Management"
+
+    # Check if workspace already exists in DB
     if frappe.db.exists("Workspace", workspace_name):
+        frappe.logger().info("EPMS: Workspace already exists, skipping sync")
         return
 
+    # Find the workspace JSON file
     json_path = os.path.join(
-        os.path.dirname(__file__),
+        os.path.dirname(os.path.abspath(__file__)),
         "workspace",
         "employee_performance_management.json",
     )
@@ -63,16 +70,17 @@ def sync_workspace():
         with open(json_path, "r") as f:
             ws_data = json.load(f)
 
+        # Ensure required fields
         ws_data["doctype"] = "Workspace"
-        if "name" in ws_data:
-            del ws_data["name"]
+        ws_data["module"] = "Employee Performance"
+        ws_data["name"] = workspace_name
 
         ws = frappe.get_doc(ws_data)
         ws.insert(ignore_permissions=True)
         frappe.db.commit()
-        frappe.logger().info("EPMS: Created workspace: " + workspace_name)
+        frappe.logger().info("EPMS: Successfully created workspace: " + workspace_name)
     except Exception as e:
-        frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}")
+        frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}", "EPMS Workspace Sync")
 
 
 def create_roles():

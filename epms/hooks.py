@@ -112,12 +112,7 @@ fixtures = [
             ["module", "=", "Employee Performance"],
         ],
     },
-    {
-        "dt": "Workspace",
-        "filters": [
-            ["module", "=", "Employee Performance"],
-        ],
-    },
+
 ]
 
 # Has Permission
@@ -128,6 +123,9 @@ has_permission = {
     "Team": "epms.employee_performance.doctype.team.team.has_permission",
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
 }
+
+# Before Migrate
+before_migrate = "epms.employee_performance.setup.before_migrate"
 
 # After Install
 after_install = "epms.employee_performance.setup.after_install"
