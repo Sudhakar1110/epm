@@ -1,0 +1,135 @@
+{% extends "templates/pages/epms/layout.html" %}
+{% set active_page = "dashboard" %}
+
+{% block content %}
+<div class="epms-page-header">
+    <h1>Welcome back, {{ frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user }}</h1>
+    <p>Your performance at a glance.</p>
+</div>
+
+<!-- Stats -->
+<div class="epms-stats-grid">
+    <div class="epms-stat-card">
+        <div class="epms-stat-icon green"><i class="octicon octicon-organization"></i></div>
+        <div class="epms-stat-info">
+            <span class="epms-stat-label">Total Teams</span>
+            <span class="epms-stat-value" id="stat-teams">-</span>
+        </div>
+    </div>
+    <div class="epms-stat-card">
+        <div class="epms-stat-icon blue"><i class="octicon octicon-person"></i></div>
+        <div class="epms-stat-info">
+            <span class="epms-stat-label">Active Members</span>
+            <span class="epms-stat-value" id="stat-members">-</span>
+        </div>
+    </div>
+    <div class="epms-stat-card">
+        <div class="epms-stat-icon yellow"><i class="octicon octicon-alert"></i></div>
+        <div class="epms-stat-info">
+            <span class="epms-stat-label">Pending Tasks</span>
+            <span class="epms-stat-value" id="stat-pending">-</span>
+        </div>
+    </div>
+    <div class="epms-stat-card">
+        <div class="epms-stat-icon purple"><i class="octicon octicon-star"></i></div>
+        <div class="epms-stat-info">
+            <span class="epms-stat-label">Avg Score</span>
+            <span class="epms-stat-value" id="stat-score">-</span>
+        </div>
+    </div>
+</div>
+
+<!-- Content Grid -->
+<div class="epms-content-grid">
+    <!-- Today's Tasks -->
+    <div class="epms-card">
+        <div class="epms-card-header">
+            <h3><i class="octicon octicon-checklist" style="margin-right:8px;opacity:0.5;"></i>Today's Tasks</h3>
+            <a href="/epms/tasks" class="epms-btn epms-btn-outline">View All</a>
+        </div>
+        <div id="today-tasks">
+            <div class="epms-empty"><i class="octicon octicon-checklist"></i><p>Loading...</p></div>
+        </div>
+    </div>
+
+    <!-- Recent Performance -->
+    <div class="epms-card">
+        <div class="epms-card-header">
+            <h3><i class="octicon octicon-star" style="margin-right:8px;opacity:0.5;"></i>Recent Performance</h3>
+            <a href="/epms/performance" class="epms-btn epms-btn-outline">View All</a>
+        </div>
+        <div id="recent-performance">
+            <div class="epms-empty"><i class="octicon octicon-star"></i><p>Loading...</p></div>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="epms-card">
+        <div class="epms-card-header">
+            <h3><i class="octicon octicon-trophy" style="margin-right:8px;opacity:0.5;"></i>Top Performers</h3>
+        </div>
+        <div id="top-performers">
+            <div class="epms-empty"><i class="octicon octicon-trophy"></i><p>Loading...</p></div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="epms-card">
+        <div class="epms-card-header">
+            <h3><i class="octicon octicon-link" style="margin-right:8px;opacity:0.5;"></i>Quick Links</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <a href="/epms/my-day" class="epms-btn epms-btn-outline" style="justify-content:center;">
+                <i class="octicon octicon-sun"></i> My Day
+            </a>
+            <a href="/epms/teams" class="epms-btn epms-btn-outline" style="justify-content:center;">
+                <i class="octicon octicon-organization"></i> Teams
+            </a>
+            <a href="/epms/scorecards" class="epms-btn epms-btn-outline" style="justify-content:center;">
+                <i class="octicon octicon-trophy"></i> Scorecards
+            </a>
+            <a href="/epms/reports" class="epms-btn epms-btn-outline" style="justify-content:center;">
+                <i class="octicon octicon-file-text"></i> Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+frappe.ready(function() {
+    frappe.call({ method: 'epms.employee_performance.api.get_portal_stats', callback: function(r) {
+        if (r.message) {
+            document.getElementById('stat-teams').textContent = r.message.teams || 0;
+            document.getElementById('stat-members').textContent = r.message.members || 0;
+            document.getElementById('stat-pending').textContent = r.message.pending_tasks || 0;
+            document.getElementById('stat-score').textContent = r.message.avg_score || 0;
+        }
+    }});
+    frappe.call({ method: 'epms.employee_performance.api.get_portal_top_performers', callback: function(r) {
+        if (r.message && r.message.length) {
+            let html = '';
+            r.message.slice(0,5).forEach(function(p, i) {
+                let medals = ['🥇','🥈','🥉'];
+                let medal = i < 3 ? medals[i] : (i+1);
+                html += '<div class="epms-list-item"><div class="epms-list-icon" style="background:#f3f4f6;">'+medal+'</div><div class="epms-list-content"><div class="epms-list-title">'+p.employee_name+'</div><div class="epms-list-sub">'+(p.final_grade||'N/A')+'</div></div><div style="font-weight:700;color:#1a2332;">'+(p.overall_score||0).toFixed(1)+'</div></div>';
+            });
+            document.getElementById('top-performers').innerHTML = html;
+        } else {
+            document.getElementById('top-performers').innerHTML = '<div class="epms-empty"><p>No data yet</p></div>';
+        }
+    }});
+    frappe.call({ method: 'epms.employee_performance.api.get_portal_tasks', callback: function(r) {
+        if (r.message && r.message.length) {
+            let html = '';
+            r.message.slice(0,5).forEach(function(t) {
+                let statusClass = t.current_status === 'Completed' ? 'success' : t.current_status === 'Blocked' ? 'danger' : 'warning';
+                html += '<div class="epms-list-item"><div class="epms-list-content"><div class="epms-list-title">'+t.task+'</div><div class="epms-list-sub">'+t.employee_name+' · Due '+(t.expected_completion||'-')+'</div></div><span class="epms-badge epms-badge-'+statusClass+'">'+t.current_status+'</span></div>';
+            });
+            document.getElementById('today-tasks').innerHTML = html;
+        } else {
+            document.getElementById('today-tasks').innerHTML = '<div class="epms-empty"><p>No pending tasks</p></div>';
+        }
+    }});
+});
+</script>
+{% endblock %}

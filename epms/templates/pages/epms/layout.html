@@ -1,0 +1,704 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<div class="epms-app">
+    <!-- Sidebar -->
+    <aside class="epms-sidebar" id="epms-sidebar">
+        <div class="epms-sidebar-header">
+            <div class="epms-logo">
+                <div class="epms-logo-icon">EP</div>
+                <div class="epms-logo-text">
+                    <strong>EPMS</strong>
+                    <span>Employee Portal</span>
+                </div>
+            </div>
+            <button class="epms-sidebar-toggle" onclick="toggleSidebar()">
+                <i class="octicon octicon-three-bars"></i>
+            </button>
+        </div>
+
+        <div class="epms-sidebar-search">
+            <div class="epms-search-box">
+                <i class="octicon octicon-search"></i>
+                <input type="text" placeholder="Search..." id="epms-search">
+                <span class="epms-search-shortcut">Ctrl K</span>
+            </div>
+        </div>
+
+        <nav class="epms-sidebar-nav">
+            <a href="/epms" class="epms-nav-item {{ 'active' if active_page == 'dashboard' }}">
+                <i class="octicon octicon-graph"></i>
+                <span>Dashboard</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/my-day" class="epms-nav-item {{ 'active' if active_page == 'my-day' }}">
+                <i class="octicon octicon-sun"></i>
+                <span>My Day</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/teams" class="epms-nav-item {{ 'active' if active_page == 'teams' }}">
+                <i class="octicon octicon-organization"></i>
+                <span>Teams</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/performance" class="epms-nav-item {{ 'active' if active_page == 'performance' }}">
+                <i class="octicon octicon-star"></i>
+                <span>Performance</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/tasks" class="epms-nav-item {{ 'active' if active_page == 'tasks' }}">
+                <i class="octicon octicon-checklist"></i>
+                <span>Tasks</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/scorecards" class="epms-nav-item {{ 'active' if active_page == 'scorecards' }}">
+                <i class="octicon octicon-trophy"></i>
+                <span>Scorecards</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+            <a href="/epms/reports" class="epms-nav-item {{ 'active' if active_page == 'reports' }}">
+                <i class="octicon octicon-file-text"></i>
+                <span>Reports</span>
+                <span class="epms-nav-dot"></span>
+            </a>
+        </nav>
+
+        <div class="epms-sidebar-footer">
+            <div class="epms-user-profile">
+                <div class="epms-user-avatar">A</div>
+                <div class="epms-user-details">
+                    <strong>{{ frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user }}</strong>
+                    <span>{{ frappe.db.get_value("User", frappe.session.user, "user_type") or "User" }}</span>
+                </div>
+                <i class="octicon octicon-chevron-down"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="epms-main">
+        <div class="epms-main-content">
+            {{ content }}
+        </div>
+    </main>
+</div>
+
+<style>
+/* EPMS Portal - Design System Match */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f8fafb;
+    color: #1a2332;
+}
+
+.epms-app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.epms-sidebar {
+    width: 260px;
+    background: #1a2332;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transition: width 0.3s;
+}
+
+.epms-sidebar-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.epms-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.epms-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #00d4aa, #00b894);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+}
+
+.epms-logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.epms-logo-text strong {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+}
+
+.epms-logo-text span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+}
+
+.epms-sidebar-toggle {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+}
+
+.epms-sidebar-toggle:hover {
+    color: white;
+}
+
+/* Search */
+.epms-sidebar-search {
+    padding: 15px 20px;
+}
+
+.epms-search-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    gap: 8px;
+}
+
+.epms-search-box i {
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+}
+
+.epms-search-box input {
+    background: none;
+    border: none;
+    color: white;
+    outline: none;
+    flex: 1;
+    font-size: 13px;
+}
+
+.epms-search-box input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.epms-search-shortcut {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+}
+
+/* Navigation */
+.epms-sidebar-nav {
+    flex: 1;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.epms-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+    gap: 12px;
+}
+
+.epms-nav-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: white;
+}
+
+.epms-nav-item.active {
+    background: rgba(0, 212, 170, 0.15);
+    color: #00d4aa;
+    border-radius: 8px;
+    margin: 2px 12px;
+    padding: 10px 16px;
+}
+
+.epms-nav-item.active .epms-nav-dot {
+    position: absolute;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: #00d4aa;
+    border-radius: 50%;
+}
+
+.epms-nav-item i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.epms-nav-item span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Footer */
+.epms-sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.epms-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.epms-user-profile:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.epms-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+}
+
+.epms-user-details {
+    flex: 1;
+}
+
+.epms-user-details strong {
+    display: block;
+    font-size: 13px;
+    color: white;
+}
+
+.epms-user-details span {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+}
+
+.epms-user-profile > i {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+}
+
+/* Main Content */
+.epms-main {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+}
+
+.epms-main-content {
+    padding: 30px 40px;
+    max-width: 1400px;
+}
+
+/* Page Header */
+.epms-page-header {
+    margin-bottom: 30px;
+}
+
+.epms-page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a2332;
+    margin: 0 0 5px 0;
+}
+
+.epms-page-header p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Stats Cards */
+.epms-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.epms-stat-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow 0.2s;
+}
+
+.epms-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.epms-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.epms-stat-icon.green { background: #d1fae5; color: #059669; }
+.epms-stat-icon.blue { background: #dbeafe; color: #2563eb; }
+.epms-stat-icon.yellow { background: #fef3c7; color: #d97706; }
+.epms-stat-icon.red { background: #fee2e2; color: #dc2626; }
+.epms-stat-icon.purple { background: #ede9fe; color: #7c3aed; }
+
+.epms-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.epms-stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.epms-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a2332;
+}
+
+.epms-stat-sub {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* Content Cards */
+.epms-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.epms-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.epms-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.epms-card-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a2332;
+    margin: 0;
+}
+
+.epms-card-full {
+    grid-column: 1 / -1;
+}
+
+/* Table */
+.epms-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.epms-table th {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.epms-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.epms-table tr:hover td {
+    background: #f9fafb;
+}
+
+/* Badges */
+.epms-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.epms-badge-success { background: #d1fae5; color: #065f46; }
+.epms-badge-warning { background: #fef3c7; color: #92400e; }
+.epms-badge-danger { background: #fee2e2; color: #991b1b; }
+.epms-badge-info { background: #dbeafe; color: #1e40af; }
+.epms-badge-neutral { background: #f3f4f6; color: #374151; }
+
+/* Empty State */
+.epms-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+}
+
+.epms-empty i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.epms-empty p {
+    font-size: 14px;
+}
+
+/* Score Bar */
+.epms-score-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.epms-score-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+/* List Item */
+.epms-list-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 12px;
+}
+
+.epms-list-item:last-child {
+    border-bottom: none;
+}
+
+.epms-list-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.epms-list-content {
+    flex: 1;
+}
+
+.epms-list-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a2332;
+}
+
+.epms-list-sub {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Filter Tabs */
+.epms-filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.epms-filter-tab {
+    padding: 8px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.epms-filter-tab:hover {
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.epms-filter-tab.active {
+    background: #1a2332;
+    color: white;
+    border-color: #1a2332;
+}
+
+/* Report Cards */
+.epms-reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.epms-report-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.epms-report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-color: #00d4aa;
+}
+
+.epms-report-card i {
+    font-size: 24px;
+    color: #1a2332;
+    margin-bottom: 12px;
+}
+
+.epms-report-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a2332;
+    margin: 0 0 4px 0;
+}
+
+.epms-report-card p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Action Button */
+.epms-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.epms-btn-primary {
+    background: #00d4aa;
+    color: white;
+    border: none;
+}
+
+.epms-btn-primary:hover {
+    background: #00b894;
+}
+
+.epms-btn-outline {
+    background: white;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.epms-btn-outline:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .epms-sidebar {
+        width: 60px;
+    }
+    .epms-logo-text, .epms-sidebar-search, .epms-nav-item span,
+    .epms-user-details, .epms-user-profile > i {
+        display: none;
+    }
+    .epms-main {
+        margin-left: 60px;
+    }
+    .epms-main-content {
+        padding: 20px;
+    }
+    .epms-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .epms-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('epms-sidebar').classList.toggle('collapsed');
+}
+</script>
+{% endblock %}

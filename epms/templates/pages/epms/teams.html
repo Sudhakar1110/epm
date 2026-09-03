@@ -1,0 +1,30 @@
+{% extends "templates/pages/epms/layout.html" %}
+{% set active_page = "teams" %}
+
+{% block content %}
+<div class="epms-page-header">
+    <h1>Teams</h1>
+    <p>All teams across the organization.</p>
+</div>
+
+<div class="epms-card epms-card-full">
+    <div id="teams-list"><div class="epms-empty"><p>Loading...</p></div></div>
+</div>
+
+<script>
+frappe.ready(function() {
+    frappe.call({ method: 'epms.employee_performance.api.get_portal_teams', callback: function(r) {
+        if (r.message && r.message.length) {
+            let html = '<table class="epms-table"><thead><tr><th>Team</th><th>Leader</th><th>Members</th><th>Status</th></tr></thead><tbody>';
+            r.message.forEach(function(t) {
+                html += '<tr><td><strong>'+t.team_name+'</strong></td><td>'+(t.team_leader||'-')+'</td><td>'+(t.total_members||0)+'</td><td><span class="epms-badge epms-badge-success">'+t.status+'</span></td></tr>';
+            });
+            html += '</tbody></table>';
+            document.getElementById('teams-list').innerHTML = html;
+        } else {
+            document.getElementById('teams-list').innerHTML = '<div class="epms-empty"><i class="octicon octicon-organization"></i><p>No teams found</p></div>';
+        }
+    }});
+});
+</script>
+{% endblock %}

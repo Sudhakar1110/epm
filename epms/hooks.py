@@ -181,5 +181,11 @@ whitelisted_methods = [
 
 # Website
 website_route_rules = [
-    {"from_route": "/epms_portal", "to_route": "epms_portal"},
+    {"from_route": "/epms", "to_route": "epms"},
+    {"from_route": "/epms/my-day", "to_route": "epms_my_day"},
+    {"from_route": "/epms/teams", "to_route": "epms_teams"},
+    {"from_route": "/epms/performance", "to_route": "epms_performance"},
+    {"from_route": "/epms/tasks", "to_route": "epms_tasks"},
+    {"from_route": "/epms/scorecards", "to_route": "epms_scorecards"},
+    {"from_route": "/epms/reports", "to_route": "epms_reports"},
 ]
