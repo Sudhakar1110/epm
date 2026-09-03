@@ -136,9 +136,6 @@ has_permission = {
 # After Install
 after_install = "epms.employee_performance.setup.after_install"
 
-# Setup Sidebar
-get_sidebar_items = "epms.employee_performance.setup.get_sidebar_items"
-
 # After Migrate
 after_migrate = "epms.employee_performance.setup.after_migrate"
 

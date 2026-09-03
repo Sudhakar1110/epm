@@ -150,23 +150,3 @@ def setup_role_permissions():
                     ).insert(ignore_permissions=True)
                 except Exception:
                     pass
-
-
-def get_sidebar_items(sidebar_items):
-    """Add EPMS module to the desk sidebar."""
-    epms_module = {
-        "module_name": "Employee Performance",
-        "label": "Employee Performance",
-        "color": "#28a745",
-        "icon": "octicon octicon-goal",
-        "type": "Module",
-        "link": "/app/employee-performance",
-        "description": "Employee Performance Management System",
-    }
-
-    # Check if already in sidebar
-    existing_modules = [item.get("module_name") for item in sidebar_items]
-    if "Employee Performance" not in existing_modules:
-        sidebar_items.append(epms_module)
-
-    return sidebar_items
