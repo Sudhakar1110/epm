@@ -67,14 +67,6 @@ def fix_workspace_now():
         link_count = frappe.db.count("Workspace Link", {"parent": "Employee Performance Management"})
         sc_count = frappe.db.count("Workspace Shortcut", {"parent": "Employee Performance Management"})
         print(f"Links: {link_count}, Shortcuts: {sc_count}")
-
-        # Verify content is stored
-        content = frappe.db.get_value("Workspace", "Employee Performance Management", "content")
-        print(f"Content stored: {bool(content)} ({len(content) if content else 0} chars)")
-
-        # Clear all caches
-        frappe.clear_cache()
-        print("Cleared Frappe cache")
         print(f"URL: /app/employee-performance-management")
     print("=== Done ===")
 
@@ -230,11 +222,7 @@ def ensure_workspace_exists():
     _insert_links(ws_name)
     _insert_shortcuts(ws_name)
     frappe.db.commit()
-
-    # Update content with link_count for cards to render
-    link_count = frappe.db.count("Workspace Link", {"parent": ws_name})
-    frappe.db.set_value("Workspace", ws_name, "link_count", link_count)
-    frappe.db.commit()
+    frappe.clear_cache()
 
 
 def create_module_def():
