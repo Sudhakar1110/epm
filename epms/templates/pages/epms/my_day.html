@@ -1,28 +1,94 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "my-day" %}
+{% extends "epms/layout.html" %}
+{% set active_page = 'my-day' %}
 
 {% block content %}
-<div class="epms-page-header" style="display:flex;justify-content:space-between;align-items:center;">
-    <div><h1>My Day</h1><p>Everything assigned to you.</p></div>
-    <a href="/app/daily-performance/new" class="btn btn-primary" target="_blank">+ New Entry</a>
+<div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between;">
+    <div>
+        <h1>My Day</h1>
+        <p>Everything assigned to you, and what is waiting to be picked up.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <input type="date" class="date-input" value="{{ today }}">
+        <button class="btn btn-primary" onclick="frappe.set_route('Form', 'Daily Performance', {'new': 1})">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            New Entry
+        </button>
+    </div>
 </div>
-<div class="epms-stats-grid">
-    <div class="epms-stat-card"><div class="epms-stat-icon blue">📋</div><div><span class="epms-stat-label">Open Tasks</span><span class="epms-stat-value" id="s1">0</span></div></div>
-    <div class="epms-stat-card"><div class="epms-stat-icon green">✅</div><div><span class="epms-stat-label">Completed</span><span class="epms-stat-value" id="s2">0</span></div></div>
-    <div class="epms-stat-card"><div class="epms-stat-icon yellow">⚠️</div><div><span class="epms-stat-label">Overdue</span><span class="epms-stat-value" id="s3">0</span></div></div>
-    <div class="epms-stat-card"><div class="epms-stat-icon purple">🕐</div><div><span class="epms-stat-label">Hours Today</span><span class="epms-stat-value" id="s4">0</span></div></div>
-</div>
-<div class="epms-card epms-card-full">
-    <div class="epms-card-header"><h3>Assigned to me</h3></div>
-    <div id="tasks-list"><div class="empty"><p>Loading...</p></div></div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-epms_call('epms.employee_performance.api.get_portal_tasks', {}, function(r) {
-    if(r&&r.length) { var h='',o=0,c=0,od=0; r.forEach(function(t){ if(t.current_status==='Completed')c++; else o++; if(t.current_status==='Blocked')od++; var sc=t.current_status==='Completed'?'success':t.current_status==='Blocked'?'danger':'warning'; var pc=t.priority==='Critical'?'danger':t.priority==='High'?'warning':'info'; h+='<div class="list-item"><div class="list-icon" style="background:#f3f4f6;">📋</div><div style="flex:1;"><div class="list-title">'+t.task+'</div><div class="list-sub">'+t.employee_name+' · Due '+(t.expected_completion||'-')+' <span class="badge badge-'+pc+'" style="margin-left:8px;">'+t.priority+'</span></div></div><span class="badge badge-'+sc+'">'+t.current_status+'</span></div>'; }); document.getElementById('tasks-list').innerHTML=h; document.getElementById('s1').textContent=o; document.getElementById('s2').textContent=c; document.getElementById('s3').textContent=od; }
-    else document.getElementById('tasks-list').innerHTML='<div class="empty"><p>No tasks</p></div>';
-});
-</script>
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Open Tasks</div>
+            <div class="stat-value">{{ open_tasks }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">{{ completed_tasks }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Overdue</div>
+            <div class="stat-value">{{ overdue_tasks }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Hours Logged</div>
+            <div class="stat-value">{{ hours_logged }}</div>
+            <div class="stat-sub">{{ hours_pct }}% of your day</div>
+        </div>
+    </div>
+</div>
+
+<!-- Assigned Tasks -->
+<div class="card">
+    <div class="card-header">
+        <h3>Assigned to me</h3>
+    </div>
+    {% if my_tasks %}
+        {% for task in my_tasks %}
+        <div class="list-item">
+            <div class="list-item-left">
+                <div class="list-item-checkbox {% if task.status == 'Completed' %}checked{% endif %}"></div>
+                <div class="list-item-info">
+                    <div class="item-title">{{ task.subject }}</div>
+                    <div class="item-meta">
+                        {% if task.assigned_to %}{{ task.assigned_to }} {% endif %}
+                        {% if task.due_date %}<span class="due">Due {{ task.due_date }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="list-item-right">
+                <span class="badge {{ task.priority_class }}">{{ task.priority }}</span>
+                <a href="/app/daily-performance?task={{ task.name }}" class="btn btn-outline" style="font-size:12px; padding: 6px 12px;">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Log time
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p>No tasks assigned to you today</p>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

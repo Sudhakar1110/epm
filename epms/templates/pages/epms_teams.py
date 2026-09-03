@@ -1,10 +1,31 @@
-no_cache = True
-template = "templates/pages/epms/teams.html"
+import frappe
+from frappe import _
+
 
 def get_context(context):
-    context.no_cache = True
-    context.title = "Teams"
-    context.show_sidebar = False
-    context.user_name = frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user
-    context.user_type = frappe.db.get_value("User", frappe.session.user, "user_type") or "User"
+    if frappe.session.user == "Guest":
+        frappe.throw(_("Please login"))
+
+    user = frappe.get_doc("User", frappe.session.user)
+    context.user_name = user.full_name or frappe.session.user
+    context.user_initial = (context.user_name[0] or "U").upper()
+    context.user_role = "Team Member"
+    roles = frappe.get_roles(frappe.session.user)
+    if "Employee Performance Founder" in roles:
+        context.user_role = "Founder"
+    elif "Employee Performance Team Leader" in roles:
+        context.user_role = "Team Leader"
+
+    teams = frappe.get_all(
+        "Team",
+        fields=["name", "team_name", "team_leader", "status"],
+        order_by="team_name asc",
+    )
+
+    context.teams = []
+    for t in teams:
+        t["member_count"] = frappe.db.count("Team Member Mapping", {"team": t.name})
+        context.teams.append(t)
+
     context.active_page = "teams"
+    context.no_cache = 1

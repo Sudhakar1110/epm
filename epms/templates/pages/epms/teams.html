@@ -1,16 +1,77 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "teams" %}
+{% extends "epms/layout.html" %}
+{% set active_page = 'teams' %}
 
 {% block content %}
-<div class="epms-page-header"><h1>Teams</h1><p>All teams across the organization.</p></div>
-<div class="epms-card epms-card-full"><div id="teams-box"><div class="empty"><p>Loading...</p></div></div></div>
-{% endblock %}
+<div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between;">
+    <div>
+        <h1>Teams</h1>
+        <p>All teams across the organization.</p>
+    </div>
+    <button class="btn btn-primary" onclick="frappe.set_route('Form', 'Team', {'new': 1})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        New Team
+    </button>
+</div>
 
-{% block scripts %}
+<!-- Filter Tabs -->
+<div class="tab-group">
+    <button class="tab-btn active" onclick="filterTeams('all', this)">All</button>
+    <button class="tab-btn" onclick="filterTeams('Active', this)">Active</button>
+    <button class="tab-btn" onclick="filterTeams('Inactive', this)">Inactive</button>
+</div>
+
+<!-- Search -->
+<div style="margin-bottom: 20px;">
+    <input type="text" placeholder="Search teams..." style="padding: 10px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; width: 320px; font-family: 'Inter', sans-serif;" id="teamSearch" onkeyup="searchTeams(this.value)">
+</div>
+
+<!-- Team List -->
+<div class="card" style="padding: 0;">
+    {% if teams %}
+        {% for team in teams %}
+        <div class="list-item" style="padding: 18px 24px;" data-status="{{ team.status }}" data-name="{{ team.team_name|lower }}">
+            <div class="list-item-left">
+                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(0,212,170,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="20" height="20" fill="none" stroke="#00d4aa" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                </div>
+                <div class="list-item-info">
+                    <div class="item-title">{{ team.team_name }}</div>
+                    <div class="item-meta">
+                        {% if team.team_leader %}Leader: {{ team.team_leader }} &middot; {% endif %}
+                        {{ team.member_count }} member{{ 's' if team.member_count != 1 }}
+                    </div>
+                </div>
+            </div>
+            <div class="list-item-right">
+                <span class="badge {{ 'green' if team.status == 'Active' else 'gray' }}">{{ team.status }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <p>No teams found</p>
+        </div>
+    {% endif %}
+</div>
+
 <script>
-epms_call('epms.employee_performance.api.get_portal_teams', {}, function(r) {
-    if(r&&r.length) { var h='<table class="epms-table"><thead><tr><th>Team</th><th>Leader</th><th>Members</th><th>Status</th></tr></thead><tbody>'; r.forEach(function(t){ h+='<tr><td><strong>'+t.team_name+'</strong></td><td>'+(t.team_leader||'-')+'</td><td>'+(t.total_members||0)+'</td><td><span class="badge badge-success">'+t.status+'</span></td></tr>'; }); h+='</tbody></table>'; document.getElementById('teams-box').innerHTML=h; }
-    else document.getElementById('teams-box').innerHTML='<div class="empty"><p>No teams found</p></div>';
-});
+function filterTeams(status, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.list-item[data-status]').forEach(item => {
+        if (status === 'all' || item.dataset.status === status) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+function searchTeams(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.list-item[data-name]').forEach(item => {
+        item.style.display = item.dataset.name.includes(q) ? '' : 'none';
+    });
+}
 </script>
 {% endblock %}

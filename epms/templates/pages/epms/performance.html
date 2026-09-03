@@ -1,16 +1,105 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "performance" %}
+{% extends "epms/layout.html" %}
+{% set active_page = 'performance' %}
 
 {% block content %}
-<div class="epms-page-header"><h1>Performance</h1><p>Performance entries across the team.</p></div>
-<div class="epms-card epms-card-full"><div id="perf-box"><div class="empty"><p>Loading...</p></div></div></div>
-{% endblock %}
+<div class="page-header">
+    <h1>Performance</h1>
+    <p>Track and monitor employee performance across teams.</p>
+</div>
 
-{% block scripts %}
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Total Scorecards</div>
+            <div class="stat-value">{{ total_scorecards }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Avg Score</div>
+            <div class="stat-value">{{ avg_score }}%</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5l9-11h-7l2-5-9 11h7z"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Top Score</div>
+            <div class="stat-value">{{ top_score }}%</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Low Score</div>
+            <div class="stat-value">{{ low_score }}%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="font-size: 16px; font-weight: 600;">Performance Scorecards</h3>
+            <div style="display: flex; gap: 8px;">
+                <input type="month" class="date-input" value="{{ current_month }}" id="monthFilter" onchange="filterByMonth(this.value)">
+            </div>
+        </div>
+    </div>
+    {% if scorecards %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Team</th>
+                <th>Month</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sc in scorecards %}
+            <tr>
+                <td style="font-weight: 500;">{{ sc.employee_name or 'N/A' }}</td>
+                <td>{{ sc.team or 'N/A' }}</td>
+                <td>{{ sc.month }}</td>
+                <td><span style="font-weight: 600;">{{ sc.total_score }}%</span></td>
+                <td><span class="badge {{ sc.grade_class }}">{{ sc.grade }}</span></td>
+                <td><span class="badge {{ 'green' if sc.status == 'Published' else 'gray' }}">{{ sc.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <p>No performance data found</p>
+        </div>
+    {% endif %}
+</div>
+
 <script>
-epms_call('epms.employee_performance.api.get_portal_scorecards', {}, function(r) {
-    if(r&&r.length) { var h='<table class="epms-table"><thead><tr><th>Employee</th><th>Team</th><th>Score</th><th>Grade</th><th>Status</th></tr></thead><tbody>'; r.forEach(function(s){ var sc=s.overall_score>=80?'success':s.overall_score>=60?'warning':'danger'; h+='<tr><td><strong>'+s.employee_name+'</strong></td><td>'+(s.team||'-')+'</td><td><span class="badge badge-'+sc+'">'+(s.overall_score||0).toFixed(1)+'</span></td><td>'+(s.final_grade||'-')+'</td><td><span class="badge badge-info">'+(s.performance_status||'-')+'</span></td></tr>'; }); h+='</tbody></table>'; document.getElementById('perf-box').innerHTML=h; }
-    else document.getElementById('perf-box').innerHTML='<div class="empty"><p>No data yet</p></div>';
-});
+function filterByMonth(month) {
+    // Client-side filter for month
+    document.querySelectorAll('.data-table tbody tr').forEach(row => {
+        if (!month || row.children[2].textContent.includes(month)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
 </script>
 {% endblock %}

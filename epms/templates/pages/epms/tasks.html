@@ -1,26 +1,79 @@
-{% extends "templates/pages/epms/layout.html" %}
-{% set active_page = "tasks" %}
+{% extends "epms/layout.html" %}
+{% set active_page = 'tasks' %}
 
 {% block content %}
-<div class="epms-page-header" style="display:flex;justify-content:space-between;align-items:center;">
-    <div><h1>Tasks</h1><p>All pending and in-progress tasks.</p></div>
-    <a href="/app/pending-task/new" class="btn btn-primary" target="_blank">+ New Task</a>
+<div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between;">
+    <div>
+        <h1>Tasks</h1>
+        <p>Manage and track all pending tasks across teams.</p>
+    </div>
+    <button class="btn btn-primary" onclick="frappe.set_route('Form', 'Pending Task', {'new': 1})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        New Task
+    </button>
 </div>
-<div class="filter-tabs">
-    <button class="filter-tab active" onclick="ft('all',this)">All</button>
-    <button class="filter-tab" onclick="ft('Pending',this)">Pending</button>
-    <button class="filter-tab" onclick="ft('In Progress',this)">In Progress</button>
-    <button class="filter-tab" onclick="ft('Completed',this)">Completed</button>
-    <button class="filter-tab" onclick="ft('Blocked',this)">Blocked</button>
-</div>
-<div class="epms-card epms-card-full"><div id="tasks-box"><div class="empty"><p>Loading...</p></div></div></div>
-{% endblock %}
 
-{% block scripts %}
+<!-- Filter Tabs -->
+<div class="tab-group">
+    <button class="tab-btn active" onclick="filterTasks('all', this)">All</button>
+    <button class="tab-btn" onclick="filterTasks('Pending', this)">Pending</button>
+    <button class="tab-btn" onclick="filterTasks('In Progress', this)">In Progress</button>
+    <button class="tab-btn" onclick="filterTasks('Completed', this)">Completed</button>
+    <button class="tab-btn" onclick="filterTasks('Overdue', this)">Overdue</button>
+</div>
+
+<!-- Search -->
+<div style="margin-bottom: 20px;">
+    <input type="text" placeholder="Search tasks..." style="padding: 10px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; width: 320px; font-family: 'Inter', sans-serif;" id="taskSearch" onkeyup="searchTasks(this.value)">
+</div>
+
+<!-- Task List -->
+<div class="card" style="padding: 0;">
+    {% if tasks %}
+        {% for task in tasks %}
+        <div class="list-item" style="padding: 18px 24px;" data-status="{{ task.status }}" data-name="{{ task.subject|lower }}">
+            <div class="list-item-left">
+                <div class="list-item-checkbox {% if task.status == 'Completed' %}checked{% endif %}"></div>
+                <div class="list-item-info">
+                    <div class="item-title">{{ task.subject }}</div>
+                    <div class="item-meta">
+                        {% if task.team %}{{ task.team }} &middot; {% endif %}
+                        {% if task.assigned_to %}{{ task.assigned_to }} &middot; {% endif %}
+                        {% if task.due_date %}<span class="due">Due {{ task.due_date }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="list-item-right">
+                <span class="badge {{ task.priority_class }}">{{ task.priority }}</span>
+                <span class="badge {{ task.status_class }}">{{ task.status }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p>No tasks found</p>
+        </div>
+    {% endif %}
+</div>
+
 <script>
-var AT=[];
-epms_call('epms.employee_performance.api.get_portal_tasks', {}, function(r){ AT=r||[]; rt(AT); });
-function ft(s,el){ document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active')}); el.classList.add('active'); rt(s==='all'?AT:AT.filter(function(t){return t.current_status===s})); }
-function rt(t){ if(!t.length){document.getElementById('tasks-box').innerHTML='<div class="empty"><p>No tasks</p></div>';return;} var h='<table class="epms-table"><thead><tr><th>Task</th><th>Employee</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead><tbody>'; t.forEach(function(x){ var sc=x.current_status==='Completed'?'success':x.current_status==='Blocked'?'danger':'warning'; var pc=x.priority==='Critical'?'danger':x.priority==='High'?'warning':'info'; h+='<tr><td><strong>'+x.task+'</strong></td><td>'+x.employee_name+'</td><td>'+(x.expected_completion||'-')+'</td><td><span class="badge badge-'+pc+'">'+x.priority+'</span></td><td><span class="badge badge-'+sc+'">'+x.current_status+'</span></td></tr>'; }); h+='</tbody></table>'; document.getElementById('tasks-box').innerHTML=h; }
+function filterTasks(status, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.list-item[data-status]').forEach(item => {
+        if (status === 'all' || item.dataset.status === status) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+function searchTasks(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.list-item[data-name]').forEach(item => {
+        item.style.display = item.dataset.name.includes(q) ? '' : 'none';
+    });
+}
 </script>
 {% endblock %}
