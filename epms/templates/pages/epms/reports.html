@@ -1,21 +1,38 @@
-{% extends "epms/layout.html" %}
 {% set active_page = 'reports' %}
-
-{% block content %}
-<div class="page-header">
-    <h1>Reports</h1>
-    <p>Access all performance reports and analytics.</p>
-</div>
-
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-    {% for report in reports %}
-    <a href="/app/query-report/{{ report.name }}" class="report-card" target="_blank">
-        <div class="report-card-icon {{ report.icon_class }}">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPMS Portal — Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f0f2f5;color:#1a2332;min-height:100vh}.layout{display:flex;min-height:100vh}.sidebar{width:260px;background:#0f1729;color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}.sidebar-header{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between}.sidebar-brand{display:flex;align-items:center;gap:12px}.sidebar-logo{width:40px;height:40px;background:linear-gradient(135deg,#00d4aa,#00b894);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff}.sidebar-brand-text h3{font-size:16px;font-weight:700;color:#fff;line-height:1.2}.sidebar-brand-text span{font-size:11px;color:rgba(255,255,255,.5)}.sidebar-bell{width:36px;height:36px;border-radius:8px;border:none;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center}.sidebar-search{padding:16px 20px}.search-box{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.06);border-radius:8px;border:1px solid rgba(255,255,255,.08)}.search-box input{background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;outline:none;width:100%;font-family:'Inter',sans-serif}.search-box input::placeholder{color:rgba(255,255,255,.35)}.search-kbd{font-size:11px;color:rgba(255,255,255,.35);background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;flex-shrink:0}.sidebar-nav{flex:1;padding:8px 12px;overflow-y:auto}.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all .15s ease;cursor:pointer;position:relative}.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}.nav-item.active{background:#00d4aa;color:#fff;font-weight:600}.nav-item.active::after{content:'';position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:4px;height:20px;background:#00d4aa;border-radius:4px 0 0 4px}.nav-item svg{width:20px;height:20px;flex-shrink:0}.sidebar-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;cursor:pointer}.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4aa,#00b894);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}.user-info{flex:1}.user-info .user-name{font-size:13px;font-weight:600;color:#fff}.user-info .user-role{font-size:11px;color:rgba(255,255,255,.45)}.main-content{margin-left:260px;flex:1;padding:32px 40px;min-height:100vh}.page-header{margin-bottom:28px}.page-header h1{font-size:28px;font-weight:700;color:#1a2332;margin-bottom:4px}.page-header p{font-size:14px;color:#6b7280}.report-card{padding:16px;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all .15s ease;text-decoration:none;color:inherit;display:block}.report-card:hover{border-color:#00d4aa;box-shadow:0 2px 8px rgba(0,212,170,.1)}.report-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}.report-card h4{font-size:14px;font-weight:600;color:#1a2332;margin-bottom:4px}.report-card p{font-size:12px;color:#9ca3af}.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.stat-icon.green{background:rgba(0,212,170,.1);color:#00d4aa}.stat-icon.blue{background:rgba(59,130,246,.1);color:#3b82f6}.stat-icon.orange{background:rgba(245,158,11,.1);color:#f59e0b}.stat-icon.purple{background:rgba(139,92,246,.1);color:#8b5cf6}.stat-icon.red{background:rgba(239,68,68,.1);color:#ef4444}.stat-icon svg{width:20px;height:20px}
+@media(max-width:768px){.sidebar{display:none}.main-content{margin-left:0;padding:20px}}
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="sidebar-brand"><div class="sidebar-logo">EP</div><div class="sidebar-brand-text"><h3>Employee</h3><span>Performance Portal</span></div></div><button class="sidebar-bell"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></button></div>
+        <div class="sidebar-search"><div class="search-box"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Search..."><span class="search-kbd">Ctrl K</span></div></div>
+        <nav class="sidebar-nav">
+            <a href="/epms" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+            <a href="/epms/my-day" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>My Day</a>
+            <a href="/epms/teams" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Teams</a>
+            <a href="/epms/performance" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Performance</a>
+            <a href="/epms/tasks" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Tasks</a>
+            <a href="/epms/scorecards" class="nav-item"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Scorecards</a>
+            <a href="/epms/reports" class="nav-item active"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>Reports</a>
+        </nav>
+        <div class="sidebar-user"><div class="user-avatar">{{ user_initial }}</div><div class="user-info"><div class="user-name">{{ user_name }}</div><div class="user-role">{{ user_role }}</div></div><svg width="16" height="16" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+    </aside>
+    <main class="main-content">
+        <div class="page-header"><h1>Reports</h1><p>Access all performance reports and analytics.</p></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            {% for report in reports %}<a href="/app/query-report/{{ report.name }}" class="report-card" target="_blank"><div class="report-card-icon {{ report.icon_class }}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg></div><h4>{{ report.name }}</h4><p>{{ report.description }}</p></a>{% endfor %}
         </div>
-        <h4>{{ report.name }}</h4>
-        <p>{{ report.description }}</p>
-    </a>
-    {% endfor %}
+    </main>
 </div>
-{% endblock %}
+<script>document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.querySelector('.search-box input').focus()}});</script>
+</body>
+</html>
