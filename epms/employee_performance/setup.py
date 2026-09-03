@@ -146,16 +146,30 @@ def fix_workspace_now():
         _create_workspace_sql(ws_name, json_path)
         return
 
-    # Step 4: Clear cache and verify
+    # Step 4: Force clear ALL caches
     frappe.clear_cache()
+    frappe.clear_document_cache("Workspace", ws_name)
+    frappe.client.delete_cache("Workspace", ws_name)
+    try:
+        frappe.cache().delete_value("workspace:{0}".format(ws_name))
+        frappe.cache().delete_value("workspace_list")
+        frappe.cache().delete_value("desk_sidebar")
+        frappe.cache().delete_value("app_modules")
+    except Exception:
+        pass
     print("\n3. Verification:")
     final_links = frappe.db.count("Workspace Link", {"parent": ws_name})
     final_scs = frappe.db.count("Workspace Shortcut", {"parent": ws_name})
     final_nc = frappe.db.count("Workspace Number Card", {"parent": ws_name})
     final_ch = frappe.db.count("Workspace Chart", {"parent": ws_name})
+    # Verify content
+    content = frappe.db.get_value("Workspace", ws_name, "content")
     print(f"   Links: {final_links}, Shortcuts: {final_scs}")
     print(f"   Number Cards: {final_nc}, Charts: {final_ch}")
+    print(f"   Content length: {len(content) if content else 0} chars")
+    print(f"   Content preview: {content[:200] if content else 'EMPTY'}...")
     print(f"   URL: /app/employee-performance-management")
+    print("\nIMPORTANT: Clear browser cache too! Press Ctrl+Shift+R")
     print("=== Done ===")
 
 
