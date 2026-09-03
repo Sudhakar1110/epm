@@ -5,10 +5,6 @@ app_description = "Employee Performance Management System for ERPNext v15"
 app_email = "epms@example.com"
 app_license = "MIT"
 
-# Includes
-app_include_css = "/assets/epms/css/epms.css"
-app_include_js = "/assets/epms/js/epms.js"
-
 # Dependencies
 required_apps = ["erpnext"]
 
