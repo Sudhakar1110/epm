@@ -212,7 +212,7 @@ def fix_workspace_now():
 
 
 def _get_workspace_content():
-    """Content matching Frappe v15 format with shortcuts AND card blocks for links."""
+    """Content with shortcuts and links directly embedded (Frappe v15 renders links from content JSON)."""
     content = [
         # Shortcuts section
         {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Your Shortcuts</b></span>", "col": 12}},
@@ -223,9 +223,28 @@ def _get_workspace_content():
         {"id": _rand_id(), "type": "shortcut", "data": {"shortcut_name": "Performance Scorecard", "col": 3}},
         # Spacer
         {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
-        # Reports & Masters section with cards
-        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Reports &amp; Masters</b></span>", "col": 12}},
-        {"id": _rand_id(), "type": "card", "data": {"card_name": "Employee Performance", "col": 4}},
+        # DocTypes header
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>DocTypes</b></span>", "col": 12}},
+        # DocType links embedded in content
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Team", "label": "Teams"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Member Mapping"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Pending Task", "label": "Pending Task"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "DocType", "link_to": "Performance Scorecard", "label": "Performance Scorecard"}},
+        # Spacer
+        {"id": _rand_id(), "type": "spacer", "data": {"col": 12}},
+        # Reports header
+        {"id": _rand_id(), "type": "header", "data": {"text": "<span class=\"h4\"><b>Reports</b></span>", "col": 12}},
+        # Report links embedded in content
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Monthly Performance Report", "label": "Monthly Performance Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Employee Wise Report", "label": "Employee Wise Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Team Wise Report", "label": "Team Wise Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Pending Task Report", "label": "Pending Task Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Top Performers", "label": "Top Performers"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Low Performers", "label": "Low Performers"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Monthly KPI Report", "label": "Monthly KPI Report"}},
+        {"id": _rand_id(), "type": "link", "data": {"link_type": "Report", "link_to": "Leaderboard Report", "label": "Leaderboard Report"}},
     ]
     return json.dumps(content)
 
