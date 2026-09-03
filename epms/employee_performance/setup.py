@@ -26,6 +26,21 @@ def after_migrate():
     frappe.db.commit()
 
 
+def fix_workspace_now():
+    """Run from bench console to force-create the workspace.
+
+    bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_workspace_now
+    """
+    create_module_def()
+    frappe.db.commit()
+    ensure_workspace_exists()
+    frappe.db.commit()
+    if frappe.db.exists("Workspace", "Employee Performance Management"):
+        frappe.logger().info("EPMS: Workspace is confirmed created!")
+    else:
+        frappe.logger().error("EPMS: Workspace STILL missing after fix!")
+
+
 def create_module_def():
     """Ensure the Employee Performance Module Def exists."""
     if not frappe.db.exists("Module Def", "Employee Performance"):
@@ -53,6 +68,7 @@ def ensure_workspace_exists():
     workspace_name = "Employee Performance Management"
 
     if frappe.db.exists("Workspace", workspace_name):
+        frappe.logger().info("EPMS: Workspace already exists")
         return
 
     json_path = os.path.join(
@@ -77,7 +93,77 @@ def ensure_workspace_exists():
         frappe.db.commit()
         frappe.logger().info("EPMS: Created workspace: " + workspace_name)
     except Exception as e:
-        frappe.log_error(f"EPMS: Failed to create workspace: {str(e)}")
+        frappe.log_error(f"EPMS: Failed to create workspace via get_doc: {str(e)}")
+        # Fallback: create via direct SQL
+        _create_workspace_sql(workspace_name)
+
+
+def _create_workspace_sql(workspace_name):
+    """Fallback: create workspace via direct SQL INSERT."""
+    json_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "workspace",
+        "employee_performance_management.json",
+    )
+    try:
+        with open(json_path, "r") as f:
+            ws_data = json.load(f)
+
+        content = json.dumps(ws_data.get("content", "[]"))
+        links_json = json.dumps(ws_data.get("links", []))
+        shortcuts_json = json.dumps(ws_data.get("shortcuts", []))
+        charts_json = json.dumps(ws_data.get("charts", []))
+        number_cards_json = json.dumps(ws_data.get("number_cards", []))
+        custom_blocks_json = json.dumps(ws_data.get("custom_blocks", []))
+        roles_json = json.dumps(ws_data.get("roles", []))
+
+        frappe.db.sql(
+            """INSERT INTO `tabWorkspace`
+            (`name`, `module`, `label`, `title`, `doctype`, `icon`,
+             `indicator_color`, `category`, `is_hidden`, `public`,
+             `for_user`, `custom`, `modified_by`, `owner`,
+             `creation`, `modified`, `content`, `links`, `shortcuts`,
+             `charts`, `number_cards`, `custom_blocks`, `roles`,
+             `sequence_id`, `parent_page`, `hide_custom`, `quick_lists`)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s)""",
+            (
+                workspace_name,
+                "Employee Performance",
+                ws_data.get("label", workspace_name),
+                ws_data.get("title", workspace_name),
+                "Workspace",
+                ws_data.get("icon", "octicon octicon-file-directory"),
+                ws_data.get("indicator_color", "green"),
+                ws_data.get("category", "Modules"),
+                0,
+                1,
+                "",
+                0,
+                "Administrator",
+                "Administrator",
+                "2024-01-01 00:00:00.000000",
+                "2024-01-01 00:00:00.000000",
+                content,
+                links_json,
+                shortcuts_json,
+                charts_json,
+                number_cards_json,
+                custom_blocks_json,
+                roles_json,
+                1,
+                "",
+                0,
+                "[]",
+            ),
+        )
+        frappe.db.commit()
+        frappe.logger().info(
+            "EPMS: Created workspace via SQL: " + workspace_name
+        )
+    except Exception as e:
+        frappe.log_error(f"EPMS: SQL workspace creation failed: {str(e)}")
 
 
 def create_roles():
