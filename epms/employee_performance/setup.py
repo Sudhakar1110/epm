@@ -3,8 +3,10 @@ from frappe import _
 
 
 def before_migrate():
-    """Run before migration to ensure Module Def exists first."""
+    """Run before migration to ensure Module Def exists first
+    and remove any broken workspace so Frappe can re-sync from JSON."""
     create_module_def()
+    _delete_stale_workspaces()
     frappe.db.commit()
 
 
@@ -19,7 +21,6 @@ def after_install():
 def after_migrate():
     """Run after migration."""
     create_module_def()
-    cleanup_stale_workspace()
     frappe.db.commit()
 
 
@@ -45,21 +46,17 @@ def create_module_def():
             frappe.log_error(f"EPMS: Failed to create Module Def: {str(e)}")
 
 
-def cleanup_stale_workspace():
-    """Delete any broken/stale workspace entries so Frappe can re-sync from JSON."""
-    workspace_name = "Employee Performance Management"
+def _delete_stale_workspaces():
+    """Delete ALL workspace entries for Employee Performance module
+    so bench migrate can re-sync cleanly from the JSON file."""
     try:
-        # Check if workspace exists but has no valid module link
-        ws = frappe.db.get_value(
-            "Workspace", workspace_name, ["name", "module"]
+        frappe.db.sql(
+            "DELETE FROM `tabWorkspace` WHERE module = %s",
+            "Employee Performance",
         )
-        if ws and ws[1] != "Employee Performance":
-            frappe.db.sql(
-                "DELETE FROM `tabWorkspace` WHERE name = %s", workspace_name
-            )
-            frappe.logger().info(
-                "EPMS: Deleted stale workspace with wrong module"
-            )
+        frappe.logger().info(
+            "EPMS: Cleared workspace entries for fresh sync"
+        )
     except Exception:
         pass
 
