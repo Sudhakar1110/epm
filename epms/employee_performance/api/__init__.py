@@ -441,8 +441,12 @@ def create_portal_team(team_name=None, team_leader=None, description=None):
     if not team_name or not team_leader:
         frappe.throw(_("Team name and team leader are required"))
 
-    if frappe.db.exists("Team", team_name):
-        frappe.throw(_("A team named \"{0}\" already exists").format(team_name))
+    existing = frappe.db.sql(
+        "select name from `tabTeam` where lower(name) = lower(%s)",
+        team_name,
+    )
+    if existing:
+        frappe.throw(_("A team named \"{0}\" already exists").format(existing[0][0]))
 
     team = frappe.get_doc(
         {
@@ -453,8 +457,17 @@ def create_portal_team(team_name=None, team_leader=None, description=None):
             "status": "Active",
         }
     )
-    # No ignore_permissions: only roles with create rights on Team can create.
-    team.insert()
-    frappe.db.commit()
+
+    try:
+        # No ignore_permissions: only roles with create rights on Team can create.
+        team.insert()
+        frappe.db.commit()
+    except frappe.DuplicateEntryError:
+        frappe.db.rollback()
+        frappe.throw(_("A team named \"{0}\" already exists").format(team_name))
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "EPMS Create Portal Team")
+        raise
 
     return {"ok": True, "name": team.name}

@@ -247,15 +247,35 @@
         });
     });
 
+    function cleanMessage(text) {
+        var el = document.createElement('textarea');
+        el.innerHTML = text;
+        return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
     function serverError(data) {
         try {
-            if (data && data._server_messages && data._server_messages.length) {
-                var el = document.createElement('textarea');
-                el.innerHTML = data._server_messages[0];
-                var txt = el.value.replace(/<[^>]*>/g, '').trim();
-                if (txt) return txt;
+            if (data) {
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') {
+                    try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; }
+                }
+                if (Array.isArray(msgs) && msgs.length) {
+                    var txt = cleanMessage(msgs[0]);
+                    if (txt) return txt;
+                }
+                if (data.exc_type === 'PermissionError' || data.exc_type === 'AuthenticationError') {
+                    return 'You do not have permission to create teams.';
+                }
+                if (data.exc && typeof data.exc === 'string') {
+                    var exc = cleanMessage(data.exc);
+                    var lines = exc.split('\n').filter(function (l) { return l.trim(); });
+                    if (lines.length) {
+                        var last = lines[lines.length - 1].replace(/^Message:\s*/i, '').trim();
+                        if (last && last.length < 300) return last;
+                    }
+                }
             }
-            if (data && data.exc_type === 'PermissionError') return 'You do not have permission to create teams.';
         } catch (err) { /* fall through */ }
         return 'Could not create the team. Please try again.';
     }
