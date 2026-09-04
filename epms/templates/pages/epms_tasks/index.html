@@ -240,6 +240,16 @@
     function success() { showMsg(''); window.location.href = '/epms/tasks'; }
     function fail(text) { submitBtn.disabled = false; showMsg(text || 'Could not create the task. Please try again.'); }
 
+    function submitViaClient(name) {
+        var doc = { doctype: 'Pending Task', name: name };
+        var url = '/api/method/frappe.client.submit?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) success();
+            else fail(readableError(res.data));
+        });
+    }
+
     function saveViaClient() {
         var doc = {
             doctype: 'Pending Task',
@@ -254,7 +264,7 @@
         var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(doc));
         getJson(url).then(function (res) {
             var m = res.data && res.data.message;
-            if (res.httpOk && m && m.name) success();
+            if (res.httpOk && m && m.name) submitViaClient(m.name);
             else fail(readableError(res.data));
         });
     }
