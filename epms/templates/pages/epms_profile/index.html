@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Profile</h1>
+                    <p class="page-subtitle">Your account details.</p>
+                </div>
+            </header>
+
+            <div class="card" style="max-width: 560px;">
+                <div class="card-body">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+                        <div class="avatar avatar-md" style="width:52px; height:52px; font-size:20px;">{{ (profile.full_name or 'U')[:1] }}</div>
+                        <div>
+                            <strong style="font-size:16px; color:var(--navy-dark);">{{ profile.full_name }}</strong>
+                            <div class="row-meta">{{ profile.email }} · {{ profile.roles }}</div>
+                        </div>
+                    </div>
+
+                    <form id="profile-form" novalidate>
+                        <div class="field">
+                            <label for="profile-name">Full name</label>
+                            <input id="profile-name" type="text" maxlength="140" value="{{ profile.full_name | e }}" required>
+                        </div>
+                        <div class="field">
+                            <label for="profile-pass">New password <span class="opt">(leave blank to keep current)</span></label>
+                            <input id="profile-pass" type="password" autocomplete="new-password">
+                        </div>
+                        <div class="field">
+                            <label for="profile-pass2">Confirm new password</label>
+                            <input id="profile-pass2" type="password" autocomplete="new-password">
+                        </div>
+                        <p class="form-msg" id="profile-form-msg" hidden></p>
+                        <button type="submit" class="btn btn-primary" id="profile-submit">Save changes</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+(function () {
+    var form = document.getElementById('profile-form');
+    var msg = document.getElementById('profile-form-msg');
+    var name = document.getElementById('profile-name');
+    var pass = document.getElementById('profile-pass');
+    var pass2 = document.getElementById('profile-pass2');
+    var submitBtn = document.getElementById('profile-submit');
+    if (!form || !msg) return;
+
+    function showMsg(t) { msg.textContent = t; msg.hidden = !t; }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fullName = name.value.trim();
+        var p1 = pass.value;
+        var p2 = pass2.value;
+        if (!fullName) { showMsg('Please enter your name.'); name.focus(); return; }
+        if (p1 && p1 !== p2) { showMsg('Passwords do not match.'); pass2.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'full_name=' + encodeURIComponent(fullName);
+        if (p1) qs += '&new_password=' + encodeURIComponent(p1);
+
+        fetch('/api/method/epms.employee_performance.api.update_portal_profile?' + qs).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).then(function (res) {
+            var m = res.data && res.data.message;
+            submitBtn.disabled = false;
+            if (res.httpOk && m && m.ok) {
+                showMsg('');
+                window.location.reload();
+            } else {
+                showMsg(m && m.error ? m.error : 'Could not save your profile.');
+            }
+        }).catch(function () {
+            submitBtn.disabled = false;
+            showMsg('Could not save your profile.');
+        });
+    });
+})();
+</script>
+
+</body>
+</html>

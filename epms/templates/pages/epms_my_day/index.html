@@ -24,6 +24,10 @@
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                         {{ today_label }}
                     </span>
+                    <button type="button" class="btn btn-primary" id="epms-log-work">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        Log today's work
+                    </button>
                 </div>
             </header>
 
@@ -90,8 +94,14 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                <div class="row-right">
+                                <div class="row-right right-col">
                                     <span class="badge {{ task.priority_class }}">{{ task.priority or '—' }}</span>
+                                    <span class="row-actions">
+                                        {% if task.current_status != 'Completed' %}
+                                        <button type="button" class="link task-quick" data-name="{{ task.name }}" data-status="In Progress">Start</button>
+                                        <button type="button" class="link task-quick" data-name="{{ task.name }}" data-status="Completed">Done</button>
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                             {% endfor %}
@@ -342,6 +352,269 @@
 })();
 </script>
 {% endif %}
+
+<div class="modal-mask" id="daily-modal">
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="daily-modal-title">
+        <div class="modal-head">
+            <strong id="daily-modal-title">Log today's work</strong>
+            <button type="button" class="modal-x" id="daily-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="daily-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="daily-date">Date</label>
+                    <input id="daily-date" type="date" required>
+                </div>
+                <div class="field">
+                    <label for="daily-task">Task Title</label>
+                    <input id="daily-task" type="text" maxlength="140" placeholder="What did you work on?" autocomplete="off" required>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="daily-status">Task Status</label>
+                        <select id="daily-status">
+                            <option value="In Progress" selected>In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Blocked">Blocked</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="daily-priority">Priority</label>
+                        <select id="daily-priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="daily-expected">Expected Hours</label>
+                        <input id="daily-expected" type="number" min="0" max="24" step="0.5" value="8">
+                    </div>
+                    <div class="field">
+                        <label for="daily-actual">Actual Hours</label>
+                        <input id="daily-actual" type="number" min="0" max="24" step="0.5" value="8">
+                    </div>
+                    <div class="field">
+                        <label for="daily-completion">Completion %</label>
+                        <input id="daily-completion" type="number" min="0" max="100" step="5" value="100">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="daily-rating">Rating (1-10)</label>
+                        <input id="daily-rating" type="number" min="1" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="field">
+                        <label for="daily-quality">Quality (1-10)</label>
+                        <input id="daily-quality" type="number" min="1" max="10" step="0.5" value="5">
+                    </div>
+                    <div class="field">
+                        <label for="daily-work-type">Work Type <span class="opt">(optional)</span></label>
+                        <input id="daily-work-type" type="text" maxlength="60" placeholder="e.g. Development">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="daily-remarks">Remarks <span class="opt">(optional)</span></label>
+                    <textarea id="daily-remarks" rows="2" placeholder="How did it go?"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="daily-challenges">Challenges <span class="opt">(optional)</span></label>
+                        <textarea id="daily-challenges" rows="2" placeholder="Any blockers?"></textarea>
+                    </div>
+                    <div class="field">
+                        <label for="daily-plan">Next Day Plan <span class="opt">(optional)</span></label>
+                        <textarea id="daily-plan" rows="2" placeholder="What is next?"></textarea>
+                    </div>
+                </div>
+                <p class="form-msg" id="daily-form-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="daily-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="daily-submit">Submit Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('daily-modal');
+    var form = document.getElementById('daily-form');
+    var msg = document.getElementById('daily-form-msg');
+    var submitBtn = document.getElementById('daily-submit');
+    if (!mask || !form || !msg) return;
+
+    function todayStr() {
+        var d = new Date();
+        var m = ('0' + (d.getMonth() + 1)).slice(-2);
+        var day = ('0' + d.getDate()).slice(-2);
+        return d.getFullYear() + '-' + m + '-' + day;
+    }
+
+    function showMsg(text) { msg.textContent = text; msg.hidden = !text; }
+    function openModal() {
+        showMsg('');
+        form.reset();
+        document.getElementById('daily-date').value = todayStr();
+        document.getElementById('daily-expected').value = 8;
+        document.getElementById('daily-actual').value = 8;
+        document.getElementById('daily-completion').value = 100;
+        document.getElementById('daily-rating').value = 5;
+        document.getElementById('daily-quality').value = 5;
+        mask.classList.add('open');
+        document.getElementById('daily-task').focus();
+    }
+    function closeModal() { mask.classList.remove('open'); }
+
+    var openBtn = document.getElementById('epms-log-work');
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    document.getElementById('daily-modal-close').addEventListener('click', closeModal);
+    document.getElementById('daily-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    function cleanMessage(text) {
+        var el = document.createElement('textarea');
+        el.innerHTML = text;
+        return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function readableError(data) {
+        try {
+            if (data) {
+                var top = data.message;
+                if (typeof top === 'string') {
+                    var s = top.trim();
+                    if (s && s.length < 250 && s !== 'Invalid Request') return s;
+                }
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') { try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; } }
+                if (Array.isArray(msgs) && msgs.length) { var t = cleanMessage(msgs[0]); if (t) return t; }
+                if (typeof data.exc === 'string') {
+                    var exc = cleanMessage(data.exc);
+                    var lines = exc.split('\n').filter(function (l) { return l.trim(); });
+                    if (lines.length) {
+                        var last = lines[lines.length - 1].replace(/^Message:\s*/i, '').trim();
+                        if (last && last.length < 300) return last;
+                    }
+                }
+            }
+        } catch (err) {}
+        return '';
+    }
+
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).catch(function () { return { httpOk: false, data: {} }; });
+    }
+
+    function success() { showMsg(''); window.location.href = '/epms/my-day'; }
+    function fail(text) { submitBtn.disabled = false; showMsg(text || 'Could not submit the entry. Please try again.'); }
+
+    function buildDoc() {
+        return {
+            doctype: 'Daily Performance',
+            date: document.getElementById('daily-date').value,
+            task_title: document.getElementById('daily-task').value.trim(),
+            task_status: document.getElementById('daily-status').value,
+            priority: document.getElementById('daily-priority').value,
+            work_type: document.getElementById('daily-work-type').value.trim() || null,
+            expected_hours: parseFloat(document.getElementById('daily-expected').value) || 0,
+            actual_hours: parseFloat(document.getElementById('daily-actual').value) || 0,
+            completion_percentage: parseFloat(document.getElementById('daily-completion').value) || 0,
+            daily_rating: parseFloat(document.getElementById('daily-rating').value) || 0,
+            quality_score: parseFloat(document.getElementById('daily-quality').value) || 0,
+            remarks: document.getElementById('daily-remarks').value.trim() || null,
+            challenges: document.getElementById('daily-challenges').value.trim() || null,
+            next_day_plan: document.getElementById('daily-plan').value.trim() || null
+        };
+    }
+
+    function submitViaClient(name) {
+        var doc = { doctype: 'Daily Performance', name: name };
+        var url = '/api/method/frappe.client.submit?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) success();
+            else fail(readableError(res.data));
+        });
+    }
+
+    function saveViaClient() {
+        var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(buildDoc()));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) submitViaClient(m.name);
+            else fail(readableError(res.data));
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!document.getElementById('daily-task').value.trim()) {
+            showMsg('Please enter a task title.');
+            document.getElementById('daily-task').focus();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var el = function (id) { return document.getElementById(id).value; };
+        var qs = 'date=' + encodeURIComponent(el('daily-date')) +
+            '&task_title=' + encodeURIComponent(el('daily-task').trim()) +
+            '&task_status=' + encodeURIComponent(el('daily-status')) +
+            '&priority=' + encodeURIComponent(el('daily-priority')) +
+            '&work_type=' + encodeURIComponent(el('daily-work-type').trim()) +
+            '&expected_hours=' + encodeURIComponent(el('daily-expected')) +
+            '&actual_hours=' + encodeURIComponent(el('daily-actual')) +
+            '&completion_percentage=' + encodeURIComponent(el('daily-completion')) +
+            '&daily_rating=' + encodeURIComponent(el('daily-rating')) +
+            '&quality_score=' + encodeURIComponent(el('daily-quality')) +
+            '&remarks=' + encodeURIComponent(el('daily-remarks').trim()) +
+            '&challenges=' + encodeURIComponent(el('daily-challenges').trim()) +
+            '&next_day_plan=' + encodeURIComponent(el('daily-plan').trim());
+
+        getJson('/api/method/epms.employee_performance.api.submit_portal_daily_performance?' + qs).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { success(); return; }
+            if (res.httpOk && m && m.ok === false) { fail(m.error); return; }
+            saveViaClient();
+        });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    var btns = document.querySelectorAll('.task-quick');
+    if (!btns.length) return;
+    btns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var qs = 'name=' + encodeURIComponent(btn.getAttribute('data-name')) +
+                '&current_status=' + encodeURIComponent(btn.getAttribute('data-status'));
+            fetch('/api/method/epms.employee_performance.api.update_portal_task?' + qs).then(function (r) {
+                return r.json();
+            }).then(function (res) {
+                var m = res && res.message;
+                if (m && m.ok) window.location.href = '/epms/my-day';
+                else alert((m && m.error) || 'Could not update the task.');
+            }).catch(function () {
+                alert('Could not reach the server.');
+            });
+        });
+    });
+})();
+</script>
 
 </body>
 </html>

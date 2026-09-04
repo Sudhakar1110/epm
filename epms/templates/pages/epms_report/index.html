@@ -25,8 +25,39 @@
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                         {{ month_label }}
                     </span>
+                    {% if rows %}
+                    <button type="button" class="btn btn-outline" id="epms-export-csv">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        Export CSV
+                    </button>
+                    {% endif %}
                 </div>
             </header>
+
+            <form class="filter-bar" method="get" action="/epms/report">
+                <input type="hidden" name="report" value="{{ report_slug }}">
+                <span class="filter-label">Filters</span>
+                <select class="filter-select" name="month" aria-label="Month">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == filter_month %}selected{% endif %}>Month {{ m }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" name="year" aria-label="Year">
+                    {% for y in range(current_year - 1, current_year + 2) %}
+                    <option value="{{ y }}" {% if y == filter_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" name="team" aria-label="Team">
+                    <option value="">All teams</option>
+                    {% for t in teams %}
+                    <option value="{{ t.name }}" {% if t.name == filter_team %}selected{% endif %}>{{ t.team_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Apply</button>
+                {% if filter_month != current_month or filter_year != current_year or filter_team %}
+                <a class="link" href="/epms/report?report={{ report_slug }}">Clear</a>
+                {% endif %}
+            </form>
 
             {% if report_error %}
             <div class="card">
@@ -74,5 +105,28 @@
         </div>
     </main>
 </div>
+
+<script>
+(function () {
+    var btn = document.getElementById('epms-export-csv');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var qs = window.location.search || '';
+        var url = '/api/method/epms.employee_performance.api.export_portal_report_csv' + qs;
+        fetch(url).then(function (r) { return r.json(); }).then(function (res) {
+            var csv = res && res.message;
+            if (!csv) { alert('No data to export.'); return; }
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'report.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }).catch(function () { alert('Export failed. Please try again.'); });
+    });
+})();
+</script>
 </body>
 </html>

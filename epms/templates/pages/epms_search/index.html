@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Search</h1>
+                    <p class="page-subtitle">Find teams, tasks and people across the portal.</p>
+                </div>
+            </header>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-body">
+                    <form action="/epms/search" method="get" style="display:flex; gap:10px;">
+                        <input type="text" name="q" value="{{ query }}" placeholder="Search teams, tasks, people…" class="search-input" style="flex:1;" autofocus>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if query %}
+            <section class="grid-2">
+                <div class="card">
+                    <div class="card-head"><h3>Teams</h3><span class="chip">{{ teams|length }}</span></div>
+                    <div class="card-body pad-sm">
+                        {% for t in teams %}
+                        <div class="row-item">
+                            <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (t.team_name or 'T')[:1] }}</div>
+                            <div class="row-main">
+                                <a class="row-title" href="/epms/team?team={{ t.name }}">{{ t.team_name }}</a>
+                                <div class="row-meta">{{ t.team_leader or 'No leader' }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty"><p>No teams match.</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><h3>Tasks</h3><span class="chip">{{ tasks|length }}</span></div>
+                    <div class="card-body pad-sm">
+                        {% for t in tasks %}
+                        <div class="row-item">
+                            <span class="status-dot s-{{ t.current_status|lower|replace(' ', '-') }}"></span>
+                            <div class="row-main">
+                                <a class="row-title" href="/epms/tasks">{{ t.task }}</a>
+                                <div class="row-meta">{{ t.employee_name or '—' }} · {{ t.team or '—' }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty"><p>No tasks match.</p></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <div class="card">
+                <div class="card-head"><h3>People</h3><span class="chip">{{ users|length }}</span></div>
+                <div class="card-body pad-sm">
+                    {% for u in users %}
+                    <div class="row-item">
+                        <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (u.full_name or '?')[:1] }}</div>
+                        <div class="row-main">
+                            <a class="row-title" href="/epms/profile">{{ u.full_name or u.name }}</a>
+                            <div class="row-meta">{{ u.email }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty"><p>No people match.</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% else %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    </div>
+                    <p>Type a query above or press Ctrl+K from any page to search.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+</body>
+</html>

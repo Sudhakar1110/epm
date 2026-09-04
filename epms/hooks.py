@@ -182,6 +182,17 @@ whitelisted_methods = [
     "epms.employee_performance.api.create_portal_team",
     "epms.employee_performance.api.create_portal_pending_task",
     "epms.employee_performance.api.create_portal_scorecard",
+    "epms.employee_performance.api.get_portal_team",
+    "epms.employee_performance.api.add_portal_team_member",
+    "epms.employee_performance.api.remove_portal_team_member",
+    "epms.employee_performance.api.set_portal_team_leader",
+    "epms.employee_performance.api.update_portal_task",
+    "epms.employee_performance.api.submit_portal_daily_performance",
+    "epms.employee_performance.api.update_portal_profile",
+    "epms.employee_performance.api.import_portal_csv",
+    "epms.employee_performance.api.portal_save_settings",
+    "epms.employee_performance.api.export_portal_scorecards_csv",
+    "epms.employee_performance.api.export_portal_report_csv",
 ]
 
 # Website
@@ -194,4 +205,13 @@ website_route_rules = [
     {"from_route": "/epms/scorecards", "to_route": "epms_scorecards", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/reports", "to_route": "epms_reports", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/report", "to_route": "epms_report", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/team", "to_route": "epms_team", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/scorecard", "to_route": "epms_scorecard", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/search", "to_route": "epms_search", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/notifications", "to_route": "epms_notifications", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/profile", "to_route": "epms_profile", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/calendar", "to_route": "epms_calendar", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/import", "to_route": "epms_import", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/settings", "to_route": "epms_settings", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/audit", "to_route": "epms_audit", "defaults": {"allow_guest": 1}},
 ]

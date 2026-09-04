@@ -24,11 +24,11 @@
     </div>
 
     <div class="sidebar-search">
-        <div class="search-field">
+        <form class="search-field" action="/epms/search" method="get">
             <img class="search-logo" src="/assets/epms/images/bizaxl_logo.png" alt="Bizaxl" width="16" height="16">
-            <input type="text" placeholder="Search…" aria-label="Search">
+            <input type="text" name="q" placeholder="Search…" aria-label="Search">
             <kbd>Ctrl K</kbd>
-        </div>
+        </form>
     </div>
 
     <nav class="sidebar-nav">
@@ -61,13 +61,33 @@
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
             <span>Reports</span>
         </a>
+        <a href="/epms/notifications" class="nav-item {% if active_page == 'notifications' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span>Notifications</span>
+        </a>
+        <a href="/epms/calendar" class="nav-item {% if active_page == 'calendar' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>Calendar</span>
+        </a>
+        <a href="/epms/import" class="nav-item {% if active_page == 'import' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Import</span>
+        </a>
+        <a href="/epms/audit" class="nav-item {% if active_page == 'audit' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Audit</span>
+        </a>
+        <a href="/epms/settings" class="nav-item {% if active_page == 'settings' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>Settings</span>
+        </a>
     </nav>
 
     <div class="sidebar-foot">
         <div class="user-card">
-            <div class="avatar avatar-sm">{{ user_initial }}</div>
+            <a class="avatar avatar-sm" href="/epms/profile" title="Profile">{{ user_initial }}</a>
             <div class="user-meta">
-                <strong>{{ user_name }}</strong>
+                <a href="/epms/profile"><strong>{{ user_name }}</strong></a>
             </div>
             <button class="icon-btn" id="epms-logout" title="Logout" type="button">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>

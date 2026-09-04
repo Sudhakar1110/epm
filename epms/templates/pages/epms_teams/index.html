@@ -93,6 +93,7 @@
                         {% else %}
                         <span class="muted small">No active members yet</span>
                         {% endif %}
+                        <a class="link" href="/epms/team?team={{ t.name|urlencode }}">Open team</a>
                     </div>
                 </div>
                 {% endfor %}

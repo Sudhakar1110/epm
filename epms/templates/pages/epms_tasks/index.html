@@ -80,6 +80,7 @@
                                 <th>Due</th>
                                 <th>Priority</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -94,6 +95,9 @@
                                 <td class="{% if task.is_overdue %}text-danger{% endif %}">{{ task.expected_completion or '—' }}</td>
                                 <td><span class="badge {{ task.priority_class }}">{{ task.priority or '—' }}</span></td>
                                 <td><span class="badge {{ task.status_class }}">{{ task.current_status or '—' }}</span></td>
+                                <td>
+                                    <button type="button" class="link task-update" data-name="{{ task.name }}" data-task="{{ task.task or task.name }}" data-status="{{ task.current_status or '' }}" data-remarks="{{ task.remarks or '' }}" data-due="{{ task.expected_completion or '' }}">Update</button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -295,6 +299,131 @@
 })();
 </script>
 {% endif %}
+
+<div class="modal-mask" id="task-update-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="task-update-title">
+        <div class="modal-head">
+            <strong id="task-update-title">Update Task</strong>
+            <button type="button" class="modal-x" id="task-update-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="task-update-form" novalidate>
+            <div class="modal-body">
+                <p class="task-update-title-text" id="task-update-name"></p>
+                <div class="field">
+                    <label for="task-update-status">Status</label>
+                    <select id="task-update-status">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Blocked">Blocked</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="task-update-completion">Completion Date <span class="opt">(auto-set when marked completed)</span></label>
+                    <input id="task-update-completion" type="date">
+                </div>
+                <div class="field">
+                    <label for="task-update-remarks">Remarks</label>
+                    <textarea id="task-update-remarks" rows="3" placeholder="Progress notes..."></textarea>
+                </div>
+                <p class="form-msg" id="task-update-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="task-update-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="task-update-submit">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('task-update-modal');
+    var form = document.getElementById('task-update-form');
+    var msg = document.getElementById('task-update-msg');
+    var status = document.getElementById('task-update-status');
+    var completion = document.getElementById('task-update-completion');
+    var remarks = document.getElementById('task-update-remarks');
+    var submitBtn = document.getElementById('task-update-submit');
+    var titleEl = document.getElementById('task-update-name');
+    if (!mask || !form || !msg || !titleEl) return;
+
+    var current = { name: '' };
+
+    function showMsg(text) { msg.textContent = text; msg.hidden = !text; }
+
+    function todayStr() {
+        var d = new Date();
+        var m = ('0' + (d.getMonth() + 1)).slice(-2);
+        var day = ('0' + d.getDate()).slice(-2);
+        return d.getFullYear() + '-' + m + '-' + day;
+    }
+
+    function openModal(name, task, st, rm, due) {
+        current.name = name;
+        titleEl.textContent = task;
+        status.value = st;
+        completion.value = due || '';
+        remarks.value = rm;
+        showMsg('');
+        mask.classList.add('open');
+    }
+
+    function closeModal() { mask.classList.remove('open'); }
+
+    document.querySelectorAll('.task-update').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openModal(
+                btn.getAttribute('data-name'),
+                btn.getAttribute('data-task'),
+                btn.getAttribute('data-status'),
+                btn.getAttribute('data-remarks') || '',
+                btn.getAttribute('data-due')
+            );
+        });
+    });
+
+    document.getElementById('task-update-close').addEventListener('click', closeModal);
+    document.getElementById('task-update-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    status.addEventListener('change', function () {
+        if (status.value === 'Completed' && !completion.value) completion.value = todayStr();
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'name=' + encodeURIComponent(current.name) +
+            '&current_status=' + encodeURIComponent(status.value) +
+            '&completion_date=' + encodeURIComponent(completion.value || '') +
+            '&remarks=' + encodeURIComponent(remarks.value.trim());
+
+        fetch('/api/method/epms.employee_performance.api.update_portal_task?' + qs).then(function (r) {
+            return r.json();
+        }).then(function (res) {
+            var m = res && res.message;
+            if (m && m.ok) {
+                window.location.href = '/epms/tasks';
+            } else {
+                submitBtn.disabled = false;
+                var err = (m && m.error) || 'Could not update the task.';
+                var el = document.createElement('textarea');
+                el.innerHTML = err;
+                showMsg(el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || 'Could not update the task.');
+            }
+        }).catch(function () {
+            submitBtn.disabled = false;
+            showMsg('Could not reach the server. Please try again.');
+        });
+    });
+})();
+</script>
 
 </body>
 </html>

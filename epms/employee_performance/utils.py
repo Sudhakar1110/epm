@@ -315,15 +315,18 @@ def portal_open_tasks(filters=None, limit=None):
     return [portal_annotate_task(t) for t in tasks]
 
 
-def portal_current_scorecards(order_by="overall_score desc", limit=None):
-    """Scorecards for the current month/year."""
+def portal_current_scorecards(order_by="overall_score desc", limit=None, month=None, year=None, team=None):
+    """Scorecards for a month/year (defaults to current) with optional team filter."""
+    filters = {
+        "month": month or getdate(nowdate()).month,
+        "year": year or getdate(nowdate()).year,
+        "docstatus": 1,
+    }
+    if team:
+        filters["team"] = team
     scorecards = frappe.get_all(
         "Performance Scorecard",
-        filters={
-            "month": getdate(nowdate()).month,
-            "year": getdate(nowdate()).year,
-            "docstatus": 1,
-        },
+        filters=filters,
         fields=[
             "name",
             "employee_name",
@@ -351,6 +354,168 @@ def portal_month_label(month=None, year=None):
     month = month or getdate(nowdate()).month
     year = year or getdate(nowdate()).year
     return frappe.utils.formatdate(f"{cint(year)}-{cint(month):02d}-01", "MMMM yyyy")
+
+
+def portal_search(query):
+    """Search teams, tasks and users for the portal search page."""
+    q = (query or "").strip()
+    if not q:
+        return {"query": q, "teams": [], "tasks": [], "users": []}
+
+    like = f"%{q}%"
+    teams = frappe.get_all(
+        "Team",
+        filters={"status": "Active", "team_name": ["like", like]},
+        fields=["name", "team_name", "team_leader"],
+        order_by="team_name asc",
+        limit_page_length=10,
+    )
+    tasks = frappe.get_all(
+        "Pending Task",
+        filters={
+            "docstatus": 1,
+            "current_status": ["in", ["Pending", "In Progress"]],
+            "task": ["like", like],
+        },
+        fields=["name", "task", "employee_name", "team", "current_status"],
+        order_by="expected_completion asc",
+        limit_page_length=10,
+    )
+    users = frappe.get_all(
+        "User",
+        filters={"enabled": 1, "full_name": ["like", like]},
+        fields=["name", "full_name", "email"],
+        order_by="full_name asc",
+        limit_page_length=10,
+    )
+    return {"query": q, "teams": teams, "tasks": tasks, "users": users}
+
+
+def portal_month_trend(year=None):
+    """Average score per month for the dashboard trend chart."""
+    year = cint(year or getdate(nowdate()).year)
+    months = []
+    for m in range(1, 13):
+        avg = frappe.db.get_value(
+            "Performance Scorecard",
+            {"month": m, "year": year, "docstatus": 1},
+            "avg(overall_score)",
+        )
+        months.append(
+            {
+                "month": m,
+                "label": frappe.utils.formatdate(f"{year}-{m:02d}-01", "MMM"),
+                "score": round(flt(avg, 1), 1) if avg else 0,
+            }
+        )
+    return months
+
+
+def portal_grade_distribution(month=None, year=None):
+    """Scorecard count by grade for the dashboard distribution card."""
+    month = month or getdate(nowdate()).month
+    year = year or getdate(nowdate()).year
+    grades = {
+        "Excellent": 0,
+        "Very Good": 0,
+        "Good": 0,
+        "Average": 0,
+        "Needs Improvement": 0,
+    }
+    rows = frappe.get_all(
+        "Performance Scorecard",
+        filters={"month": month, "year": year, "docstatus": 1},
+        fields=["final_grade"],
+    )
+    for r in rows:
+        g = r.get("final_grade")
+        if g in grades:
+            grades[g] += 1
+    total = sum(grades.values()) or 1
+    return {"grades": grades, "total": total, "month_label": portal_month_label(month, year)}
+
+
+def portal_calendar_tasks(month=None, year=None):
+    """Open tasks due in the given month for the calendar view."""
+    month = month or getdate(nowdate()).month
+    year = year or getdate(nowdate()).year
+    first = f"{year}-{month:02d}-01"
+    last_day = frappe.utils.get_last_day(first)
+    tasks = frappe.get_all(
+        "Pending Task",
+        filters={
+            "docstatus": 1,
+            "expected_completion": ["between", [first, last_day]],
+            "current_status": ["in", ["Pending", "In Progress"]],
+        },
+        fields=["name", "task", "employee_name", "team", "priority", "expected_completion", "current_status"],
+        order_by="expected_completion asc",
+    )
+    by_day = {}
+    for t in tasks:
+        day = str(t.get("expected_completion") or "")[-2:].lstrip("0") or "1"
+        by_day.setdefault(day, []).append(t)
+    return {"tasks": tasks, "by_day": by_day, "last_day": int(str(last_day)[-2:])}
+
+
+def portal_audit_log(limit=60):
+    """Recent document changes (Frappe Version log) for EPMS doctypes."""
+    doctypes = ["Team", "Team Member Mapping", "Pending Task", "Daily Performance", "Performance Scorecard"]
+    rows = frappe.get_all(
+        "Version",
+        filters={"ref_doctype": ["in", doctypes]},
+        fields=["name", "ref_doctype", "ref_docname", "docchanges", "modified_by", "creation"],
+        order_by="creation desc",
+        limit_page_length=limit,
+    )
+    out = []
+    for r in rows:
+        changed = []
+        try:
+            changes = frappe.parse_json(r.get("docchanges") or "[]")
+            for c in changes:
+                if isinstance(c, dict):
+                    field = c.get("field")
+                    changed.append(field)
+        except Exception:
+            pass
+        out.append(
+            {
+                "ref_doctype": r.get("ref_doctype"),
+                "ref_docname": r.get("ref_docname"),
+                "changed": ", ".join(x for x in changed if x) or "updated",
+                "by": r.get("modified_by"),
+                "when": frappe.utils.pretty_date(r.get("creation")) if r.get("creation") else "",
+            }
+        )
+    return out
+
+
+def portal_get_settings():
+    """EPMS Settings values (single record named 'EPMS Settings')."""
+    defaults = {
+        "auto_generate_scorecards": 1,
+        "scorecard_day": 1,
+        "send_daily_reminders": 1,
+        "send_weekly_summary": 1,
+        "send_monthly_summary": 1,
+        "low_performance_threshold": 60,
+        "excellent_threshold": 90,
+        "very_good_threshold": 80,
+        "good_threshold": 70,
+        "average_threshold": 60,
+    }
+    try:
+        if not frappe.db.exists("EPMS Settings", "EPMS Settings"):
+            return defaults
+        doc = frappe.get_doc("EPMS Settings", "EPMS Settings")
+        for k in defaults:
+            val = doc.get(k)
+            if val is not None:
+                defaults[k] = val
+    except Exception:
+        pass
+    return defaults
 
 
 # Portal-viewable script reports. Folders mirror the module layout under

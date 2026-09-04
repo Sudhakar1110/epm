@@ -4,8 +4,10 @@ from frappe.utils import flt, getdate, nowdate
 from epms.employee_performance.utils import (
     portal_annotate_scorecard,
     portal_current_scorecards,
+    portal_grade_distribution,
     portal_login_redirect,
     portal_month_label,
+    portal_month_trend,
     portal_open_tasks,
     portal_setup_common,
 )
@@ -30,6 +32,7 @@ def get_context(context):
     context.avg_score = round(flt(avg_score, 1) if avg_score else 0, 1)
 
     context.month_label = portal_month_label()
+    context.current_year_label = str(getdate(nowdate()).year)
 
     # Open tasks across the portal
     context.open_tasks = portal_open_tasks(limit=6)
@@ -59,5 +62,9 @@ def get_context(context):
         limit_page_length=5,
     )
     context.recent_scorecards = [portal_annotate_scorecard(r) for r in recent]
+
+    # Charts
+    context.trend = portal_month_trend()
+    context.distribution = portal_grade_distribution()
 
     context.active_page = "dashboard"

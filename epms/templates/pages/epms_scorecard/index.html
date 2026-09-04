@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if scorecard %}{{ scorecard.employee_name }} · Scorecard{% else %}Scorecard · EPMS Portal{% endif %}</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            {% if not_found %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    </div>
+                    <p>Scorecard not found or you don't have access to it.</p>
+                    <a class="btn btn-outline" href="/epms/scorecards">Back to scorecards</a>
+                </div>
+            </div>
+            {% else %}
+
+            <header class="page-head">
+                <div>
+                    <a class="link" href="/epms/scorecards">&larr; All scorecards</a>
+                    <h1 class="page-title" style="margin-top: 10px;">{{ scorecard.employee_name or 'Unnamed' }}</h1>
+                    <p class="page-subtitle">{{ scorecard.team or '—' }} · {{ month_label }}</p>
+                </div>
+                <div class="head-actions">
+                    <button type="button" class="btn btn-outline" id="epms-export-csv">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        Export CSV
+                    </button>
+                </div>
+            </header>
+
+            <section class="score-grid">
+                <div class="score-card">
+                    <div class="score-card-head">
+                        <h3 style="font-size:15px; color:var(--navy-dark);">Overall</h3>
+                        <span class="badge {{ scorecard.grade_class }}">{{ scorecard.final_grade }}</span>
+                    </div>
+                    <div class="score-card-mid">
+                        <div class="ring" style="--p: {{ scorecard.overall_score }};">
+                            <div class="ring-inner">
+                                <strong>{{ scorecard.overall_score }}<small>%</small></strong>
+                                <span>Score</span>
+                            </div>
+                        </div>
+                        <div class="score-bars">
+                            <div class="meter-row"><span>Attendance</span><div class="meter"><i class="m-teal" style="width: {{ scorecard.attendance_score }}%"></i></div><strong>{{ scorecard.attendance_score }}%</strong></div>
+                            <div class="meter-row"><span>Productivity</span><div class="meter"><i class="m-blue" style="width: {{ scorecard.productivity_score }}%"></i></div><strong>{{ scorecard.productivity_score }}%</strong></div>
+                            <div class="meter-row"><span>Quality</span><div class="meter"><i class="m-purple" style="width: {{ scorecard.quality_score }}%"></i></div><strong>{{ scorecard.quality_score }}%</strong></div>
+                        </div>
+                    </div>
+                    <div class="score-card-foot">
+                        <span>Tasks done: <strong>{{ scorecard.tasks_completed }}</strong></span>
+                        <span>Pending: <strong>{{ scorecard.pending_tasks }}</strong></span>
+                        <span class="status-pill {{ scorecard.status_class }}">
+                            <span class="status-dot s-{{ scorecard.status_class }}"></span>{{ scorecard.performance_status }}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <div id="epms-scorecard-data" style="display:none;"
+                 data-name="{{ scorecard.employee_name | e }}"
+                 data-team="{{ scorecard.team | e }}"
+                 data-month="{{ month_label | e }}"
+                 data-attendance="{{ scorecard.attendance_score }}"
+                 data-productivity="{{ scorecard.productivity_score }}"
+                 data-quality="{{ scorecard.quality_score }}"
+                 data-overall="{{ scorecard.overall_score }}"
+                 data-grade="{{ scorecard.final_grade | e }}"
+                 data-status="{{ scorecard.performance_status | e }}"></div>
+
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+<script>
+(function () {
+    var btn = document.getElementById('epms-export-csv');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var el = document.getElementById('epms-scorecard-data');
+        if (!el) return;
+        var row = [
+            el.getAttribute('data-name'), el.getAttribute('data-team'), el.getAttribute('data-month'),
+            el.getAttribute('data-attendance') + '%', el.getAttribute('data-productivity') + '%',
+            el.getAttribute('data-quality') + '%', el.getAttribute('data-overall') + '%',
+            el.getAttribute('data-grade'), el.getAttribute('data-status')
+        ];
+        var csv = 'Employee,Team,Month,Attendance,Productivity,Quality,Overall,Grade,Status\n' +
+            row.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'scorecard.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+})();
+</script>
+
+</body>
+</html>

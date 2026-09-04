@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Notifications</h1>
+                    <p class="page-subtitle">{% if unread_count %}{{ unread_count }} unread{% else %}You're all caught up{% endif %}</p>
+                </div>
+                <div class="head-actions">
+                    {% if unread_count %}
+                    <button type="button" class="btn btn-outline" id="epms-mark-all">Mark all read</button>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="card">
+                {% if notifications %}
+                <div class="card-body pad-sm" id="epms-notification-list">
+                    {% for n in notifications %}
+                    <div class="row-item bell-item {% if not n.read %}unread{% endif %}" data-name="{{ n.name }}">
+                        <span class="bell-item-dot"></span>
+                        <div class="row-main">
+                            <span class="row-title" style="font-weight: {% if not n.read %}600{% else %}400{% endif %};">{{ n.subject }}</span>
+                            <div class="row-meta">
+                                {{ n.creation_label }}
+                                {% if n.document_type %}<span class="bell-item-tag">{{ n.document_type }}</span>{% endif %}
+                            </div>
+                        </div>
+                        {% if not n.read %}
+                        <button type="button" class="btn btn-outline notif-read" data-name="{{ n.name }}" style="padding:5px 10px;">Mark read</button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p>No notifications yet.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+(function () {
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).catch(function () { return { httpOk: false, data: {} }; });
+    }
+
+    var markAll = document.getElementById('epms-mark-all');
+    if (markAll) {
+        markAll.addEventListener('click', function () {
+            getJson('/api/method/epms.employee_performance.api.set_portal_notifications_read').then(function () {
+                window.location.reload();
+            });
+        });
+    }
+
+    document.querySelectorAll('.notif-read').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var name = btn.getAttribute('data-name');
+            getJson('/api/method/epms.employee_performance.api.set_portal_notifications_read?name=' + encodeURIComponent(name)).then(function (res) {
+                var m = res.data && res.data.message;
+                if (res.httpOk && m && m.ok) {
+                    window.location.reload();
+                }
+            });
+        });
+    });
+})();
+</script>
+
+</body>
+</html>

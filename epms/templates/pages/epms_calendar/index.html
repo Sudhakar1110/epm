@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Calendar</h1>
+                    <p class="page-subtitle">Task deadlines by month.</p>
+                </div>
+                <div class="head-actions">
+                    <a class="btn btn-outline" href="{{ prev_url }}">&larr; Prev</a>
+                    <span class="date-chip">{{ month_label }}</span>
+                    <a class="btn btn-outline" href="{{ next_url }}">Next &rarr;</a>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="cal-grid">
+                        <div class="cal-head">Mon</div>
+                        <div class="cal-head">Tue</div>
+                        <div class="cal-head">Wed</div>
+                        <div class="cal-head">Thu</div>
+                        <div class="cal-head">Fri</div>
+                        <div class="cal-head">Sat</div>
+                        <div class="cal-head">Sun</div>
+                        {% for _ in range(first_weekday - 1) %}
+                        <div class="cal-cell cal-blank"></div>
+                        {% endfor %}
+                        {% for day in range(1, last_day + 1) %}
+                        <div class="cal-cell">
+                            <span class="cal-day">{{ day }}</span>
+                            {% for t in by_day.get(day|string, []) %}
+                            <a class="cal-task cal-task-{{ t.priority|lower }}" href="/epms/tasks" title="{{ t.task }}">{{ t.task }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+</body>
+</html>

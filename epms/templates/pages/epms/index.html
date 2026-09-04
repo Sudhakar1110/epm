@@ -69,6 +69,55 @@
             <section class="grid-2">
                 <div class="card">
                     <div class="card-head">
+                        <h3>Score Trend</h3>
+                        <span class="chip">{{ current_year_label }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-bars">
+                            {% for m in trend %}
+                            <div class="chart-col">
+                                <div class="chart-bar-wrap">
+                                    <span class="chart-bar-value">{{ m.score }}</span>
+                                    <div class="chart-bar" style="--h: {{ m.score }}%"><i></i></div>
+                                </div>
+                                <span class="chart-bar-label">{{ m.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Grade Distribution</h3>
+                        <span class="chip">{{ distribution.month_label }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if distribution.total > 0 %}
+                        <div class="dist-list">
+                            {% for g, count in distribution.grades.items() %}
+                            <div class="dist-row">
+                                <span class="badge {{ {'Excellent': 'b-teal', 'Very Good': 'b-green', 'Good': 'b-blue', 'Average': 'b-amber', 'Needs Improvement': 'b-red'}[g] }}">{{ g }}</span>
+                                <div class="dist-bar"><i style="width: {{ (count * 100 / distribution.total)|round|int }}%"></i></div>
+                                <strong>{{ count }}</strong>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty">
+                            <div class="empty-icon icon-purple">
+                                <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            </div>
+                            <p>No scorecards published for {{ distribution.month_label }} yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid-2">
+                <div class="card">
+                    <div class="card-head">
                         <h3>Open Tasks</h3>
                         <a class="link" href="/epms/tasks">View all</a>
                     </div>

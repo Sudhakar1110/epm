@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle">Automation toggles and performance thresholds.</p>
+                </div>
+            </header>
+
+            {% if not can_manage %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    </div>
+                    <p>Only EPMS Founder can change settings.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="card" style="max-width: 640px;">
+                <div class="card-body">
+                    <form id="settings-form" novalidate>
+                        <p class="section-note">Automation</p>
+                        <label class="switch-row"><input type="checkbox" id="set-auto" {% if settings.auto_generate_scorecards %}checked{% endif %}> Auto-generate monthly scorecards</label>
+                        <label class="switch-row"><input type="checkbox" id="set-daily" {% if settings.send_daily_reminders %}checked{% endif %}> Send daily reminders</label>
+                        <label class="switch-row"><input type="checkbox" id="set-weekly" {% if settings.send_weekly_summary %}checked{% endif %}> Send weekly summary</label>
+                        <label class="switch-row"><input type="checkbox" id="set-monthly" {% if settings.send_monthly_summary %}checked{% endif %}> Send monthly summary</label>
+
+                        <p class="section-note" style="margin-top:18px;">Scorecard generation</p>
+                        <div class="field">
+                            <label for="set-day">Generation day of month (1-28)</label>
+                            <input id="set-day" type="number" min="1" max="28" value="{{ settings.scorecard_day }}" required>
+                        </div>
+
+                        <p class="section-note" style="margin-top:18px;">Thresholds</p>
+                        <div class="threshold-grid">
+                            <div class="field"><label for="set-low">Low performance &lt;</label><input id="set-low" type="number" value="{{ settings.low_performance_threshold }}" required></div>
+                            <div class="field"><label for="set-exc">Excellent &ge;</label><input id="set-exc" type="number" value="{{ settings.excellent_threshold }}" required></div>
+                            <div class="field"><label for="set-vg">Very good &ge;</label><input id="set-vg" type="number" value="{{ settings.very_good_threshold }}" required></div>
+                            <div class="field"><label for="set-good">Good &ge;</label><input id="set-good" type="number" value="{{ settings.good_threshold }}" required></div>
+                            <div class="field"><label for="set-avg">Average &ge;</label><input id="set-avg" type="number" value="{{ settings.average_threshold }}" required></div>
+                        </div>
+
+                        <p class="form-msg" id="settings-msg" hidden></p>
+                        <button type="submit" class="btn btn-primary" id="settings-submit">Save settings</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+{% if can_manage %}
+<script>
+(function () {
+    var form = document.getElementById('settings-form');
+    var msg = document.getElementById('settings-msg');
+    var submitBtn = document.getElementById('settings-submit');
+    if (!form || !msg) return;
+
+    function showMsg(t, ok) {
+        msg.textContent = t;
+        msg.hidden = !t;
+        msg.style.background = ok ? 'var(--green-soft)' : '';
+        msg.style.color = ok ? '#0e9f6e' : '';
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        showMsg('Saving…');
+
+        function chk(id) { return document.getElementById(id).checked ? '1' : '0'; }
+        var qs = 'auto_generate_scorecards=' + chk('set-auto') +
+            '&send_daily_reminders=' + chk('set-daily') +
+            '&send_weekly_summary=' + chk('set-weekly') +
+            '&send_monthly_summary=' + chk('set-monthly') +
+            '&scorecard_day=' + encodeURIComponent(document.getElementById('set-day').value) +
+            '&low_performance_threshold=' + encodeURIComponent(document.getElementById('set-low').value) +
+            '&excellent_threshold=' + encodeURIComponent(document.getElementById('set-exc').value) +
+            '&very_good_threshold=' + encodeURIComponent(document.getElementById('set-vg').value) +
+            '&good_threshold=' + encodeURIComponent(document.getElementById('set-good').value) +
+            '&average_threshold=' + encodeURIComponent(document.getElementById('set-avg').value);
+
+        fetch('/api/method/epms.employee_performance.api.portal_save_settings?' + qs).then(function (r) {
+            return r.json().then(function (d) { return { httpOk: r.ok, data: d }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).then(function (res) {
+            var m = res.data && res.data.message;
+            submitBtn.disabled = false;
+            if (m && m.ok) showMsg('Settings saved.', true);
+            else showMsg(m && m.error ? m.error : 'Could not save settings.', false);
+        }).catch(function () {
+            submitBtn.disabled = false;
+            showMsg('Could not save settings.', false);
+        });
+    });
+})();
+</script>
+{% endif %}
+
+</body>
+</html>
