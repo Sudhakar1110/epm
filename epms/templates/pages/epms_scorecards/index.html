@@ -43,7 +43,7 @@
                         <div class="cell-user">
                             <div class="avatar avatar-md avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
                             <div>
-                                <a class="table-title" href="/app/performance-scorecard/{{ s.name }}" target="_blank" rel="noopener">{{ s.employee_name or 'Unnamed' }}</a>
+                                <a class="table-title" href="/epms/performance">{{ s.employee_name or 'Unnamed' }}</a>
                                 <div class="cell-sub">{{ s.team or 'No team' }}</div>
                             </div>
                         </div>

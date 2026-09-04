@@ -6,6 +6,7 @@ from epms.employee_performance.utils import (
     portal_login_redirect,
     portal_month_label,
     portal_setup_common,
+    portal_user_candidates,
 )
 
 
@@ -29,4 +30,6 @@ def get_context(context):
     context.at_risk_count = len([s for s in scorecards if s.get("performance_status") == "At Risk"])
 
     context.scorecards = scorecards
+    context.can_create_scorecard = frappe.has_permission("Performance Scorecard", "create")
+    context.user_candidates = portal_user_candidates()
     context.active_page = "performance"

@@ -89,7 +89,7 @@
                                     <div class="cell-user">
                                         <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
                                         <div>
-                                            <a class="table-title" href="/app/performance-scorecard/{{ s.name }}" target="_blank" rel="noopener">{{ s.employee_name or 'Unnamed' }}</a>
+                                            <a class="table-title" href="/epms/scorecards">{{ s.employee_name or 'Unnamed' }}</a>
                                             <div class="cell-sub">{{ s.tasks_completed or 0 }} done · {{ s.pending_tasks or 0 }} pending</div>
                                         </div>
                                     </div>
@@ -122,7 +122,9 @@
                         <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     </div>
                     <p>No scorecards published for {{ month_label }} yet.</p>
-                    <a class="btn btn-outline" href="/app/performance-scorecard/new" target="_blank" rel="noopener">Create scorecard</a>
+                    {% if can_create_scorecard %}
+                    <button type="button" class="btn btn-primary" id="epms-new-scorecard">Create scorecard</button>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -130,5 +132,150 @@
         </div>
     </main>
 </div>
+
+{% if can_create_scorecard %}
+<div class="modal-mask" id="scorecard-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="scorecard-modal-title">
+        <div class="modal-head">
+            <strong id="scorecard-modal-title">Create Scorecard</strong>
+            <button type="button" class="modal-x" id="scorecard-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="scorecard-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="scorecard-employee">Employee</label>
+                    <select id="scorecard-employee" required>
+                        <option value="">Select an employee</option>
+                        {% for u in user_candidates %}
+                        <option value="{{ u.name }}">{{ u.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="scorecard-month">Month</label>
+                    <select id="scorecard-month">
+                        {% for m in range(1, 13) %}
+                        <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="scorecard-year">Year</label>
+                    <input id="scorecard-year" type="number" min="2000" max="2100" value="{{ current_year }}" required>
+                </div>
+                <p class="form-msg" id="scorecard-form-msg" hidden></p>
+                <p class="field-hint">Scores are calculated automatically from the employee's daily performance.</p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="scorecard-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="scorecard-submit">Create Scorecard</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('scorecard-modal');
+    var form = document.getElementById('scorecard-form');
+    var msg = document.getElementById('scorecard-form-msg');
+    var emp = document.getElementById('scorecard-employee');
+    var month = document.getElementById('scorecard-month');
+    var year = document.getElementById('scorecard-year');
+    var submitBtn = document.getElementById('scorecard-submit');
+    if (!mask || !form || !msg) return;
+
+    function showMsg(text) { msg.textContent = text; msg.hidden = !text; }
+    function openModal() { showMsg(''); form.reset(); mask.classList.add('open'); if (emp) emp.focus(); }
+    function closeModal() { mask.classList.remove('open'); }
+
+    document.getElementById('epms-new-scorecard').addEventListener('click', openModal);
+    document.getElementById('scorecard-modal-close').addEventListener('click', closeModal);
+    document.getElementById('scorecard-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    function cleanMessage(text) {
+        var el = document.createElement('textarea');
+        el.innerHTML = text;
+        return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function readableError(data) {
+        try {
+            if (data) {
+                var top = data.message;
+                if (typeof top === 'string') {
+                    var s = top.trim();
+                    if (s && s.length < 250 && s !== 'Invalid Request') return s;
+                }
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') { try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; } }
+                if (Array.isArray(msgs) && msgs.length) { var t = cleanMessage(msgs[0]); if (t) return t; }
+                if (data.exc_type === 'PermissionError' || data.exc_type === 'AuthenticationError') return 'You do not have permission to create scorecards.';
+                if (typeof data.exc === 'string') {
+                    var exc = cleanMessage(data.exc);
+                    var lines = exc.split('\n').filter(function (l) { return l.trim(); });
+                    if (lines.length) {
+                        var last = lines[lines.length - 1].replace(/^Message:\s*/i, '').trim();
+                        if (last && last.length < 300) return last;
+                    }
+                }
+            }
+        } catch (err) {}
+        return '';
+    }
+
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).catch(function () { return { httpOk: false, data: {} }; });
+    }
+
+    function success() { showMsg(''); window.location.href = '/epms/performance'; }
+    function fail(text) { submitBtn.disabled = false; showMsg(text || 'Could not create the scorecard. Please try again.'); }
+
+    function saveViaClient() {
+        var doc = {
+            doctype: 'Performance Scorecard',
+            employee: emp.value,
+            month: parseInt(month.value, 10),
+            year: parseInt(year.value, 10)
+        };
+        var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) success();
+            else fail(readableError(res.data));
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!emp.value) { showMsg('Please choose an employee.'); emp.focus(); return; }
+        var y = parseInt(year.value, 10);
+        if (!y || y < 2000 || y > 2100) { showMsg('Please enter a valid year (2000-2100).'); year.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'employee=' + encodeURIComponent(emp.value) +
+            '&month=' + encodeURIComponent(month.value) +
+            '&year=' + encodeURIComponent(year.value);
+
+        getJson('/api/method/epms.employee_performance.api.create_portal_scorecard?' + qs).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { success(); return; }
+            if (res.httpOk && m && m.ok === false) { fail(m.error); return; }
+            saveViaClient();
+        });
+    });
+})();
+</script>
+{% endif %}
+
 </body>
 </html>

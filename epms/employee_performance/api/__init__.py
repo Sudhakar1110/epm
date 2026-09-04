@@ -478,6 +478,105 @@ def create_portal_team(team_name=None, team_leader=None, description=None):
         team.insert()
         frappe.db.commit()
         return {"ok": True, "name": team.name}
+
+
+@frappe.whitelist()
+def create_portal_pending_task(employee=None, task=None, priority=None, expected_completion=None, assigned_date=None, remarks=None):
+    """Create + submit a Pending Task from the portal (shows up on the desk too)."""
+    employee = (employee or "").strip()
+    task = (task or "").strip()
+    expected_completion = (expected_completion or "").strip()
+
+    if not employee:
+        return {"ok": False, "error": _("Please choose an employee.")}
+    if not task:
+        return {"ok": False, "error": _("Please enter a task.")}
+    if not expected_completion:
+        return {"ok": False, "error": _("Please set the expected completion date.")}
+
+    priority = (priority or "").strip() or "Medium"
+    if priority not in ("Low", "Medium", "High", "Critical"):
+        return {"ok": False, "error": _("Invalid priority.")}
+
+    try:
+        if not frappe.db.exists("User", employee):
+            return {"ok": False, "error": _("The selected employee does not exist.")}
+
+        doc = frappe.get_doc(
+            {
+                "doctype": "Pending Task",
+                "employee": employee,
+                "task": task,
+                "priority": priority,
+                "expected_completion": expected_completion,
+                "assigned_date": (assigned_date or "").strip() or None,
+                "current_status": "Pending",
+                "remarks": (remarks or "").strip() or None,
+            }
+        )
+        doc.insert()
+        doc.submit()
+        frappe.db.commit()
+        return {"ok": True, "name": doc.name}
+    except frappe.ValidationError as e:
+        frappe.db.rollback()
+        message = str(e).replace("[", "").replace("]", "").strip()
+        return {"ok": False, "error": message or _("Could not create the task. Please check the details.")}
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "EPMS Create Portal Task")
+        return {"ok": False, "error": _("Could not create the task. An unexpected error occurred (see Error Log \"EPMS Create Portal Task\").")}
+
+
+@frappe.whitelist()
+def create_portal_scorecard(employee=None, month=None, year=None):
+    """Create + submit a Performance Scorecard from the portal (shows up on the desk too)."""
+    employee = (employee or "").strip()
+
+    if not employee:
+        return {"ok": False, "error": _("Please choose an employee.")}
+
+    try:
+        month = int(month or 0)
+        year = int(year or 0)
+    except (TypeError, ValueError):
+        return {"ok": False, "error": _("Invalid month or year.")}
+
+    if month < 1 or month > 12:
+        return {"ok": False, "error": _("Month must be between 1 and 12.")}
+    if year < 2000 or year > 2100:
+        return {"ok": False, "error": _("Year must be between 2000 and 2100.")}
+
+    try:
+        if not frappe.db.exists("User", employee):
+            return {"ok": False, "error": _("The selected employee does not exist.")}
+
+        if frappe.db.exists(
+            "Performance Scorecard",
+            {"employee": employee, "month": month, "year": year},
+        ):
+            return {"ok": False, "error": _("A scorecard for this employee already exists for {0}/{1}.").format(month, year)}
+
+        doc = frappe.get_doc(
+            {
+                "doctype": "Performance Scorecard",
+                "employee": employee,
+                "month": month,
+                "year": year,
+            }
+        )
+        doc.insert()
+        doc.submit()
+        frappe.db.commit()
+        return {"ok": True, "name": doc.name}
+    except frappe.ValidationError as e:
+        frappe.db.rollback()
+        message = str(e).replace("[", "").replace("]", "").strip()
+        return {"ok": False, "error": message or _("Could not create the scorecard. Please check the details.")}
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "EPMS Create Portal Scorecard")
+        return {"ok": False, "error": _("Could not create the scorecard. An unexpected error occurred (see Error Log \"EPMS Create Portal Scorecard\").")}
     except frappe.DuplicateEntryError:
         frappe.db.rollback()
         return {"ok": False, "error": _("A team named \"{0}\" already exists.").format(team_name)}

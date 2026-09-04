@@ -5,6 +5,7 @@ from epms.employee_performance.utils import (
     portal_login_redirect,
     portal_open_tasks,
     portal_setup_common,
+    portal_user_candidates,
 )
 
 
@@ -31,4 +32,6 @@ def get_context(context):
     )
 
     context.my_tasks = tasks
+    context.can_create_task = frappe.has_permission("Pending Task", "create")
+    context.user_candidates = portal_user_candidates()
     context.active_page = "my-day"

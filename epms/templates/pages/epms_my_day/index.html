@@ -70,7 +70,9 @@
                 <div class="card">
                     <div class="card-head">
                         <h3>Assigned to me</h3>
-                        <a class="link" href="/app/pending-task/new" target="_blank" rel="noopener">New task</a>
+                        {% if can_create_task %}
+                        <button type="button" class="link" id="epms-new-task">New task</button>
+                        {% endif %}
                     </div>
                     <div class="card-body pad-sm">
                         {% if my_tasks %}
@@ -78,7 +80,7 @@
                             <div class="row-item {% if task.is_overdue %}row-overdue{% endif %}">
                                 <span class="status-dot s-{{ task.status_class }}"></span>
                                 <div class="row-main">
-                                    <a class="row-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                    <a class="row-title" href="/epms/tasks">{{ task.task or task.name }}</a>
                                     <div class="row-meta">
                                         {% if task.team %}{{ task.team }} · {% endif %}
                                         {% if task.expected_completion %}
@@ -118,7 +120,7 @@
                                 <div class="row-item row-overdue">
                                     <span class="status-dot s-b-red"></span>
                                     <div class="row-main">
-                                        <a class="row-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                        <a class="row-title" href="/epms/tasks">{{ task.task or task.name }}</a>
                                         <div class="row-meta">Due {{ task.expected_completion }} · {{ task.priority or '—' }}</div>
                                     </div>
                                     <span class="badge b-red">Overdue</span>
@@ -131,7 +133,7 @@
                                 <div class="row-item">
                                     <span class="status-dot s-{{ task.status_class }}"></span>
                                     <div class="row-main">
-                                        <a class="row-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                        <a class="row-title" href="/epms/tasks">{{ task.task or task.name }}</a>
                                         <div class="row-meta">Due {{ task.expected_completion or '—' }}</div>
                                     </div>
                                     <span class="badge {{ task.priority_class }}">{{ task.priority or '—' }}</span>
@@ -156,5 +158,180 @@
         </div>
     </main>
 </div>
+
+{% if can_create_task %}
+<div class="modal-mask" id="task-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+        <div class="modal-head">
+            <strong id="task-modal-title">Create Task</strong>
+            <button type="button" class="modal-x" id="task-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="task-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="task-employee">Employee</label>
+                    <select id="task-employee" required>
+                        <option value="">Select an employee</option>
+                        {% for u in user_candidates %}
+                        <option value="{{ u.name }}">{{ u.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="task-title">Task</label>
+                    <input id="task-title" type="text" maxlength="140" placeholder="e.g. Prepare monthly report" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="task-priority">Priority</label>
+                    <select id="task-priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="task-due">Expected Completion</label>
+                    <input id="task-due" type="date" required>
+                </div>
+                <div class="field">
+                    <label for="task-assigned">Assigned Date <span class="opt">(optional, defaults to today)</span></label>
+                    <input id="task-assigned" type="date">
+                </div>
+                <div class="field">
+                    <label for="task-remarks">Remarks <span class="opt">(optional)</span></label>
+                    <textarea id="task-remarks" rows="2" placeholder="Any notes for this task?"></textarea>
+                </div>
+                <p class="form-msg" id="task-form-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="task-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="task-submit">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('task-modal');
+    var form = document.getElementById('task-form');
+    var msg = document.getElementById('task-form-msg');
+    var emp = document.getElementById('task-employee');
+    var title = document.getElementById('task-title');
+    var priority = document.getElementById('task-priority');
+    var due = document.getElementById('task-due');
+    var assigned = document.getElementById('task-assigned');
+    var remarks = document.getElementById('task-remarks');
+    var submitBtn = document.getElementById('task-submit');
+    if (!mask || !form || !msg) return;
+
+    function todayStr() {
+        var d = new Date();
+        var m = ('0' + (d.getMonth() + 1)).slice(-2);
+        var day = ('0' + d.getDate()).slice(-2);
+        return d.getFullYear() + '-' + m + '-' + day;
+    }
+
+    function showMsg(text) { msg.textContent = text; msg.hidden = !text; }
+    function openModal() { showMsg(''); form.reset(); assigned.value = todayStr(); mask.classList.add('open'); if (emp) emp.focus(); }
+    function closeModal() { mask.classList.remove('open'); }
+
+    var newTaskBtn = document.getElementById('epms-new-task');
+    if (newTaskBtn) newTaskBtn.addEventListener('click', openModal);
+    document.getElementById('task-modal-close').addEventListener('click', closeModal);
+    document.getElementById('task-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    function cleanMessage(text) {
+        var el = document.createElement('textarea');
+        el.innerHTML = text;
+        return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function readableError(data) {
+        try {
+            if (data) {
+                var top = data.message;
+                if (typeof top === 'string') {
+                    var s = top.trim();
+                    if (s && s.length < 250 && s !== 'Invalid Request') return s;
+                }
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') { try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; } }
+                if (Array.isArray(msgs) && msgs.length) { var t = cleanMessage(msgs[0]); if (t) return t; }
+                if (data.exc_type === 'PermissionError' || data.exc_type === 'AuthenticationError') return 'You do not have permission to create tasks.';
+                if (typeof data.exc === 'string') {
+                    var exc = cleanMessage(data.exc);
+                    var lines = exc.split('\n').filter(function (l) { return l.trim(); });
+                    if (lines.length) {
+                        var last = lines[lines.length - 1].replace(/^Message:\s*/i, '').trim();
+                        if (last && last.length < 300) return last;
+                    }
+                }
+            }
+        } catch (err) {}
+        return '';
+    }
+
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).catch(function () { return { httpOk: false, data: {} }; });
+    }
+
+    function success() { showMsg(''); window.location.href = '/epms/my-day'; }
+    function fail(text) { submitBtn.disabled = false; showMsg(text || 'Could not create the task. Please try again.'); }
+
+    function saveViaClient() {
+        var doc = {
+            doctype: 'Pending Task',
+            employee: emp.value,
+            task: title.value.trim(),
+            priority: priority.value,
+            expected_completion: due.value,
+            assigned_date: assigned.value || null,
+            current_status: 'Pending',
+            remarks: remarks.value.trim() || null
+        };
+        var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) success();
+            else fail(readableError(res.data));
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!emp.value) { showMsg('Please choose an employee.'); emp.focus(); return; }
+        if (!title.value.trim()) { showMsg('Please enter a task.'); title.focus(); return; }
+        if (!due.value) { showMsg('Please set the expected completion date.'); due.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'employee=' + encodeURIComponent(emp.value) +
+            '&task=' + encodeURIComponent(title.value.trim()) +
+            '&priority=' + encodeURIComponent(priority.value) +
+            '&expected_completion=' + encodeURIComponent(due.value) +
+            '&assigned_date=' + encodeURIComponent(assigned.value || '') +
+            '&remarks=' + encodeURIComponent(remarks.value.trim());
+
+        getJson('/api/method/epms.employee_performance.api.create_portal_pending_task?' + qs).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { success(); return; }
+            if (res.httpOk && m && m.ok === false) { fail(m.error); return; }
+            saveViaClient();
+        });
+    });
+})();
+</script>
+{% endif %}
+
 </body>
 </html>

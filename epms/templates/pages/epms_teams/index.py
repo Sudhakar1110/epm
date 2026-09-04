@@ -3,6 +3,7 @@ import frappe
 from epms.employee_performance.utils import (
     portal_login_redirect,
     portal_setup_common,
+    portal_user_candidates,
 )
 
 
@@ -50,16 +51,6 @@ def get_context(context):
 
     # Every enabled system user is a candidate (same pool the desk shows);
     # choosing a user without a leader role auto-assigns it on creation.
-    candidates = []
-    users = frappe.get_all(
-        "User",
-        filters={"enabled": 1, "user_type": "System User"},
-        fields=["name", "full_name", "email"],
-        order_by="full_name asc",
-    )
-    for u in users:
-        label = (u.get("full_name") or "").strip() or u.get("email") or u.get("name")
-        candidates.append({"name": u.get("name"), "label": f"{label} ({u.get('name')})"})
-    context.candidate_leaders = candidates
+    context.candidate_leaders = portal_user_candidates()
 
     context.active_page = "teams"

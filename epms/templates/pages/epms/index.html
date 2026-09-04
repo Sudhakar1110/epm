@@ -78,7 +78,7 @@
                             <div class="row-item">
                                 <span class="status-dot s-{{ task.status_class }}"></span>
                                 <div class="row-main">
-                                    <a class="row-title" href="/app/pending-task/{{ task.name }}" target="_blank" rel="noopener">{{ task.task or task.name }}</a>
+                                    <a class="row-title" href="/epms/tasks">{{ task.task or task.name }}</a>
                                     <div class="row-meta">
                                         {% if task.employee_name %}{{ task.employee_name }} · {% endif %}
                                         {% if task.team %}{{ task.team }} · {% endif %}
@@ -118,7 +118,7 @@
                                 <span class="rank-badge {{ p.rank_class }}">{{ p.rank }}</span>
                                 <div class="avatar avatar-sm">{{ (p.employee_name or '?')[:1] }}</div>
                                 <div class="row-main">
-                                    <a class="row-title" href="/app/performance-scorecard/{{ p.name }}" target="_blank" rel="noopener">{{ p.employee_name or 'Unnamed' }}</a>
+                                    <a class="row-title" href="/epms/performance">{{ p.employee_name or 'Unnamed' }}</a>
                                     <div class="row-meta">{{ p.team or '—' }}</div>
                                 </div>
                                 <div class="row-right right-col">

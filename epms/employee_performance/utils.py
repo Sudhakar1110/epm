@@ -369,6 +369,21 @@ PORTAL_REPORTS = [
 ]
 
 
+def portal_user_candidates():
+    """Enabled system users for portal pickers (same pool the desk shows)."""
+    candidates = []
+    users = frappe.get_all(
+        "User",
+        filters={"enabled": 1, "user_type": "System User"},
+        fields=["name", "full_name", "email"],
+        order_by="full_name asc",
+    )
+    for u in users:
+        label = (u.get("full_name") or "").strip() or u.get("email") or u.get("name")
+        candidates.append({"name": u.get("name"), "label": f"{label} ({u.get('name')})"})
+    return candidates
+
+
 def portal_reports():
     """Registry of portal-viewable reports (never opens the ERP desk)."""
     return [dict(r) for r in PORTAL_REPORTS]
