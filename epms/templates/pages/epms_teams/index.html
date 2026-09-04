@@ -210,53 +210,21 @@
         if (e.key === 'Escape' && mask.classList.contains('open')) closeModal();
     });
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var teamName = nameInput.value.trim();
-        var teamLeader = leaderInput.value;
-        if (!teamName) { showMsg('Please enter a team name.'); nameInput.focus(); return; }
-        if (!teamLeader) { showMsg('Please choose a team leader.'); leaderInput.focus(); return; }
-
-        submitBtn.disabled = true;
-        showMsg('');
-
-        var body = 'team_name=' + encodeURIComponent(teamName) +
-            '&team_leader=' + encodeURIComponent(teamLeader) +
-            '&description=' + encodeURIComponent(descInput.value.trim());
-
-        fetch('/api/method/epms.employee_performance.api.create_portal_team', {
-            method: 'POST',
-            headers: {
-                'X-Frappe-CSRF-Token': readCookie('csrf_token'),
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            body: body
-        }).then(function (r) {
-            return r.json().then(function (data) { return { ok: r.ok, data: data }; });
-        }).then(function (res) {
-            submitBtn.disabled = false;
-            var m = res.data && res.data.message;
-            if (res.ok && m && m.ok) {
-                showMsg('');
-                window.location.href = '/epms/teams';
-            } else {
-                showMsg((m && m.error) || serverError(res.data));
-            }
-        }).catch(function () {
-            submitBtn.disabled = false;
-            showMsg('Could not create the team. Please try again.');
-        });
-    });
-
     function cleanMessage(text) {
         var el = document.createElement('textarea');
         el.innerHTML = text;
         return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function serverError(data) {
+    // Extract a readable reason from any Frappe error payload.
+    function readableError(data) {
         try {
             if (data) {
+                var top = data.message;
+                if (typeof top === 'string') {
+                    var s = top.trim();
+                    if (s && s.length < 250 && s !== 'Invalid Request') return s;
+                }
                 var msgs = data._server_messages;
                 if (typeof msgs === 'string') {
                     try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; }
@@ -268,7 +236,7 @@
                 if (data.exc_type === 'PermissionError' || data.exc_type === 'AuthenticationError') {
                     return 'You do not have permission to create teams.';
                 }
-                if (data.exc && typeof data.exc === 'string') {
+                if (typeof data.exc === 'string') {
                     var exc = cleanMessage(data.exc);
                     var lines = exc.split('\n').filter(function (l) { return l.trim(); });
                     if (lines.length) {
@@ -278,8 +246,84 @@
                 }
             }
         } catch (err) { /* fall through */ }
-        return 'Could not create the team. Please try again.';
+        return '';
     }
+
+    function post(url, body, contentType) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': readCookie('csrf_token'),
+                'Content-Type': contentType
+            },
+            body: body
+        }).then(function (r) {
+            return r.json().then(function (data) {
+                return { httpOk: r.ok, data: data };
+            }).catch(function () {
+                return { httpOk: r.ok, data: {} };
+            });
+        }).catch(function () {
+            return { httpOk: false, data: {} };
+        });
+    }
+
+    function reloadAfterCreate() {
+        showMsg('');
+        window.location.href = '/epms/teams';
+    }
+
+    // Fallback: standard Frappe REST endpoint (always available on any site).
+    function createViaResource(teamName, teamLeader, description) {
+        var doc = {
+            doctype: 'Team',
+            team_name: teamName,
+            team_leader: teamLeader,
+            description: description || null,
+            status: 'Active'
+        };
+        return post('/api/resource/Team', JSON.stringify(doc), 'application/json').then(function (res) {
+            submitBtn.disabled = false;
+            if (res.httpOk && res.data && res.data.data && res.data.data.name) {
+                reloadAfterCreate();
+            } else {
+                showMsg(readableError(res.data) || 'Could not create the team. Please try again.');
+            }
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var teamName = nameInput.value.trim();
+        var teamLeader = leaderInput.value;
+        var description = descInput.value.trim();
+        if (!teamName) { showMsg('Please enter a team name.'); nameInput.focus(); return; }
+        if (!teamLeader) { showMsg('Please choose a team leader.'); leaderInput.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var body = 'team_name=' + encodeURIComponent(teamName) +
+            '&team_leader=' + encodeURIComponent(teamLeader) +
+            '&description=' + encodeURIComponent(description);
+
+        post('/api/method/epms.employee_performance.api.create_portal_team', body,
+            'application/x-www-form-urlencoded; charset=UTF-8').then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) {
+                submitBtn.disabled = false;
+                reloadAfterCreate();
+                return;
+            }
+            // Custom method not registered on this server yet — use the built-in REST API.
+            if (m === 'Invalid Request' || !(res.data && res.data.exc_type)) {
+                createViaResource(teamName, teamLeader, description);
+                return;
+            }
+            submitBtn.disabled = false;
+            showMsg((m && m.error) || readableError(res.data) || 'Could not create the team. Please try again.');
+        });
+    });
 })();
 </script>
 {% endif %}
