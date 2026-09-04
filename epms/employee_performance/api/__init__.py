@@ -448,12 +448,21 @@ def create_portal_team(team_name=None, team_leader=None, description=None):
         return {"ok": False, "error": _("Please choose a team leader.")}
 
     try:
+        if not frappe.db.exists("User", team_leader):
+            return {"ok": False, "error": _("The selected team leader does not exist.")}
+
         existing = frappe.db.sql(
             "select name from `tabTeam` where lower(name) = lower(%s)",
             team_name,
         )
         if existing:
             return {"ok": False, "error": _("A team named \"{0}\" already exists.").format(existing[0][0])}
+
+        # Keep portal and desk in sync: a user picked as leader but without the
+        # role yet is promoted automatically (mirrors Team Member Mapping).
+        user_roles = frappe.get_roles(team_leader)
+        if "EPMS Team Leader" not in user_roles and "EPMS Founder" not in user_roles:
+            frappe.get_doc("User", team_leader).add_roles("EPMS Team Leader")
 
         team = frappe.get_doc(
             {

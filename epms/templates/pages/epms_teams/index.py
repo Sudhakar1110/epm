@@ -48,26 +48,18 @@ def get_context(context):
     # Portal team creation: who may create, and whom they may assign as leader.
     context.can_create_team = frappe.has_permission("Team", "create")
 
-    leader_user_ids = frappe.get_all(
-        "Has Role",
-        filters={
-            "role": ["in", ["EPMS Team Leader", "EPMS Founder"]],
-            "parenttype": "User",
-        },
-        pluck="parent",
-        distinct=True,
-    )
+    # Every enabled system user is a candidate (same pool the desk shows);
+    # choosing a user without a leader role auto-assigns it on creation.
     candidates = []
-    if leader_user_ids:
-        users = frappe.get_all(
-            "User",
-            filters={"name": ["in", leader_user_ids], "enabled": 1},
-            fields=["name", "full_name", "email"],
-            order_by="full_name asc",
-        )
-        for u in users:
-            label = (u.get("full_name") or "").strip() or u.get("email") or u.get("name")
-            candidates.append({"name": u.get("name"), "label": f"{label} ({u.get('name')})"})
+    users = frappe.get_all(
+        "User",
+        filters={"enabled": 1, "user_type": "System User"},
+        fields=["name", "full_name", "email"],
+        order_by="full_name asc",
+    )
+    for u in users:
+        label = (u.get("full_name") or "").strip() or u.get("email") or u.get("name")
+        candidates.append({"name": u.get("name"), "label": f"{label} ({u.get('name')})"})
     context.candidate_leaders = candidates
 
     context.active_page = "teams"
