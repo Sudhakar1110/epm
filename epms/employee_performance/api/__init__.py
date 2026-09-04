@@ -434,40 +434,49 @@ def set_portal_notifications_read(name=None):
 
 @frappe.whitelist()
 def create_portal_team(team_name=None, team_leader=None, description=None):
-    """Create a Team from the portal. Same doctype as the desk, so it appears there too."""
+    """Create a Team from the portal. Same doctype as the desk, so it appears there too.
+
+    Never raises: failures are returned as {"ok": False, "error": "..."} so the
+    portal dialog can always show a readable message.
+    """
     team_name = (team_name or "").strip()
     team_leader = (team_leader or "").strip()
 
-    if not team_name or not team_leader:
-        frappe.throw(_("Team name and team leader are required"))
-
-    existing = frappe.db.sql(
-        "select name from `tabTeam` where lower(name) = lower(%s)",
-        team_name,
-    )
-    if existing:
-        frappe.throw(_("A team named \"{0}\" already exists").format(existing[0][0]))
-
-    team = frappe.get_doc(
-        {
-            "doctype": "Team",
-            "team_name": team_name,
-            "team_leader": team_leader,
-            "description": (description or "").strip() or None,
-            "status": "Active",
-        }
-    )
+    if not team_name:
+        return {"ok": False, "error": _("Please enter a team name.")}
+    if not team_leader:
+        return {"ok": False, "error": _("Please choose a team leader.")}
 
     try:
+        existing = frappe.db.sql(
+            "select name from `tabTeam` where lower(name) = lower(%s)",
+            team_name,
+        )
+        if existing:
+            return {"ok": False, "error": _("A team named \"{0}\" already exists.").format(existing[0][0])}
+
+        team = frappe.get_doc(
+            {
+                "doctype": "Team",
+                "team_name": team_name,
+                "team_leader": team_leader,
+                "description": (description or "").strip() or None,
+                "status": "Active",
+            }
+        )
+
         # No ignore_permissions: only roles with create rights on Team can create.
         team.insert()
         frappe.db.commit()
+        return {"ok": True, "name": team.name}
     except frappe.DuplicateEntryError:
         frappe.db.rollback()
-        frappe.throw(_("A team named \"{0}\" already exists").format(team_name))
+        return {"ok": False, "error": _("A team named \"{0}\" already exists.").format(team_name)}
+    except frappe.ValidationError as e:
+        frappe.db.rollback()
+        message = str(e).replace("[", "").replace("]", "").strip()
+        return {"ok": False, "error": message or _("Could not create the team. Please check the details.")}
     except Exception:
         frappe.db.rollback()
         frappe.log_error(frappe.get_traceback(), "EPMS Create Portal Team")
-        raise
-
-    return {"ok": True, "name": team.name}
+        return {"ok": False, "error": _("Could not create the team. An unexpected error occurred (see Error Log \"EPMS Create Portal Team\").")}

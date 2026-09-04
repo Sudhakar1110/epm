@@ -235,11 +235,12 @@
             return r.json().then(function (data) { return { ok: r.ok, data: data }; });
         }).then(function (res) {
             submitBtn.disabled = false;
-            if (res.ok && res.data && res.data.message) {
+            var m = res.data && res.data.message;
+            if (res.ok && m && m.ok) {
                 showMsg('');
                 window.location.href = '/epms/teams';
             } else {
-                showMsg(serverError(res.data));
+                showMsg((m && m.error) || serverError(res.data));
             }
         }).catch(function () {
             submitBtn.disabled = false;
