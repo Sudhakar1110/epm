@@ -177,6 +177,8 @@ whitelisted_methods = [
     "epms.employee_performance.api.get_portal_scorecards",
     "epms.employee_performance.api.get_portal_tasks",
     "epms.employee_performance.api.get_portal_top_performers",
+    "epms.employee_performance.api.get_portal_notifications",
+    "epms.employee_performance.api.set_portal_notifications_read",
 ]
 
 # Website
@@ -188,4 +190,5 @@ website_route_rules = [
     {"from_route": "/epms/tasks", "to_route": "epms_tasks", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/scorecards", "to_route": "epms_scorecards", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/reports", "to_route": "epms_reports", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/report", "to_route": "epms_report", "defaults": {"allow_guest": 1}},
 ]

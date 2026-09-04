@@ -17,22 +17,22 @@
             <header class="page-head">
                 <div>
                     <h1 class="page-title">Reports</h1>
-                    <p class="page-subtitle">Jump into any performance report — they open inside ERP.</p>
+                    <p class="page-subtitle">Every report opens right here in the portal — no ERP desk needed.</p>
                 </div>
             </header>
 
             {% if reports %}
             <section class="report-grid">
                 {% for r in reports %}
-                <a class="report-tile" href="{{ r.url }}" target="_blank" rel="noopener">
+                <a class="report-tile" href="{{ r.url }}">
                     <span class="tile-icon {{ r.icon_class }}">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
                     </span>
                     <strong>{{ r.name }}</strong>
                     <span class="report-desc">{{ r.description }}</span>
                     <span class="report-open">
-                        Open report
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                        View report
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </span>
                 </a>
                 {% endfor %}

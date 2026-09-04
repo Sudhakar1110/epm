@@ -351,3 +351,59 @@ def portal_month_label(month=None, year=None):
     month = month or getdate(nowdate()).month
     year = year or getdate(nowdate()).year
     return frappe.utils.formatdate(f"{cint(year)}-{cint(month):02d}-01", "MMMM yyyy")
+
+
+# Portal-viewable script reports. Folders mirror the module layout under
+# epms/employee_performance/report/<folder>/<folder>.py
+PORTAL_REPORTS = [
+    {"name": "Daily Performance Report", "slug": "daily-performance", "folder": "daily_performance_report", "description": "Daily performance summary for every employee"},
+    {"name": "Monthly Performance Report", "slug": "monthly-performance", "folder": "monthly_performance_report", "description": "Monthly performance overview and trends"},
+    {"name": "Employee Wise Report", "slug": "employee-wise", "folder": "employee_wise_report", "description": "Performance data filtered by employee"},
+    {"name": "Team Wise Report", "slug": "team-wise", "folder": "team_wise_report", "description": "Team-level performance comparison"},
+    {"name": "Pending Task Report", "slug": "pending-task", "folder": "pending_task_report", "description": "Overview of pending tasks and deadlines"},
+    {"name": "Top Performers", "slug": "top-performers", "folder": "top_performers", "description": "Ranked list of the highest performers"},
+    {"name": "Low Performers", "slug": "low-performers", "folder": "low_performers", "description": "Employees who may need improvement support"},
+    {"name": "Monthly KPI Report", "slug": "monthly-kpi", "folder": "monthly_kpi_report", "description": "Key performance indicators by month"},
+    {"name": "Leaderboard Report", "slug": "leaderboard", "folder": "leaderboard_report", "description": "Employee ranking leaderboard"},
+    {"name": "Daily Summary Report", "slug": "daily-summary", "folder": "daily_summary_report", "description": "Complete daily summary across all teams"},
+]
+
+
+def portal_reports():
+    """Registry of portal-viewable reports (never opens the ERP desk)."""
+    return [dict(r) for r in PORTAL_REPORTS]
+
+
+def portal_run_report(slug, filters=None):
+    """Execute a portal script report and return its columns/data for rendering."""
+    report = next((r for r in PORTAL_REPORTS if r["slug"] == slug), None)
+    if not report:
+        return None
+
+    module = "epms.employee_performance.report.{folder}.{folder}".format(folder=report["folder"])
+    try:
+        columns, data, _message, _chart = frappe.get_attr(module + ".execute")(filters or {})
+    except Exception:
+        frappe.log_error(f"EPMS Portal Report Error: {slug}", "epms")
+        return None
+
+    return {
+        "name": report["name"],
+        "description": report["description"],
+        "slug": slug,
+        "columns": columns or [],
+        "data": data or [],
+    }
+
+
+def portal_format_report_value(value, fieldtype=None):
+    """Light formatting for report cells shown in the portal table."""
+    if value is None:
+        return ""
+    if fieldtype in ("Float", "Percent", "Currency", "Duration", "Rating"):
+        try:
+            num = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+        return str(int(num)) if num == int(num) else f"{num:.2f}".rstrip("0").rstrip(".")
+    return str(value)

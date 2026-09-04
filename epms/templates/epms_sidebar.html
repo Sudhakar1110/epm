@@ -7,10 +7,20 @@
                 <span>Performance Portal</span>
             </span>
         </a>
-        <a class="icon-btn bell" href="/app" title="Notifications — opens ERP desk">
-            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-            <span class="bell-dot"></span>
-        </a>
+        <div class="bell-wrap">
+            <button type="button" class="icon-btn bell" id="epms-bell" title="Notifications" aria-haspopup="true" aria-expanded="false">
+                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <span class="bell-dot" id="epms-bell-dot" hidden></span>
+            </button>
+
+            <div class="bell-pop" id="epms-bell-pop">
+                <div class="bell-pop-head">
+                    <strong>Notifications</strong>
+                    <button type="button" class="bell-pop-mark" id="epms-bell-mark">Mark all read</button>
+                </div>
+                <div class="bell-pop-list" id="epms-bell-list"></div>
+            </div>
+        </div>
     </div>
 
     <div class="sidebar-search">
@@ -93,5 +103,201 @@ document.addEventListener('keydown', function (e) {
             window.location.href = '/api/method/logout';
         });
     });
+})();
+
+(function () {
+    var bell = document.getElementById('epms-bell');
+    var pop = document.getElementById('epms-bell-pop');
+    var list = document.getElementById('epms-bell-list');
+    var dot = document.getElementById('epms-bell-dot');
+    var markBtn = document.getElementById('epms-bell-mark');
+    if (!bell || !pop || !list || !dot || !markBtn) return;
+
+    var state = { open: false, loaded: false, fetching: false, error: false, items: [], unread: 0 };
+
+    function readCookie(name) {
+        var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function apiCall(method, args, cb) {
+        var qs = '';
+        if (args) {
+            qs = Object.keys(args).map(function (k) {
+                return encodeURIComponent(k) + '=' + encodeURIComponent(args[k]);
+            }).join('&');
+        }
+        fetch('/api/method/' + method + (qs ? '?' + qs : ''), {
+            method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': readCookie('csrf_token'),
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: qs
+        }).then(function (r) {
+            return r.json();
+        }).then(function (res) {
+            cb(res && res.message !== undefined ? res.message : null);
+        }).catch(function () {
+            cb(null);
+        });
+    }
+
+    function render() {
+        dot.hidden = !(state.unread > 0);
+        markBtn.disabled = !(state.unread > 0);
+        if (!state.open) return;
+
+        if (!state.loaded && !state.fetching && state.error) {
+            list.innerHTML = '<div class="bell-empty">Couldn&rsquo;t load notifications.</div>';
+            return;
+        }
+        if (!state.loaded) {
+            list.innerHTML = '<div class="bell-empty">Loading&hellip;</div>';
+            return;
+        }
+        if (!state.items.length) {
+            list.innerHTML = '<div class="bell-empty">You&rsquo;re all caught up!</div>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < state.items.length; i++) {
+            var n = state.items[i];
+            html += '<button type="button" class="bell-item' + (n.read ? '' : ' unread') +
+                '" data-name="' + esc(n.name) + '" data-route="' + esc(n.portal_route || '') + '">' +
+                '<span class="bell-item-dot"></span>' +
+                '<span class="bell-item-main">' +
+                '<span class="bell-item-subject">' + esc(n.subject) + '</span>' +
+                '<span class="bell-item-meta">' +
+                '<span>' + esc(n.creation_label || '') + '</span>' +
+                (n.document_type ? '<span class="bell-item-tag">' + esc(n.document_type) + '</span>' : '') +
+                '</span>' +
+                '</span>' +
+                '</button>';
+        }
+        list.innerHTML = html;
+    }
+
+    function positionPop() {
+        var r = bell.getBoundingClientRect();
+        var w = pop.offsetWidth || 360;
+        var top = r.bottom + 10;
+        var left = r.right + 10;
+        if (left + w > window.innerWidth - 8) {
+            left = window.innerWidth - w - 8;
+            if (left < 8) left = 8;
+        }
+        pop.style.top = top + 'px';
+        pop.style.left = left + 'px';
+    }
+
+    function loadNotifications() {
+        if (state.loaded || state.fetching) return;
+        state.fetching = true;
+        state.error = false;
+        apiCall('epms.employee_performance.api.get_portal_notifications', {}, function (res) {
+            state.fetching = false;
+            if (res) {
+                state.loaded = true;
+                state.items = res.notifications || [];
+                state.unread = res.unread_count || 0;
+            } else {
+                state.error = true;
+            }
+            render();
+        });
+    }
+
+    function openPop() {
+        state.open = true;
+        bell.setAttribute('aria-expanded', 'true');
+        positionPop();
+        pop.classList.add('open');
+        if (!state.loaded) {
+            loadNotifications();
+            render();
+        } else {
+            render();
+        }
+    }
+
+    function closePop() {
+        if (!state.open) return;
+        state.open = false;
+        bell.setAttribute('aria-expanded', 'false');
+        pop.classList.remove('open');
+    }
+
+    bell.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (state.open) {
+            closePop();
+        } else {
+            openPop();
+        }
+    });
+
+    list.addEventListener('click', function (e) {
+        var row = e.target.closest ? e.target.closest('.bell-item') : null;
+        if (!row) return;
+        var name = row.getAttribute('data-name');
+        var route = row.getAttribute('data-route') || '';
+        var isUnread = row.classList.contains('unread');
+        var idx = -1;
+        for (var i = 0; i < state.items.length; i++) {
+            if (state.items[i].name === name) { idx = i; break; }
+        }
+        if (isUnread && idx > -1) {
+            apiCall('epms.employee_performance.api.set_portal_notifications_read', { name: name }, function () {
+                state.items[idx].read = 1;
+                if (state.unread > 0) state.unread -= 1;
+                if (route) {
+                    closePop();
+                    window.location.href = route;
+                } else {
+                    render();
+                }
+            });
+        } else if (route) {
+            closePop();
+            window.location.href = route;
+        }
+    });
+
+    markBtn.addEventListener('click', function () {
+        if (!state.unread) return;
+        apiCall('epms.employee_performance.api.set_portal_notifications_read', {}, function () {
+            state.unread = 0;
+            for (var i = 0; i < state.items.length; i++) state.items[i].read = 1;
+            render();
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (state.open && !pop.contains(e.target) && !bell.contains(e.target)) closePop();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && state.open) closePop();
+    });
+
+    window.addEventListener('scroll', function () {
+        if (state.open) closePop();
+    }, true);
+
+    window.addEventListener('resize', function () {
+        if (state.open) closePop();
+    });
+
+    // Fetch on load so the bell dot reflects unread notifications immediately.
+    loadNotifications();
 })();
 </script>

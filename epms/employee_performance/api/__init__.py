@@ -367,3 +367,66 @@ def get_portal_top_performers():
         order_by="overall_score desc",
         limit_page_length=10,
     )
+
+
+@frappe.whitelist()
+def get_portal_notifications():
+    """Recent Notification Logs for the current user (portal bell dropdown)."""
+    user = frappe.session.user
+
+    notifications = frappe.get_all(
+        "Notification Log",
+        filters={"for_user": user},
+        fields=[
+            "name",
+            "subject",
+            "read",
+            "creation",
+            "document_type",
+            "document_name",
+        ],
+        order_by="creation desc",
+        limit_page_length=20,
+    )
+
+    # Where each referenced doctype lives inside the portal (never the desk)
+    portal_routes = {
+        "Pending Task": "/epms/tasks",
+        "Performance Scorecard": "/epms/scorecards",
+        "Daily Performance": "/epms/my-day",
+    }
+
+    for n in notifications:
+        n["subject"] = n.get("subject") or "Notification"
+        n["document_type"] = n.get("document_type") or ""
+        n["portal_route"] = portal_routes.get(n["document_type"], "")
+        try:
+            n["creation_label"] = frappe.utils.pretty_date(n.get("creation"))
+        except Exception:
+            n["creation_label"] = str(n.get("creation") or "")
+
+    unread_count = frappe.db.count("Notification Log", {"for_user": user, "read": 0})
+
+    return {
+        "notifications": notifications,
+        "unread_count": unread_count or 0,
+    }
+
+
+@frappe.whitelist()
+def set_portal_notifications_read(name=None):
+    """Mark one notification (or all) of the current user as read."""
+    user = frappe.session.user
+
+    if name:
+        if frappe.db.exists("Notification Log", {"name": name, "for_user": user}):
+            frappe.db.set_value("Notification Log", name, "read", 1)
+    else:
+        frappe.db.sql(
+            "update `tabNotification Log` set `read` = 1 "
+            "where `for_user` = %s and `read` = 0",
+            (user,),
+        )
+
+    frappe.db.commit()
+    return {"ok": True}
