@@ -179,6 +179,7 @@ whitelisted_methods = [
     "epms.employee_performance.api.get_portal_top_performers",
     "epms.employee_performance.api.get_portal_notifications",
     "epms.employee_performance.api.set_portal_notifications_read",
+    "epms.employee_performance.api.create_portal_team",
 ]
 
 # Website

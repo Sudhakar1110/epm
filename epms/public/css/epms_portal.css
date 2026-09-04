@@ -921,6 +921,113 @@ small { font-size: 0.72em; font-weight: 600; color: inherit; opacity: 0.7; }
 }
 
 /* ============================================================
+   Modal & forms (used by portal create dialogs)
+   ============================================================ */
+.modal-mask {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(5, 19, 60, 0.55);
+    backdrop-filter: blur(2px);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 8vh 16px 16px;
+}
+.modal-mask.open { display: flex; }
+
+.modal-card {
+    width: 460px;
+    max-width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: 0 24px 60px -12px rgba(5, 19, 60, 0.35);
+    overflow: hidden;
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 18px 22px 0;
+}
+.modal-head strong { font-size: 16px; font-weight: 700; color: var(--navy-dark); }
+
+.modal-x {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background: var(--gray-100);
+    color: var(--gray-400);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.modal-x:hover { background: var(--red-soft); color: var(--red); }
+
+.modal-body { padding: 16px 22px 6px; }
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 22px 20px;
+}
+
+.field { margin-bottom: 14px; }
+.field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--body);
+    margin-bottom: 6px;
+}
+.field label .opt { color: var(--gray-400); font-weight: 500; }
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--body);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field textarea { resize: vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
+.field-hint {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--amber);
+}
+
+.form-msg {
+    margin: 4px 0 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: var(--red-soft);
+    color: var(--red);
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* ============================================================
    Utilities
    ============================================================ */
 .muted { color: var(--gray-400); }

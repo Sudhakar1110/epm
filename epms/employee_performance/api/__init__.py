@@ -430,3 +430,31 @@ def set_portal_notifications_read(name=None):
 
     frappe.db.commit()
     return {"ok": True}
+
+
+@frappe.whitelist()
+def create_portal_team(team_name=None, team_leader=None, description=None):
+    """Create a Team from the portal. Same doctype as the desk, so it appears there too."""
+    team_name = (team_name or "").strip()
+    team_leader = (team_leader or "").strip()
+
+    if not team_name or not team_leader:
+        frappe.throw(_("Team name and team leader are required"))
+
+    if frappe.db.exists("Team", team_name):
+        frappe.throw(_("A team named \"{0}\" already exists").format(team_name))
+
+    team = frappe.get_doc(
+        {
+            "doctype": "Team",
+            "team_name": team_name,
+            "team_leader": team_leader,
+            "description": (description or "").strip() or None,
+            "status": "Active",
+        }
+    )
+    # No ignore_permissions: only roles with create rights on Team can create.
+    team.insert()
+    frappe.db.commit()
+
+    return {"ok": True, "name": team.name}

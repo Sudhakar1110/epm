@@ -20,10 +20,12 @@
                     <p class="page-subtitle">Every team, its leader and the people who keep it moving.</p>
                 </div>
                 <div class="head-actions">
-                    <a class="btn btn-primary" href="/app/team/new" target="_blank" rel="noopener">
+                    {% if can_create_team %}
+                    <button type="button" class="btn btn-primary" id="epms-new-team">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                         New Team
-                    </a>
+                    </button>
+                    {% endif %}
                 </div>
             </header>
 
@@ -102,8 +104,12 @@
                     <div class="empty-icon icon-blue">
                         <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     </div>
+                    {% if can_create_team %}
                     <p>No active teams yet. Create your first team to get started.</p>
-                    <a class="btn btn-primary" href="/app/team/new" target="_blank" rel="noopener">Create a team</a>
+                    <button type="button" class="btn btn-primary" id="epms-new-team-empty">Create a team</button>
+                    {% else %}
+                    <p>No active teams yet.</p>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -111,5 +117,151 @@
         </div>
     </main>
 </div>
+
+{% if can_create_team %}
+<div class="modal-mask" id="team-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+        <div class="modal-head">
+            <strong id="team-modal-title">Create Team</strong>
+            <button type="button" class="modal-x" id="team-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="team-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="team-name">Team Name</label>
+                    <input id="team-name" type="text" maxlength="140" placeholder="e.g. Product Engineering" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="team-leader">Team Leader</label>
+                    <select id="team-leader" required>
+                        <option value="">Select a team leader</option>
+                        {% for u in candidate_leaders %}
+                        <option value="{{ u.name }}">{{ u.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if not candidate_leaders %}
+                    <p class="field-hint">No users with the Team Leader (or Founder) role yet — assign the role to a user first in ERP.</p>
+                    {% endif %}
+                </div>
+                <div class="field">
+                    <label for="team-desc">Description <span class="opt">(optional)</span></label>
+                    <textarea id="team-desc" rows="3" placeholder="What does this team focus on?"></textarea>
+                </div>
+                <p class="form-msg" id="team-form-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="team-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="team-submit">Create Team</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('team-modal');
+    var form = document.getElementById('team-form');
+    var msg = document.getElementById('team-form-msg');
+    var nameInput = document.getElementById('team-name');
+    var leaderInput = document.getElementById('team-leader');
+    var descInput = document.getElementById('team-desc');
+    var submitBtn = document.getElementById('team-submit');
+    if (!mask || !form || !msg) return;
+
+    function openTriggers() {
+        return [document.getElementById('epms-new-team'), document.getElementById('epms-new-team-empty')];
+    }
+
+    function readCookie(name) {
+        var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    function showMsg(text) {
+        msg.textContent = text;
+        msg.hidden = !text;
+    }
+
+    function openModal() {
+        showMsg('');
+        form.reset();
+        mask.classList.add('open');
+        if (nameInput) nameInput.focus();
+    }
+
+    function closeModal() {
+        mask.classList.remove('open');
+    }
+
+    openTriggers().forEach(function (btn) {
+        if (btn) btn.addEventListener('click', openModal);
+    });
+
+    document.getElementById('team-modal-close').addEventListener('click', closeModal);
+    document.getElementById('team-cancel').addEventListener('click', closeModal);
+
+    mask.addEventListener('click', function (e) {
+        if (e.target === mask) closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mask.classList.contains('open')) closeModal();
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var teamName = nameInput.value.trim();
+        var teamLeader = leaderInput.value;
+        if (!teamName) { showMsg('Please enter a team name.'); nameInput.focus(); return; }
+        if (!teamLeader) { showMsg('Please choose a team leader.'); leaderInput.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var body = 'team_name=' + encodeURIComponent(teamName) +
+            '&team_leader=' + encodeURIComponent(teamLeader) +
+            '&description=' + encodeURIComponent(descInput.value.trim());
+
+        fetch('/api/method/epms.employee_performance.api.create_portal_team', {
+            method: 'POST',
+            headers: {
+                'X-Frappe-CSRF-Token': readCookie('csrf_token'),
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: body
+        }).then(function (r) {
+            return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+        }).then(function (res) {
+            submitBtn.disabled = false;
+            if (res.ok && res.data && res.data.message) {
+                showMsg('');
+                window.location.href = '/epms/teams';
+            } else {
+                showMsg(serverError(res.data));
+            }
+        }).catch(function () {
+            submitBtn.disabled = false;
+            showMsg('Could not create the team. Please try again.');
+        });
+    });
+
+    function serverError(data) {
+        try {
+            if (data && data._server_messages && data._server_messages.length) {
+                var el = document.createElement('textarea');
+                el.innerHTML = data._server_messages[0];
+                var txt = el.value.replace(/<[^>]*>/g, '').trim();
+                if (txt) return txt;
+            }
+            if (data && data.exc_type === 'PermissionError') return 'You do not have permission to create teams.';
+        } catch (err) { /* fall through */ }
+        return 'Could not create the team. Please try again.';
+    }
+})();
+</script>
+{% endif %}
+
 </body>
 </html>
