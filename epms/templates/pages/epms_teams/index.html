@@ -174,11 +174,6 @@
         return [document.getElementById('epms-new-team'), document.getElementById('epms-new-team-empty')];
     }
 
-    function readCookie(name) {
-        var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-        return m ? decodeURIComponent(m[1]) : '';
-    }
-
     function showMsg(text) {
         msg.textContent = text;
         msg.hidden = !text;
@@ -249,15 +244,10 @@
         return '';
     }
 
-    function post(url, body, contentType) {
-        return fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-Frappe-CSRF-Token': readCookie('csrf_token'),
-                'Content-Type': contentType
-            },
-            body: body
-        }).then(function (r) {
+    // GET-based calls only — no CSRF token needed, so portal pages can
+    // always talk to the server (custom pages have no Frappe boot token).
+    function getJson(url) {
+        return fetch(url).then(function (r) {
             return r.json().then(function (data) {
                 return { httpOk: r.ok, data: data };
             }).catch(function () {
@@ -268,26 +258,36 @@
         });
     }
 
-    function reloadAfterCreate() {
+    function success() {
         showMsg('');
         window.location.href = '/epms/teams';
     }
 
-    // Fallback: standard Frappe REST endpoint (always available on any site).
-    function createViaResource(teamName, teamLeader, description) {
-        var doc = {
+    function fail(text) {
+        submitBtn.disabled = false;
+        showMsg(text || 'Could not create the team. Please try again.');
+    }
+
+    function teamDoc(teamName, teamLeader, description) {
+        return {
             doctype: 'Team',
             team_name: teamName,
             team_leader: teamLeader,
             description: description || null,
             status: 'Active'
         };
-        return post('/api/resource/Team', JSON.stringify(doc), 'application/json').then(function (res) {
-            submitBtn.disabled = false;
-            if (res.httpOk && res.data && res.data.data && res.data.data.name) {
-                reloadAfterCreate();
+    }
+
+    // Core Frappe method, always registered — final fallback.
+    function saveViaClient(teamName, teamLeader, description) {
+        var doc = teamDoc(teamName, teamLeader, description);
+        var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) {
+                success();
             } else {
-                showMsg(readableError(res.data) || 'Could not create the team. Please try again.');
+                fail(readableError(res.data));
             }
         });
     }
@@ -303,25 +303,23 @@
         submitBtn.disabled = true;
         showMsg('');
 
-        var body = 'team_name=' + encodeURIComponent(teamName) +
+        var qs = 'team_name=' + encodeURIComponent(teamName) +
             '&team_leader=' + encodeURIComponent(teamLeader) +
             '&description=' + encodeURIComponent(description);
 
-        post('/api/method/epms.employee_performance.api.create_portal_team', body,
-            'application/x-www-form-urlencoded; charset=UTF-8').then(function (res) {
+        // Attempt 1: our portal endpoint (returns {ok, error} or {ok, name}).
+        getJson('/api/method/epms.employee_performance.api.create_portal_team?' + qs).then(function (res) {
             var m = res.data && res.data.message;
             if (res.httpOk && m && m.ok) {
-                submitBtn.disabled = false;
-                reloadAfterCreate();
+                success();
                 return;
             }
-            // Custom method not registered on this server yet — use the built-in REST API.
-            if (m === 'Invalid Request' || !(res.data && res.data.exc_type)) {
-                createViaResource(teamName, teamLeader, description);
+            if (res.httpOk && m && m.ok === false) {
+                fail(m.error);
                 return;
             }
-            submitBtn.disabled = false;
-            showMsg((m && m.error) || readableError(res.data) || 'Could not create the team. Please try again.');
+            // Endpoint missing/not registered on this server -> core fallback.
+            saveViaClient(teamName, teamLeader, description);
         });
     });
 })();
