@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ team.team_name }} · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body" data-team="{{ team.name | e }}">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <a class="link" href="/epms/teams">&larr; All teams</a>
+                    <h1 class="page-title" style="margin-top: 10px;">{{ team.team_name }}</h1>
+                    <p class="page-subtitle">{{ team.description or 'No description' }}</p>
+                </div>
+                <div class="head-actions">
+                    {% if can_manage %}
+                    <button type="button" class="btn btn-primary" id="epms-add-member">Add member</button>
+                    {% endif %}
+                </div>
+            </header>
+
+            <section class="stat-grid stat-grid-3">
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                    <div class="stat-info"><span class="stat-label">Active Members</span><span class="stat-value">{{ members|length }}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <div class="stat-info"><span class="stat-label">Team Leader</span><span class="stat-value" style="font-size: 18px;">{{ team.leader_name or '—' }}</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg></div>
+                    <div class="stat-info"><span class="stat-label">Status</span><span class="stat-value" style="font-size: 18px;">{{ team.status }}</span></div>
+                </div>
+            </section>
+
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-head">
+                    <h3>Team members</h3>
+                    {% if can_manage %}
+                    <label class="filter-label" for="team-leader-change" style="display:inline-flex; align-items:center; gap:8px;">
+                        Leader:
+                        <select id="team-leader-change" class="filter-select" style="width:auto;">
+                            {% for u in user_candidates %}
+                            <option value="{{ u.name }}" {% if u.name == team.team_leader %}selected{% endif %}>{{ u.label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-outline" id="epms-change-leader" style="padding:6px 12px;">Save</button>
+                    </label>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if members %}
+                    <div class="table-scroll">
+                        <table class="table">
+                            <thead><tr><th>Member</th><th>Designation</th><th>Joining Date</th><th></th></tr></thead>
+                            <tbody>
+                                {% for m in members %}
+                                <tr>
+                                    <td>
+                                        <div class="cell-user">
+                                            <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (m.employee_name or '?')[:1] }}</div>
+                                            <div>
+                                                <span class="table-title">{{ m.employee_name or m.user }}</span>
+                                                <div class="cell-sub">{{ m.user }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ m.designation or '—' }}</td>
+                                    <td>{{ m.joining_date or '—' }}</td>
+                                    <td class="num">
+                                        {% if can_manage %}
+                                        <button type="button" class="btn btn-outline member-remove" data-name="{{ m.name }}" style="padding:5px 10px;">Remove</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty"><p>No active members yet.{% if can_manage %} Use "Add member" to invite people.{% endif %}</p></div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+{% if can_manage %}
+<div class="modal-mask" id="member-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
+        <div class="modal-head">
+            <strong id="member-modal-title">Add member</strong>
+            <button type="button" class="modal-x" id="member-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="member-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="member-user">User</label>
+                    <select id="member-user" required>
+                        <option value="">Select a user</option>
+                        {% for u in user_candidates %}
+                        <option value="{{ u.name }}">{{ u.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p class="form-msg" id="member-form-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="member-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="member-submit">Add member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var team = document.body.getAttribute('data-team') || '';
+    var mask = document.getElementById('member-modal');
+    var form = document.getElementById('member-form');
+    var msg = document.getElementById('member-form-msg');
+    var userSel = document.getElementById('member-user');
+    var submitBtn = document.getElementById('member-submit');
+    if (!mask || !form || !msg) return;
+
+    function showMsg(t) { msg.textContent = t; msg.hidden = !t; }
+    function openModal() { showMsg(''); form.reset(); mask.classList.add('open'); if (userSel) userSel.focus(); }
+    function closeModal() { mask.classList.remove('open'); }
+
+    document.getElementById('epms-add-member').addEventListener('click', openModal);
+    document.getElementById('member-modal-close').addEventListener('click', closeModal);
+    document.getElementById('member-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, data: data }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).catch(function () { return { httpOk: false, data: {} }; });
+    }
+    function done() { window.location.href = '/epms/team?team=' + encodeURIComponent(team); }
+    function fail(t) { submitBtn.disabled = false; showMsg(t || 'Something went wrong.'); }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!userSel.value) { showMsg('Please choose a user.'); userSel.focus(); return; }
+        submitBtn.disabled = true;
+        showMsg('');
+        var url = '/api/method/epms.employee_performance.api.add_portal_team_member?team=' +
+            encodeURIComponent(team) + '&user=' + encodeURIComponent(userSel.value);
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { done(); return; }
+            fail(m && m.error);
+        });
+    });
+
+    document.getElementById('epms-change-leader').addEventListener('click', function () {
+        var leader = document.getElementById('team-leader-change').value;
+        if (!leader) return;
+        var btn = this;
+        btn.disabled = true;
+        var url = '/api/method/epms.employee_performance.api.set_portal_team_leader?team=' +
+            encodeURIComponent(team) + '&team_leader=' + encodeURIComponent(leader);
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { window.location.reload(); return; }
+            btn.disabled = false;
+            alert(m && m.error ? m.error : 'Could not change leader.');
+        });
+    });
+
+    document.querySelectorAll('.member-remove').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var name = btn.getAttribute('data-name');
+            if (!confirm('Remove this member from the team?')) return;
+            btn.disabled = true;
+            var url = '/api/method/epms.employee_performance.api.remove_portal_team_member?name=' + encodeURIComponent(name);
+            getJson(url).then(function (res) {
+                var m = res.data && res.data.message;
+                if (res.httpOk && m && m.ok) { window.location.reload(); return; }
+                btn.disabled = false;
+                alert(m && m.error ? m.error : 'Could not remove member.');
+            });
+        });
+    });
+})();
+</script>
+{% endif %}
+
+</body>
+</html>

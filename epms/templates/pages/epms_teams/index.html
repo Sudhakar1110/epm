@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Teams</h1>
+                    <p class="page-subtitle">Every team, its leader and the people who keep it moving.</p>
+                </div>
+                <div class="head-actions">
+                    {% if can_create_team %}
+                    <button type="button" class="btn btn-primary" id="epms-new-team">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        New Team
+                    </button>
+                    {% endif %}
+                </div>
+            </header>
+
+            <section class="stat-grid stat-grid-3">
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Active Teams</span>
+                        <span class="stat-value">{{ total_teams }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Members</span>
+                        <span class="stat-value">{{ total_members }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Avg Members</span>
+                        <span class="stat-value">{{ (total_members / total_teams)|round|int if total_teams else 0 }}</span>
+                    </div>
+                </div>
+            </section>
+
+            {% if teams %}
+            <section class="teams-grid">
+                {% for t in teams %}
+                <div class="team-card">
+                    <div class="team-card-top">
+                        <div class="avatar avatar-md avatar-tone-{{ loop.index % 6 }}">{{ (t.team_name or 'T')[:1] }}</div>
+                        <div class="team-card-name">
+                            <strong>{{ t.team_name }}</strong>
+                            <span><span class="badge b-green">Active</span></span>
+                        </div>
+                        <span class="team-members-count">{{ t.member_count }} members</span>
+                    </div>
+                    {% if t.description %}
+                    <p class="team-desc">{{ t.description }}</p>
+                    {% endif %}
+                    <div class="team-meta-row">
+                        <span class="team-leader">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {{ t.leader_name or 'No leader' }}
+                        </span>
+                    </div>
+                    <div class="team-card-foot">
+                        {% if t.member_preview %}
+                        <div class="avatar-stack">
+                            {% for m in t.member_preview %}
+                            <span class="avatar avatar-xs avatar-tone-{{ loop.index % 6 }}">{{ (m or '?')[:1] }}</span>
+                            {% endfor %}
+                            {% if t.extra_members %}
+                            <span class="avatar avatar-xs avatar-more">+{{ t.extra_members }}</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="muted small">No active members yet</span>
+                        {% endif %}
+                        <a class="link" href="/epms/team?team={{ t.name|urlencode }}">Open team</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+            {% else %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    {% if can_create_team %}
+                    <p>No active teams yet. Create your first team to get started.</p>
+                    <button type="button" class="btn btn-primary" id="epms-new-team-empty">Create a team</button>
+                    {% else %}
+                    <p>No active teams yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+{% if can_create_team %}
+<div class="modal-mask" id="team-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+        <div class="modal-head">
+            <strong id="team-modal-title">Create Team</strong>
+            <button type="button" class="modal-x" id="team-modal-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="team-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="team-name">Team Name</label>
+                    <input id="team-name" type="text" maxlength="140" placeholder="e.g. Product Engineering" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label for="team-leader">Team Leader</label>
+                    <select id="team-leader" required>
+                        <option value="">Select a team leader</option>
+                        {% for u in candidate_leaders %}
+                        <option value="{{ u.name }}">{{ u.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if not candidate_leaders %}
+                    <p class="field-hint">No enabled users found — add users in ERP first.</p>
+                    {% endif %}
+                </div>
+                <div class="field">
+                    <label for="team-desc">Description <span class="opt">(optional)</span></label>
+                    <textarea id="team-desc" rows="3" placeholder="What does this team focus on?"></textarea>
+                </div>
+                <p class="form-msg" id="team-form-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="team-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="team-submit">Create Team</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('team-modal');
+    var form = document.getElementById('team-form');
+    var msg = document.getElementById('team-form-msg');
+    var nameInput = document.getElementById('team-name');
+    var leaderInput = document.getElementById('team-leader');
+    var descInput = document.getElementById('team-desc');
+    var submitBtn = document.getElementById('team-submit');
+    if (!mask || !form || !msg) return;
+
+    function openTriggers() {
+        return [document.getElementById('epms-new-team'), document.getElementById('epms-new-team-empty')];
+    }
+
+    function showMsg(text) {
+        msg.textContent = text;
+        msg.hidden = !text;
+    }
+
+    function openModal() {
+        showMsg('');
+        form.reset();
+        mask.classList.add('open');
+        if (nameInput) nameInput.focus();
+    }
+
+    function closeModal() {
+        mask.classList.remove('open');
+    }
+
+    openTriggers().forEach(function (btn) {
+        if (btn) btn.addEventListener('click', openModal);
+    });
+
+    document.getElementById('team-modal-close').addEventListener('click', closeModal);
+    document.getElementById('team-cancel').addEventListener('click', closeModal);
+
+    mask.addEventListener('click', function (e) {
+        if (e.target === mask) closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mask.classList.contains('open')) closeModal();
+    });
+
+    function cleanMessage(text) {
+        var el = document.createElement('textarea');
+        el.innerHTML = text;
+        return el.value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    // Extract a readable reason from any Frappe error payload.
+    function readableError(data) {
+        try {
+            if (data) {
+                var top = data.message;
+                if (typeof top === 'string') {
+                    var s = top.trim();
+                    if (s && s.length < 250 && s !== 'Invalid Request') return s;
+                }
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') {
+                    try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; }
+                }
+                if (Array.isArray(msgs) && msgs.length) {
+                    var txt = cleanMessage(msgs[0]);
+                    if (txt) return txt;
+                }
+                if (data.exc_type === 'PermissionError' || data.exc_type === 'AuthenticationError') {
+                    return 'You do not have permission to create teams.';
+                }
+                if (typeof data.exc === 'string') {
+                    var exc = cleanMessage(data.exc);
+                    var lines = exc.split('\n').filter(function (l) { return l.trim(); });
+                    if (lines.length) {
+                        var last = lines[lines.length - 1].replace(/^Message:\s*/i, '').trim();
+                        if (last && last.length < 300) return last;
+                    }
+                }
+            }
+        } catch (err) { /* fall through */ }
+        return '';
+    }
+
+    // GET-based calls only — no CSRF token needed, so portal pages can
+    // always talk to the server (custom pages have no Frappe boot token).
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) {
+                return { httpOk: r.ok, data: data };
+            }).catch(function () {
+                return { httpOk: r.ok, data: {} };
+            });
+        }).catch(function () {
+            return { httpOk: false, data: {} };
+        });
+    }
+
+    function success() {
+        showMsg('');
+        window.location.href = '/epms/teams';
+    }
+
+    function fail(text) {
+        submitBtn.disabled = false;
+        showMsg(text || 'Could not create the team. Please try again.');
+    }
+
+    function teamDoc(teamName, teamLeader, description) {
+        return {
+            doctype: 'Team',
+            team_name: teamName,
+            team_leader: teamLeader,
+            description: description || null,
+            status: 'Active'
+        };
+    }
+
+    // Core Frappe method, always registered — final fallback.
+    function saveViaClient(teamName, teamLeader, description) {
+        var doc = teamDoc(teamName, teamLeader, description);
+        var url = '/api/method/frappe.client.save?doc=' + encodeURIComponent(JSON.stringify(doc));
+        getJson(url).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.name) {
+                success();
+            } else {
+                fail(readableError(res.data));
+            }
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var teamName = nameInput.value.trim();
+        var teamLeader = leaderInput.value;
+        var description = descInput.value.trim();
+        if (!teamName) { showMsg('Please enter a team name.'); nameInput.focus(); return; }
+        if (!teamLeader) { showMsg('Please choose a team leader.'); leaderInput.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'team_name=' + encodeURIComponent(teamName) +
+            '&team_leader=' + encodeURIComponent(teamLeader) +
+            '&description=' + encodeURIComponent(description);
+
+        // Attempt 1: our portal endpoint (returns {ok, error} or {ok, name}).
+        getJson('/api/method/epms.employee_performance.api.create_portal_team?' + qs).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) {
+                success();
+                return;
+            }
+            if (res.httpOk && m && m.ok === false) {
+                fail(m.error);
+                return;
+            }
+            // Endpoint missing/not registered on this server -> core fallback.
+            saveViaClient(teamName, teamLeader, description);
+        });
+    });
+})();
+</script>
+{% endif %}
+
+</body>
+</html>

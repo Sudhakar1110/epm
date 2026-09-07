@@ -1,0 +1,224 @@
+/* EPMS Styles */
+
+/* Dashboard Cards */
+.epms-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.epms-card-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.epms-card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+}
+
+.epms-card-value.text-success {
+    color: #28a745;
+}
+
+.epms-card-value.text-danger {
+    color: #dc3545;
+}
+
+.epms-card-value.text-warning {
+    color: #ffc107;
+}
+
+.epms-card-value.text-info {
+    color: #17a2b8;
+}
+
+/* Score Indicators */
+.score-excellent {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.score-very-good {
+    background: linear-gradient(135deg, #17a2b8, #007bff);
+    color: white;
+}
+
+.score-good {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: white;
+}
+
+.score-average {
+    background: linear-gradient(135deg, #fd7e14, #dc3545);
+    color: white;
+}
+
+.score-needs-improvement {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+/* Status Badges */
+.epms-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.epms-status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.epms-status-inactive {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.epms-status-archived {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Priority Badges */
+.epms-priority-critical {
+    background: #dc3545;
+    color: white;
+}
+
+.epms-priority-high {
+    background: #fd7e14;
+    color: white;
+}
+
+.epms-priority-medium {
+    background: #007bff;
+    color: white;
+}
+
+.epms-priority-low {
+    background: #28a745;
+    color: white;
+}
+
+/* Task Status */
+.epms-task-completed {
+    background: #28a745;
+    color: white;
+}
+
+.epms-task-in-progress {
+    background: #007bff;
+    color: white;
+}
+
+.epms-task-pending {
+    background: #ffc107;
+    color: #333;
+}
+
+.epms-task-blocked {
+    background: #dc3545;
+    color: white;
+}
+
+/* Leaderboard */
+.leaderboard-row {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.leaderboard-row:hover {
+    background: #f8f9fa;
+}
+
+.leaderboard-rank {
+    font-size: 24px;
+    font-weight: 700;
+    width: 60px;
+    text-align: center;
+}
+
+.leaderboard-name {
+    flex: 1;
+    font-weight: 600;
+}
+
+.leaderboard-score {
+    font-size: 20px;
+    font-weight: 700;
+    color: #5e64ff;
+}
+
+/* Charts */
+.epms-chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.epms-chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .epms-card-value {
+        font-size: 24px;
+    }
+    
+    .leaderboard-rank {
+        font-size: 18px;
+        width: 40px;
+    }
+    
+    .leaderboard-score {
+        font-size: 16px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.epms-animate-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Print Styles */
+@media print {
+    .epms-no-print {
+        display: none !important;
+    }
+    
+    .epms-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

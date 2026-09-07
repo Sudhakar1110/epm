@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Number Card",
+ "name": "Total Teams",
+ "label": "Total Teams",
+ "module": "Employee Performance",
+ "number_card_name": "Total Teams",
+ "type": "Count",
+ "document_type": "Team",
+ "filters_json": "[[\"Team\",\"status\",\"=\",\"Active\",false]]",
+ "filters_set": [],
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "range": "All",
+ "show_percentage_change": 0
+}

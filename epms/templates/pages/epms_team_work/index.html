@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Daily Work · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Team Daily Work</h1>
+                    <p class="page-subtitle">Log daily work for your team members at end of day.</p>
+                </div>
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        {{ today_label }}
+                    </span>
+                </div>
+            </header>
+
+            <!-- Team Selector -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-body pad-sm">
+                    <div class="filter-bar" style="margin-bottom: 0;">
+                        <span class="filter-label">Select Team</span>
+                        <select id="team-select" class="filter-select" style="width: auto; min-width: 200px;">
+                            {% if not teams %}
+                            <option value="" disabled selected>No teams available</option>
+                            {% endif %}
+                            {% for t in teams %}
+                            <option value="{{ t.name }}" {% if t.name == selected_team %}selected{% endif %}>{{ t.team_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {% if members %}
+            <div class="stat-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <div class="stat-icon icon-teal">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Team Members</span>
+                        <span class="stat-value">{{ member_count }}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Logged Today</span>
+                        <span class="stat-value">{{ submitted_employees|length }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Members List with Quick Log -->
+            {% if members %}
+            <div class="table-card">
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Designation</th>
+                                <th>Today's Work</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in members %}
+                            <tr data-member="{{ m.user }}" data-name="{{ m.name }}">
+                                <td>
+                                    <div class="cell-user">
+                                        <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (m.employee_name or '?')[:1] }}</div>
+                                        <div>
+                                            <span class="table-title">{{ m.employee_name or m.user }}</span>
+                                            <div class="cell-sub">{{ m.user }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ m.designation or '—' }}</td>
+                                <td>
+                                    {% if m.user in submitted_employees %}
+                                    <span class="badge b-green">Logged ✓</span>
+                                    {% else %}
+                                    <button type="button" class="btn btn-primary btn-sm btn-log-work" data-member="{{ m.user }}" data-name="{{ m.name }}" data-employee="{{ m.employee_name or m.user }}">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                                        Log Work
+                                    </button>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if m.user in submitted_employees %}
+                                    <span class="status-pill b-green">Done</span>
+                                    {% else %}
+                                    <span class="status-pill b-amber">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-blue">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <p>No team members found. Add members to your team first.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+<!-- Log Work Modal -->
+<div class="modal-mask" id="log-work-modal">
+    <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="log-work-title">
+        <div class="modal-head">
+            <strong id="log-work-title">Log Daily Work</strong>
+            <button type="button" class="modal-x" id="log-work-close" title="Close" aria-label="Close">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="log-work-form" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="lw-member">Member</label>
+                    <input id="lw-member" type="text" readonly class="form-control-static">
+                </div>
+                <div class="field">
+                    <label for="lw-date">Date</label>
+                    <input id="lw-date" type="date" required>
+                </div>
+                <div class="field">
+                    <label for="lw-task">Task / Work Done</label>
+                    <input id="lw-task" type="text" maxlength="140" placeholder="What work was done today?" autocomplete="off" required>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="lw-hours">Actual Hours</label>
+                        <input id="lw-hours" type="number" min="0" max="24" step="0.5" value="8" required>
+                    </div>
+                    <div class="field">
+                        <label for="lw-completion">Completion %</label>
+                        <input id="lw-completion" type="number" min="0" max="100" step="5" value="100" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="lw-rating">Rating (1-10)</label>
+                        <input id="lw-rating" type="number" min="1" max="10" step="0.5" value="5" required>
+                    </div>
+                    <div class="field">
+                        <label for="lw-quality">Quality (1-10)</label>
+                        <input id="lw-quality" type="number" min="1" max="10" step="0.5" value="5" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="lw-work-type">Work Type <span class="opt">(optional)</span></label>
+                    <input id="lw-work-type" type="text" maxlength="60" placeholder="e.g. Development, Meeting, Documentation">
+                </div>
+                <div class="field">
+                    <label for="lw-remarks">Remarks <span class="opt">(optional)</span></label>
+                    <textarea id="lw-remarks" rows="2" placeholder="Any notes?"></textarea>
+                </div>
+                <p class="form-msg" id="log-work-msg" hidden></p>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn btn-outline" id="log-work-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="log-work-submit">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var mask = document.getElementById('log-work-modal');
+    var form = document.getElementById('log-work-form');
+    var msg = document.getElementById('log-work-msg');
+    var submitBtn = document.getElementById('log-work-submit');
+    var memberInput = document.getElementById('lw-member');
+    var dateInput = document.getElementById('lw-date');
+    var teamSelect = document.getElementById('team-select');
+    var currentMember = null;
+
+    function showMsg(text) { msg.textContent = text; msg.hidden = !text; }
+    function openModal(member, name, employee) {
+        currentMember = member;
+        memberInput.value = employee + ' (' + name + ')';
+        document.getElementById('lw-task').value = '';
+        document.getElementById('lw-hours').value = 8;
+        document.getElementById('lw-completion').value = 100;
+        document.getElementById('lw-rating').value = 5;
+        document.getElementById('lw-quality').value = 5;
+        document.getElementById('lw-work-type').value = '';
+        document.getElementById('lw-remarks').value = '';
+        mask.classList.add('open');
+        document.getElementById('lw-task').focus();
+    }
+    function closeModal() { mask.classList.remove('open'); }
+
+    document.getElementById('log-work-close').addEventListener('click', closeModal);
+    document.getElementById('log-work-cancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', function (e) { if (e.target === mask) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && mask.classList.contains('open')) closeModal(); });
+
+    // Team change - reload page with new team
+    teamSelect.addEventListener('change', function () {
+        var team = this.value;
+        if (team) {
+            window.location.href = '/epms/team-work?team=' + encodeURIComponent(team);
+        }
+    });
+
+    // Log work buttons
+    document.querySelectorAll('.btn-log-work').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var member = this.getAttribute('data-member');
+            var name = this.getAttribute('data-name');
+            var employee = this.getAttribute('data-employee');
+            openModal(member, name, employee);
+        });
+    });
+
+    function readableError(data) {
+        try {
+            if (data && data._server_messages) {
+                var msgs = data._server_messages;
+                if (typeof msgs === 'string') { try { msgs = JSON.parse(msgs); } catch (e) { msgs = null; } }
+                if (Array.isArray(msgs) && msgs.length) {
+                    var raw = msgs[0];
+                    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (e) { raw = null; } }
+                    if (raw && raw.message) return raw.message;
+                    if (typeof msgs[0] === 'string' && msgs[0].length < 300) return msgs[0];
+                }
+            }
+            if (data && data.message && typeof data.message === 'string' && data.message.length < 300) return data.message;
+            if (data && data.exc_type) return data.exc_type + ' error occurred.';
+        } catch (err) {}
+        return '';
+    }
+
+    function getJson(url) {
+        return fetch(url).then(function (r) {
+            return r.json().then(function (data) { return { httpOk: r.ok, status: r.status, data: data }; })
+                .catch(function () { return { httpOk: r.ok, status: r.status, data: {} }; });
+        }).catch(function () { return { httpOk: false, status: 0, data: {} }; });
+    }
+
+    function success() { showMsg(''); window.location.reload(); }
+    function fail(text) { submitBtn.disabled = false; showMsg(text || 'Could not submit. Please try again.'); }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!currentMember) return;
+        if (!document.getElementById('lw-task').value.trim()) {
+            showMsg('Please enter the work done.');
+            document.getElementById('lw-task').focus();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        showMsg('');
+
+        var qs = 'member=' + encodeURIComponent(currentMember) +
+            '&employee_name=' + encodeURIComponent(document.getElementById('lw-member').value.split(' (')[0]) +
+            '&date=' + encodeURIComponent(dateInput.value || new Date().toISOString().split('T')[0]) +
+            '&task_title=' + encodeURIComponent(document.getElementById('lw-task').value.trim()) +
+            '&actual_hours=' + encodeURIComponent(document.getElementById('lw-hours').value) +
+            '&completion_percentage=' + encodeURIComponent(document.getElementById('lw-completion').value) +
+            '&daily_rating=' + encodeURIComponent(document.getElementById('lw-rating').value) +
+            '&quality_score=' + encodeURIComponent(document.getElementById('lw-quality').value) +
+            '&work_type=' + encodeURIComponent(document.getElementById('lw-work-type').value.trim() || '') +
+            '&remarks=' + encodeURIComponent(document.getElementById('lw-remarks').value.trim() || '');
+
+        getJson('/api/method/epms.employee_performance.api.submit_team_member_daily_work?' + qs).then(function (res) {
+            var m = res.data && res.data.message;
+            if (res.httpOk && m && m.ok) { success(); return; }
+            if (res.httpOk && m && m.ok === false) { fail(m.error); return; }
+            var err = readableError(res.data);
+            fail(err || 'Could not submit. Please try again.');
+        });
+    });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Report",
+ "is_standard": "Yes",
+ "module": "Employee Performance",
+ "name": "Daily Performance Report",
+ "owner": "Administrator",
+ "ref_doctype": "Daily Performance",
+ "report_name": "Daily Performance Report",
+ "report_type": "Script Report",
+ "roles": [
+  {"role": "EPMS Founder"},
+  {"role": "EPMS Team Leader"},
+  {"role": "EPMS Team Member"}
+ ]
+}

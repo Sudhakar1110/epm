@@ -1,0 +1,19 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "name": "Monthly Performance Trend",
+ "chart_name": "Monthly Performance Trend",
+ "module": "Employee Performance",
+ "chart_type": "Line",
+ "document_type": "Performance Scorecard",
+ "filters_json": "[[\"Performance Scorecard\",\"docstatus\",\"=\",\"1\",false]]",
+ "group_by_type": "Count",
+ "time_interval": "Monthly",
+ "x_field": "month",
+ "y_axis": [{"fieldname": "overall_score", "label": "Average Score"}],
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "color": "#5e64ff",
+ "timespan": "Last 12 Months",
+ "filters_set": []
+}

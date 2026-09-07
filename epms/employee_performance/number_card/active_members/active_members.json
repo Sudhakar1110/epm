@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Number Card",
+ "name": "Active Members",
+ "label": "Active Members",
+ "module": "Employee Performance",
+ "number_card_name": "Active Members",
+ "type": "Count",
+ "document_type": "Team Member Mapping",
+ "filters_json": "[[\"Team Member Mapping\",\"status\",\"=\",\"Active\",false]]",
+ "filters_set": [],
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "range": "All",
+ "show_percentage_change": 0
+}

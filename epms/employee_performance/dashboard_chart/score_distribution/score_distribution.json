@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard Chart",
+ "name": "Score Distribution",
+ "chart_name": "Score Distribution",
+ "module": "Employee Performance",
+ "chart_type": "Bar",
+ "document_type": "Performance Scorecard",
+ "filters_json": "[[\"Performance Scorecard\",\"docstatus\",\"=\",\"1\",false]]",
+ "group_by_field": "final_grade",
+ "group_by_type": "Count",
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "color": "#ff6b6b",
+ "filters_set": []
+}

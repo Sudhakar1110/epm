@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Performance</h1>
+                    <p class="page-subtitle">Monthly performance scorecards across every team.</p>
+                </div>
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        {{ month_label }}
+                    </span>
+                    {% if scorecards %}
+                    <button type="button" class="btn btn-outline" id="epms-export-csv">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        Export CSV
+                    </button>
+                    {% endif %}
+                </div>
+            </header>
+
+            <form class="filter-bar" method="get" action="/epms/performance">
+                <span class="filter-label">Filters</span>
+                <select class="filter-select" name="month" aria-label="Month">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == filter_month %}selected{% endif %}>Month {{ m }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" name="year" aria-label="Year">
+                    {% for y in range(current_year - 1, current_year + 2) %}
+                    <option value="{{ y }}" {% if y == filter_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" name="team" aria-label="Team">
+                    <option value="">All teams</option>
+                    {% for t in teams %}
+                    <option value="{{ t.name }}" {% if t.name == filter_team %}selected{% endif %}>{{ t.team_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Apply</button>
+                {% if filter_month != current_month or filter_year != current_year or filter_team %}
+                <a class="link" href="/epms/performance">Clear</a>
+                {% endif %}
+            </form>
+
+            <div class="table-card">
+                {% if scorecards %}
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Team</th>
+                                <th class="num">Attendance</th>
+                                <th class="num">Productivity</th>
+                                <th class="num">Quality</th>
+                                <th class="num">Overall</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in scorecards %}
+                            <tr>
+                                <td>
+                                    <div class="cell-user">
+                                        <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
+                                        <div>
+                                            <a class="table-title" href="/epms/scorecard?name={{ s.name }}">{{ s.employee_name or 'Unnamed' }}</a>
+                                            <div class="cell-sub">{{ s.tasks_completed or 0 }} done · {{ s.pending_tasks or 0 }} pending</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ s.team or '—' }}</td>
+                                <td class="num">{{ s.attendance_score|round|int }}%</td>
+                                <td class="num">{{ s.productivity_score|round|int }}%</td>
+                                <td class="num">{{ s.quality_score|round|int }}%</td>
+                                <td class="num">
+                                    <div class="score-cell">
+                                        <span class="score-cell-bar"><i style="width: {{ s.overall_score }}%"></i></span>
+                                        <strong>{{ s.overall_score }}%</strong>
+                                    </div>
+                                </td>
+                                <td><span class="badge {{ s.grade_class }}">{{ s.final_grade or '—' }}</span></td>
+                                <td>
+                                    <span class="status-pill {{ s.status_class }}">
+                                        <span class="status-dot s-{{ s.status_class }}"></span>
+                                        {{ s.performance_status or '—' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <p>No scorecards published for {{ month_label }} yet. Scorecards are generated automatically from daily performance entries.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+(function () {
+    var btn = document.getElementById('epms-export-csv');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var qs = window.location.search || '';
+        var url = '/api/method/epms.employee_performance.api.export_portal_scorecards_csv' + qs;
+        fetch(url).then(function (r) { return r.json(); }).then(function (res) {
+            var csv = res && res.message;
+            if (!csv) { alert('No data to export.'); return; }
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'performance-scorecards.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }).catch(function () { alert('Export failed. Please try again.'); });
+    });
+})();
+</script>
+</body>
+</html>

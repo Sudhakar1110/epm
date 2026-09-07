@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Import</h1>
+                    <p class="page-subtitle">Bulk add teams, users or tasks from CSV text.</p>
+                </div>
+            </header>
+
+            {% if not can_import %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    </div>
+                    <p>Only EPMS Founder can import data.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="card" style="max-width: 720px;">
+                <div class="card-body">
+                    <div class="field">
+                        <label for="import-kind">What are you importing?</label>
+                        <select id="import-kind">
+                            <option value="teams">Teams — team name, leader, description</option>
+                            <option value="users">Users — email, first name, last name</option>
+                            <option value="tasks">Tasks — employee, task, due date, priority</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="import-data">CSV data <span class="opt">(one row per line, first line can be a header)</span></label>
+                        <textarea id="import-data" rows="8" placeholder="e.g.&#10;team name, leader, description"></textarea>
+                    </div>
+                    <p class="form-msg" id="import-msg" hidden></p>
+                    <button type="button" class="btn btn-primary" id="import-run">Import</button>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+{% if can_import %}
+<script>
+(function () {
+    var btn = document.getElementById('import-run');
+    var kind = document.getElementById('import-kind');
+    var data = document.getElementById('import-data');
+    var msg = document.getElementById('import-msg');
+    if (!btn || !msg) return;
+
+    function showMsg(t, isError) {
+        msg.textContent = t;
+        msg.hidden = !t;
+        msg.style.background = isError ? '' : 'var(--green-soft)';
+        msg.style.color = isError ? '' : '#0e9f6e';
+    }
+
+    btn.addEventListener('click', function () {
+        var csv = data.value.trim();
+        if (!csv) { showMsg('Paste some CSV data first.', true); return; }
+        btn.disabled = true;
+        showMsg('Importing…');
+        var url = '/api/method/epms.employee_performance.api.import_portal_csv?kind=' +
+            encodeURIComponent(kind.value) + '&data=' + encodeURIComponent(csv);
+        fetch(url).then(function (r) {
+            return r.json().then(function (d) { return { httpOk: r.ok, data: d }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).then(function (res) {
+            var m = res.data && res.data.message;
+            btn.disabled = false;
+            if (m && m.ok) {
+                var text = 'Imported ' + m.created + ' row(s).';
+                if (m.errors && m.errors.length) text += ' Errors: ' + m.errors.join('; ');
+                showMsg(text, false);
+            } else {
+                showMsg(m && m.error ? m.error : 'Import failed.', true);
+            }
+        }).catch(function () {
+            btn.disabled = false;
+            showMsg('Import failed.', true);
+        });
+    });
+})();
+</script>
+{% endif %}
+
+</body>
+</html>

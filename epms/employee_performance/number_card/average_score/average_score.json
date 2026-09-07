@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Number Card",
+ "name": "Average Score",
+ "label": "Average Score",
+ "module": "Employee Performance",
+ "number_card_name": "Average Score",
+ "type": "Custom",
+ "document_type": "Performance Scorecard",
+ "custom_result": "from frappe.utils import getdate, nowdate\nmonth = getdate(nowdate()).month\nyear = getdate(nowdate()).year\nresult = frappe.db.get_value('Performance Scorecard', {'month': month, 'year': year, 'docstatus': 1}, 'avg(overall_score)')\nresult = round(result or 0, 1)",
+ "filters_set": [],
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "range": "This Month",
+ "show_percentage_change": 0
+}

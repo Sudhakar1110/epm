@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Scoreboard · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head">
+                <div>
+                    <h1 class="page-title">Team Scoreboard</h1>
+                    <p class="page-subtitle">All teams ranked by performance.</p>
+                </div>
+                <div class="head-actions">
+                    <span class="date-chip">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        {{ month_label }}
+                    </span>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-body pad-sm">
+                    <form class="filter-bar" method="get" action="/epms/team-scoreboard">
+                        <span class="filter-label">Filter</span>
+                        <select class="filter-select" name="month" aria-label="Month">
+                            {% for m in range(1, 13) %}
+                            <option value="{{ m }}" {% if m == filter_month %}selected{% endif %}>Month {{ m }}</option>
+                            {% endfor %}
+                        </select>
+                        <select class="filter-select" name="year" aria-label="Year">
+                            {% for y in range(current_year - 1, current_year + 2) %}
+                            <option value="{{ y }}" {% if y == filter_year %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                        {% if filter_month != current_month or filter_year != current_year %}
+                        <a class="link" href="/epms/team-scoreboard">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Team Scoreboard Table -->
+            {% if team_data %}
+            <div class="table-card">
+                <div class="table-scroll">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Rank</th>
+                                <th>Team</th>
+                                <th class="num">Score</th>
+                                <th>Members</th>
+                                <th>Team Leader</th>
+                                <th>Top Performer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in team_data %}
+                            <tr>
+                                <td>
+                                    <span class="rank-badge {% if t.rank == 1 %}gold{% elif t.rank == 2 %}silver{% elif t.rank == 3 %}bronze{% endif %}">
+                                        {{ t.rank }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="cell-user">
+                                        <div class="avatar avatar-md avatar-tone-{{ t.rank % 6 }}">{{ (t.team_name or 'T')[:1] }}</div>
+                                        <div>
+                                            <strong class="table-title">{{ t.team_name }}</strong>
+                                            <div class="cell-sub">{{ t.team_leader }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="num">
+                                    <div class="score-cell">
+                                        <span class="score-cell-bar"><i style="width: {{ t.avg_score }}%"></i></span>
+                                        <strong>{{ t.avg_score }}%</strong>
+                                    </div>
+                                </td>
+                                <td class="num">{{ t.member_count }}</td>
+                                <td>{{ t.team_leader or '—' }}</td>
+                                <td>{{ t.top_performer }}</td>
+                                <td>
+                                    <span class="status-pill {% if t.status == 'On Track' %}b-green{% elif t.status == 'Needs Attention' %}b-amber{% else %}b-red{% endif %}">
+                                        {{ t.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-purple">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <p>No teams found. Create teams first to see the scoreboard.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

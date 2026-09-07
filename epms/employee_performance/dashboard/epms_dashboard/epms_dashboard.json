@@ -1,0 +1,27 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Dashboard",
+ "name": "EPMS Dashboard",
+ "dashboard_name": "EPMS Dashboard",
+ "module": "Employee Performance",
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "charts": [
+  {"chart": "Monthly Performance Trend", "width": "Half"},
+  {"chart": "Task Completion Rate", "width": "Half"},
+  {"chart": "Score Distribution", "width": "Half"}
+ ],
+ "shortcuts": [
+  {"type": "DocType", "link_to": "Team", "label": "Team"},
+  {"type": "DocType", "link_to": "Team Member Mapping", "label": "Team Member Mapping"},
+  {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
+  {"type": "DocType", "link_to": "Pending Task", "label": "Pending Task"},
+  {"type": "DocType", "link_to": "Performance Scorecard", "label": "Performance Scorecard"}
+ ],
+ "number_card": [
+  {"number_card": "Total Teams"},
+  {"number_card": "Active Members"},
+  {"number_card": "Pending Tasks Count"},
+  {"number_card": "Average Score"}
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Number Card",
+ "name": "Pending Tasks Count",
+ "label": "Pending Tasks Count",
+ "module": "Employee Performance",
+ "number_card_name": "Pending Tasks Count",
+ "type": "Count",
+ "document_type": "Pending Task",
+ "filters_json": "[[\"Pending Task\",\"current_status\",\"in\",\"[\\\"Pending\\\",\\\"In Progress\\\"]\",false]]",
+ "filters_set": [],
+ "is_standard": "Yes",
+ "owner": "Administrator",
+ "range": "All",
+ "show_percentage_change": 0
+}

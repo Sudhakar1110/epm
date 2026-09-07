@@ -1,0 +1,22 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Performance Scorecard",
+ "enabled": 1,
+ "event": "Method",
+ "message": "Monthly performance summary for {{ doc.month }}/{{ doc.year }} is available.",
+ "message_type": "Markdown",
+ "method": "on_submit",
+ "module": "Employee Performance",
+ "name": "Monthly Summary",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 0,
+ "subject": "Monthly Performance Summary - {{ doc.month }}/{{ doc.year }}",
+ "value_changed": "",
+ "value_changed_method": ""
+}

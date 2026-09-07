@@ -1,0 +1,5 @@
+include MANIFEST.in
+include requirements.txt
+include *.md
+include license.txt
+recursive-include epms *.py *.json *.js *.css *.html *.txt *.md

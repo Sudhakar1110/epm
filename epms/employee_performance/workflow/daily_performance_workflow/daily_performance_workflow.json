@@ -1,0 +1,57 @@
+{
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "Workflow",
+ "module": "Employee Performance",
+ "name": "Daily Performance Workflow",
+ "workflow_name": "Daily Performance Workflow",
+ "document_type": "Daily Performance",
+ "is_active": 1,
+ "is_standard": "Yes",
+ "override_status": 0,
+ "send_email": 1,
+ "workflow_state_field": "workflow_state",
+ "states": [
+  {
+   "state": "Draft",
+   "style": "Warning",
+   "doc_status": 0,
+   "allow_edit": "EPMS Team Member",
+   "allow_self_approval": 1
+  },
+  {
+   "state": "Submitted",
+   "style": "Primary",
+   "doc_status": 1,
+   "allow_edit": "EPMS Team Leader"
+  },
+  {
+   "state": "Reviewed",
+   "style": "Success",
+   "doc_status": 1,
+   "allow_edit": "EPMS Founder"
+  }
+ ],
+ "transitions": [
+  {
+   "state": "Draft",
+   "action": "Submit",
+   "next_state": "Submitted",
+   "allowed": "EPMS Team Member",
+   "allow_self_approval": 1
+  },
+  {
+   "state": "Submitted",
+   "action": "Review",
+   "next_state": "Reviewed",
+   "allowed": "EPMS Team Leader",
+   "allow_self_approval": 0
+  },
+  {
+   "state": "Submitted",
+   "action": "Reject",
+   "next_state": "Draft",
+   "allowed": "EPMS Team Leader",
+   "allow_self_approval": 0
+  }
+ ]
+}

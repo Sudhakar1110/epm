@@ -1,0 +1,22 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Team",
+ "enabled": 1,
+ "event": "Method",
+ "message": "Your daily performance update for {{ doc.date }} is overdue. Please submit it at the earliest.",
+ "message_type": "Markdown",
+ "method": "on_update",
+ "module": "Employee Performance",
+ "name": "Late Update Reminder",
+ "recipients": [
+  {
+   "receiver_by_role": "EPMS Team Leader"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Late Update Reminder - Daily Performance",
+ "value_changed": "",
+ "value_changed_method": ""
+}

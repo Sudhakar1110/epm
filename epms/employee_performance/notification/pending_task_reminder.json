@@ -1,0 +1,22 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "document_type": "Pending Task",
+ "enabled": 1,
+ "event": "Method",
+ "message": "You have a pending task: {{ doc.task }}",
+ "message_type": "Markdown",
+ "method": "on_submit",
+ "module": "Employee Performance",
+ "name": "Pending Task Reminder",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 1,
+ "subject": "Pending Task Reminder",
+ "value_changed": "",
+ "value_changed_method": ""
+}
