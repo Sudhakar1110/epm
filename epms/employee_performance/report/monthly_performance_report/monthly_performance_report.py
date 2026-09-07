@@ -158,11 +158,9 @@ def get_data(filters):
 
 
 def get_chart_data(data):
-    """Get chart data for the report."""
     if not data:
         return None
 
-    # Group by grade
     grade_counts = {}
     for row in data:
         grade = row.get("final_grade", "Unknown")
@@ -175,6 +173,6 @@ def get_chart_data(data):
                 {"name": "Employees", "values": list(grade_counts.values())}
             ],
         },
-        "type": "pie",
+        "type": "bar",
         "colors": ["#28a745", "#17a2b8", "#ffc107", "#fd7e14", "#dc3545"],
     }

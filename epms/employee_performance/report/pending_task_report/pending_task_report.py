@@ -99,6 +99,6 @@ def get_chart_data(data):
             "labels": list(status_counts.keys()),
             "datasets": [{"name": "Tasks", "values": list(status_counts.values())}],
         },
-        "type": "pie",
+        "type": "bar",
         "colors": ["#ffc107", "#007bff", "#28a745", "#dc3545"],
     }

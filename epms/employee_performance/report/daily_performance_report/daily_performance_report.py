@@ -142,11 +142,9 @@ def get_data(filters):
 
 
 def get_chart_data(data):
-    """Get chart data for the report."""
     if not data:
         return None
 
-    # Group by status
     status_counts = {}
     for row in data:
         status = row.get("task_status", "Unknown")
@@ -157,6 +155,6 @@ def get_chart_data(data):
             "labels": list(status_counts.keys()),
             "datasets": [{"name": "Tasks", "values": list(status_counts.values())}],
         },
-        "type": "pie",
+        "type": "bar",
         "colors": ["#28a745", "#007bff", "#ffc107", "#dc3545"],
     }
