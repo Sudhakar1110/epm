@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
+from epms.employee_performance.report.report_utils import badge, score_color
 
 
 def execute(filters=None):
@@ -116,17 +117,21 @@ def get_data(filters):
     for i, row in enumerate(data):
         row["rank"] = i + 1
 
-        # Assign badge
-        if row.overall_score >= 90:
-            row["badge"] = "🏆"
-        elif row.overall_score >= 80:
-            row["badge"] = "🥇"
-        elif row.overall_score >= 70:
-            row["badge"] = "🥈"
-        elif row.overall_score >= 60:
-            row["badge"] = "🥉"
+        sc = float(row.get("overall_score") or 0)
+        row["overall_score"] = score_color(sc)
+        row["final_grade"] = badge(row.get("final_grade"))
+
+        if sc >= 90:
+            row["badge"] = "🏆 Gold"
+        elif sc >= 80:
+            row["badge"] = "🥇 Silver"
+        elif sc >= 70:
+            row["badge"] = "🥈 Bronze"
+        elif sc >= 60:
+            row["badge"] = "🥉 Merit"
         else:
-            row["badge"] = "📋"
+            row["badge"] = "📋 Review"
+        row["badge"] = badge(row["badge"])
 
     return data
 

@@ -28,11 +28,6 @@ frappe.query_reports['Employee Wise Report'] = {
         }
     ],
 
-    formatters: {
-        latest_grade: function(value) { return epms_report_utils.badge(value); },
-        avg_completion: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, date_diff
+from epms.employee_performance.report.report_utils import badge, priority, progress_bar
 
 
 def execute(filters=None):
@@ -77,8 +78,8 @@ def get_data(filters):
             "employee_name": dp.get("employee_name", ""),
             "date": dp.get("date"),
             "days_overdue": days_overdue,
-            "priority": st.priority,
-            "task_status": st.task_status,
+            "priority": priority(st.priority),
+            "task_status": badge(st.task_status),
             "remarks": st.remarks,
         })
 

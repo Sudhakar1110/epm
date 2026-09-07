@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
+from epms.employee_performance.report.report_utils import badge, score_color
 
 
 def execute(filters=None):
@@ -111,6 +112,8 @@ def get_data(filters):
     # Add rank
     for i, row in enumerate(data):
         row["rank"] = i + 1
+        row["overall_score"] = score_color(row.get("overall_score"))
+        row["final_grade"] = badge(row.get("final_grade"))
 
     return data
 

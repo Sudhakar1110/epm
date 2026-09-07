@@ -35,13 +35,6 @@ frappe.query_reports['Monthly Performance Report'] = {
         }
     ],
 
-    formatters: {
-        performance_status: function(value) { return epms_report_utils.badge(value); },
-        final_grade: function(value) { return epms_report_utils.badge(value); },
-        overall_score: function(value) { return epms_report_utils.progress(value); },
-        completed_percentage: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

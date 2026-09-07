@@ -40,12 +40,6 @@ frappe.query_reports['Daily Performance Report'] = {
         }
     ],
 
-    formatters: {
-        task_status: function(value) { return epms_report_utils.badge(value); },
-        priority: function(value) { return epms_report_utils.priority(value); },
-        completion_percentage: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

@@ -17,11 +17,6 @@ frappe.query_reports['Monthly KPI Report'] = {
         }
     ],
 
-    formatters: {
-        status: function(value) { return epms_report_utils.badge(value); },
-        achievement: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

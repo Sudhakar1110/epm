@@ -26,11 +26,6 @@ frappe.query_reports['Pending Task Report'] = {
         }
     ],
 
-    formatters: {
-        task_status: function(value) { return epms_report_utils.badge(value); },
-        priority: function(value) { return epms_report_utils.priority(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

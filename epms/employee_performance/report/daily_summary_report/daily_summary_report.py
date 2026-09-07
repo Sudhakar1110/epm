@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate
+from epms.employee_performance.report.report_utils import progress_bar
 
 
 def execute(filters=None):
@@ -67,6 +68,9 @@ def get_data(filters):
         """,
         as_dict=True,
     )
+
+    for row in data:
+        row["avg_completion"] = progress_bar(row.get("avg_completion"))
 
     return data
 

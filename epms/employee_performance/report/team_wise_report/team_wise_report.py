@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
+from epms.employee_performance.report.report_utils import badge, progress_bar, score_color
 
 
 def execute(filters=None):
@@ -144,8 +145,8 @@ def get_data(filters):
                 "avg_rating": round(stats.avg_rating or 0, 2),
                 "avg_quality": round(stats.avg_quality or 0, 2),
                 "total_hours": round(stats.total_hours or 0, 2),
-                "avg_completion": round(stats.avg_completion or 0, 2),
-                "team_score": round(team_score or 0, 2),
+                "avg_completion": progress_bar(stats.avg_completion or 0),
+                "team_score": score_color(team_score or 0),
             }
         )
 

@@ -23,11 +23,6 @@ frappe.query_reports['Leaderboard Report'] = {
         }
     ],
 
-    formatters: {
-        final_grade: function(value) { return epms_report_utils.badge(value); },
-        overall_score: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

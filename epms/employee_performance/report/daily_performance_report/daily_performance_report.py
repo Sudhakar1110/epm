@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
+from epms.employee_performance.report.report_utils import badge, priority, progress_bar
 
 
 def execute(filters=None):
@@ -137,6 +138,11 @@ def get_data(filters):
         ],
         order_by="date desc, employee_name asc",
     )
+
+    for row in data:
+        row["priority"] = priority(row.get("priority"))
+        row["task_status"] = badge(row.get("task_status"))
+        row["completion_percentage"] = progress_bar(row.get("completion_percentage"))
 
     return data
 

@@ -16,10 +16,6 @@ frappe.query_reports['Team Wise Report'] = {
         }
     ],
 
-    formatters: {
-        avg_completion: function(value) { return epms_report_utils.progress(value); }
-    },
-
     onload: function(report) {
         epms_report_utils.addExportButtons(report);
     }

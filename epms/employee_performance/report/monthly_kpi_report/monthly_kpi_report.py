@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint, get_first_day, get_last_day
+from epms.employee_performance.report.report_utils import badge, progress_bar
 
 
 def execute(filters=None):
@@ -113,8 +114,8 @@ def get_data(filters):
                 "kpi_name": kpi["kpi_name"],
                 "target": kpi["target"],
                 "actual": kpi["actual"],
-                "achievement": round(achievement, 2),
-                "status": status,
+                "achievement": progress_bar(achievement),
+                "status": badge(status),
             })
 
     return data
