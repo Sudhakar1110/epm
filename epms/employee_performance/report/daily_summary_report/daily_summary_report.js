@@ -1,3 +1,13 @@
+function epms_progress(val) {
+    if (val === null || val === undefined || val === '') return '';
+    var pct = parseFloat(val) || 0;
+    var cls = 'blue';
+    if (pct >= 80) cls = 'green';
+    else if (pct >= 60) cls = 'yellow';
+    else cls = 'red';
+    return '<div class="epms-progress"><div class="epms-progress-track"><div class="epms-progress-fill ' + cls + '" style="width:' + Math.min(pct,100) + '%"></div></div><span class="epms-progress-label">' + pct.toFixed(1) + '%</span></div>';
+}
+
 frappe.query_reports['Daily Summary Report'] = {
     filters: [
         {
@@ -28,7 +38,7 @@ frappe.query_reports['Daily Summary Report'] = {
         }
     ],
 
-    onload: function(report) {
-        epms_report_utils.addExportButtons(report);
+    formatters: {
+        avg_completion: function(v) { return epms_progress(v); }
     }
 };

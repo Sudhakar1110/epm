@@ -1,3 +1,31 @@
+function epms_badge(v) {
+    if (!v) return '';
+    var s = String(v).toLowerCase();
+    var cls = 'epms-badge-info';
+    if (['on track','excellent','very good','completed','a+','a','b+','b','gold','silver'].indexOf(s) > -1) cls = 'epms-badge-success';
+    else if (['needs attention','good','average','in progress','c','d'].indexOf(s) > -1) cls = 'epms-badge-warning';
+    else if (['at risk','needs improvement','blocked','f','fail'].indexOf(s) > -1) cls = 'epms-badge-danger';
+    else if (['pending'].indexOf(s) > -1) cls = 'epms-badge-muted';
+    return '<span class="epms-badge ' + cls + '">' + v + '</span>';
+}
+function epms_progress(val) {
+    if (val === null || val === undefined || val === '') return '';
+    var pct = parseFloat(val) || 0;
+    var cls = 'blue';
+    if (pct >= 80) cls = 'green';
+    else if (pct >= 60) cls = 'yellow';
+    else cls = 'red';
+    return '<div class="epms-progress"><div class="epms-progress-track"><div class="epms-progress-fill ' + cls + '" style="width:' + Math.min(pct,100) + '%"></div></div><span class="epms-progress-label">' + pct.toFixed(1) + '%</span></div>';
+}
+function epms_score(v) {
+    if (v === null || v === undefined || v === '') return '0';
+    var n = parseFloat(v) || 0;
+    var cls = 'epms-badge-success';
+    if (n < 60) cls = 'epms-badge-danger';
+    else if (n < 80) cls = 'epms-badge-warning';
+    return '<span class="epms-badge ' + cls + '">' + n.toFixed(1) + '</span>';
+}
+
 frappe.query_reports['Employee Wise Report'] = {
     filters: [
         {
@@ -28,7 +56,9 @@ frappe.query_reports['Employee Wise Report'] = {
         }
     ],
 
-    onload: function(report) {
-        epms_report_utils.addExportButtons(report);
+    formatters: {
+        latest_grade: function(v) { return epms_badge(v); },
+        avg_completion: function(v) { return epms_progress(v); },
+        latest_score: function(v) { return epms_score(v); }
     }
 };

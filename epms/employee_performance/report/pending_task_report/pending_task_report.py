@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, date_diff
-from epms.employee_performance.report.report_utils import badge, priority, progress_bar
 
 
 def execute(filters=None):
@@ -21,8 +20,8 @@ def get_columns():
         {"fieldname": "employee_name", "fieldtype": "Data", "label": _("Employee"), "width": 150},
         {"fieldname": "date", "fieldtype": "Date", "label": _("Date"), "width": 100},
         {"fieldname": "days_overdue", "fieldtype": "Int", "label": _("Days Overdue"), "width": 100},
-        {"fieldname": "priority", "fieldtype": "Data", "label": _("Priority"), "width": 80, "escape_html": 0},
-        {"fieldname": "task_status", "fieldtype": "Data", "label": _("Status"), "width": 100, "escape_html": 0},
+        {"fieldname": "priority", "fieldtype": "Data", "label": _("Priority"), "width": 80},
+        {"fieldname": "task_status", "fieldtype": "Data", "label": _("Status"), "width": 100},
         {"fieldname": "remarks", "fieldtype": "Data", "label": _("Remarks"), "width": 150},
     ]
 
@@ -78,8 +77,8 @@ def get_data(filters):
             "employee_name": dp.get("employee_name", ""),
             "date": dp.get("date"),
             "days_overdue": days_overdue,
-            "priority": priority(st.priority),
-            "task_status": badge(st.task_status),
+            "priority": st.priority,
+            "task_status": st.task_status,
             "remarks": st.remarks,
         })
 

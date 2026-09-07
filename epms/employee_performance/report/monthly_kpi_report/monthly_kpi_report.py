@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint, get_first_day, get_last_day
-from epms.employee_performance.report.report_utils import badge, progress_bar
 
 
 def execute(filters=None):
@@ -21,8 +20,8 @@ def get_columns():
         {"fieldname": "kpi_name", "fieldtype": "Data", "label": _("KPI"), "width": 200},
         {"fieldname": "target", "fieldtype": "Float", "label": _("Target"), "width": 100},
         {"fieldname": "actual", "fieldtype": "Float", "label": _("Actual"), "width": 100},
-        {"fieldname": "achievement", "fieldtype": "Percent", "label": _("Achievement %"), "width": 110, "escape_html": 0},
-        {"fieldname": "status", "fieldtype": "Data", "label": _("Status"), "width": 100, "escape_html": 0},
+        {"fieldname": "achievement", "fieldtype": "Percent", "label": _("Achievement %"), "width": 110},
+        {"fieldname": "status", "fieldtype": "Data", "label": _("Status"), "width": 100},
     ]
 
 
@@ -114,8 +113,8 @@ def get_data(filters):
                 "kpi_name": kpi["kpi_name"],
                 "target": kpi["target"],
                 "actual": kpi["actual"],
-                "achievement": progress_bar(achievement),
-                "status": badge(status),
+                "achievement": round(achievement, 2),
+                "status": status,
             })
 
     return data

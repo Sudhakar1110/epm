@@ -1,3 +1,23 @@
+function epms_badge(v) {
+    if (!v) return '';
+    var s = String(v).toLowerCase();
+    var cls = 'epms-badge-info';
+    if (['on track','excellent','very good','completed','a+','a','b+','b','gold','silver'].indexOf(s) > -1) cls = 'epms-badge-success';
+    else if (['needs attention','good','average','in progress','c','d'].indexOf(s) > -1) cls = 'epms-badge-warning';
+    else if (['at risk','needs improvement','blocked','f','fail'].indexOf(s) > -1) cls = 'epms-badge-danger';
+    else if (['pending'].indexOf(s) > -1) cls = 'epms-badge-muted';
+    return '<span class="epms-badge ' + cls + '">' + v + '</span>';
+}
+function epms_progress(val) {
+    if (val === null || val === undefined || val === '') return '';
+    var pct = parseFloat(val) || 0;
+    var cls = 'blue';
+    if (pct >= 80) cls = 'green';
+    else if (pct >= 60) cls = 'yellow';
+    else cls = 'red';
+    return '<div class="epms-progress"><div class="epms-progress-track"><div class="epms-progress-fill ' + cls + '" style="width:' + Math.min(pct,100) + '%"></div></div><span class="epms-progress-label">' + pct.toFixed(1) + '%</span></div>';
+}
+
 frappe.query_reports['Monthly KPI Report'] = {
     filters: [
         {
@@ -17,7 +37,8 @@ frappe.query_reports['Monthly KPI Report'] = {
         }
     ],
 
-    onload: function(report) {
-        epms_report_utils.addExportButtons(report);
+    formatters: {
+        status: function(v) { return epms_badge(v); },
+        achievement: function(v) { return epms_progress(v); }
     }
 };

@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
-from epms.employee_performance.report.report_utils import badge, progress_bar, score_color
 
 
 def execute(filters=None):
@@ -26,9 +25,9 @@ def get_columns():
         {"fieldname": "avg_rating", "fieldtype": "Float", "label": _("Avg Rating"), "width": 90},
         {"fieldname": "avg_quality", "fieldtype": "Float", "label": _("Avg Quality"), "width": 90},
         {"fieldname": "total_hours", "fieldtype": "Float", "label": _("Total Hours"), "width": 90},
-        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion %"), "width": 110, "escape_html": 0},
-        {"fieldname": "latest_score", "fieldtype": "Float", "label": _("Latest Score"), "width": 100, "escape_html": 0},
-        {"fieldname": "latest_grade", "fieldtype": "Data", "label": _("Latest Grade"), "width": 100, "escape_html": 0},
+        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion %"), "width": 110},
+        {"fieldname": "latest_score", "fieldtype": "Float", "label": _("Latest Score"), "width": 100},
+        {"fieldname": "latest_grade", "fieldtype": "Data", "label": _("Latest Grade"), "width": 100},
     ]
 
 
@@ -110,9 +109,9 @@ def get_data(filters):
             "avg_rating": round(avg_rating, 2),
             "avg_quality": round(avg_quality, 2),
             "total_hours": round(total_hours, 2),
-            "avg_completion": progress_bar(avg_completion),
-            "latest_score": score_color(scorecard.overall_score if scorecard else 0),
-            "latest_grade": badge(scorecard.final_grade if scorecard else "N/A"),
+            "avg_completion": round(avg_completion, 2),
+            "latest_score": scorecard.overall_score if scorecard else 0,
+            "latest_grade": scorecard.final_grade if scorecard else "N/A",
         })
 
     # Sort by avg rating descending

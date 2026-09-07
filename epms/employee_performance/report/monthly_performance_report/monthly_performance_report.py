@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate, cint
-from epms.employee_performance.report.report_utils import badge, progress_bar, score_color
 
 
 def execute(filters=None):
@@ -67,7 +66,6 @@ def get_columns():
             "fieldtype": "Percent",
             "label": _("Completion %"),
             "width": 100,
-            "escape_html": 0,
         },
         {
             "fieldname": "average_rating",
@@ -98,21 +96,18 @@ def get_columns():
             "fieldtype": "Float",
             "label": _("Overall Score"),
             "width": 110,
-            "escape_html": 0,
         },
         {
             "fieldname": "final_grade",
             "fieldtype": "Data",
             "label": _("Grade"),
             "width": 100,
-            "escape_html": 0,
         },
         {
             "fieldname": "performance_status",
             "fieldtype": "Data",
             "label": _("Status"),
             "width": 100,
-            "escape_html": 0,
         },
     ]
 
@@ -158,12 +153,6 @@ def get_data(filters):
         ],
         order_by="overall_score desc",
     )
-
-    for row in data:
-        row["completed_percentage"] = progress_bar(row.get("completed_percentage"))
-        row["overall_score"] = score_color(row.get("overall_score"))
-        row["final_grade"] = badge(row.get("final_grade"))
-        row["performance_status"] = badge(row.get("performance_status"))
 
     return data
 

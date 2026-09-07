@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate, nowdate
-from epms.employee_performance.report.report_utils import progress_bar
 
 
 def execute(filters=None):
@@ -28,7 +27,7 @@ def get_columns():
         {"fieldname": "avg_rating", "fieldtype": "Float", "label": _("Avg Rating"), "width": 90},
         {"fieldname": "avg_quality", "fieldtype": "Float", "label": _("Avg Quality"), "width": 90},
         {"fieldname": "total_hours", "fieldtype": "Float", "label": _("Total Hours"), "width": 90},
-        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion"), "width": 100, "escape_html": 0},
+        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion"), "width": 100},
     ]
 
 
@@ -68,9 +67,6 @@ def get_data(filters):
         """,
         as_dict=True,
     )
-
-    for row in data:
-        row["avg_completion"] = progress_bar(row.get("avg_completion"))
 
     return data
 
