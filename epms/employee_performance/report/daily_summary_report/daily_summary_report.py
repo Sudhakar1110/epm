@@ -28,7 +28,7 @@ def get_columns():
         {"fieldname": "avg_rating", "fieldtype": "Float", "label": _("Avg Rating"), "width": 90},
         {"fieldname": "avg_quality", "fieldtype": "Float", "label": _("Avg Quality"), "width": 90},
         {"fieldname": "total_hours", "fieldtype": "Float", "label": _("Total Hours"), "width": 90},
-        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion"), "width": 100},
+        {"fieldname": "avg_completion", "fieldtype": "Percent", "label": _("Avg Completion"), "width": 100, "escape_html": 0},
     ]
 
 

@@ -43,12 +43,14 @@ def get_columns():
             "fieldtype": "Float",
             "label": _("Score"),
             "width": 100,
+            "escape_html": 0,
         },
         {
             "fieldname": "final_grade",
             "fieldtype": "Data",
             "label": _("Grade"),
             "width": 100,
+            "escape_html": 0,
         },
         {
             "fieldname": "tasks_completed",
@@ -79,6 +81,7 @@ def get_columns():
             "fieldtype": "Data",
             "label": _("Badge"),
             "width": 80,
+            "escape_html": 0,
         },
     ]
 

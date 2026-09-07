@@ -43,12 +43,14 @@ def get_columns():
             "fieldtype": "Float",
             "label": _("Overall Score"),
             "width": 110,
+            "escape_html": 0,
         },
         {
             "fieldname": "final_grade",
             "fieldtype": "Data",
             "label": _("Grade"),
             "width": 100,
+            "escape_html": 0,
         },
         {
             "fieldname": "productivity_score",

@@ -21,8 +21,8 @@ def get_columns():
         {"fieldname": "kpi_name", "fieldtype": "Data", "label": _("KPI"), "width": 200},
         {"fieldname": "target", "fieldtype": "Float", "label": _("Target"), "width": 100},
         {"fieldname": "actual", "fieldtype": "Float", "label": _("Actual"), "width": 100},
-        {"fieldname": "achievement", "fieldtype": "Percent", "label": _("Achievement %"), "width": 110},
-        {"fieldname": "status", "fieldtype": "Data", "label": _("Status"), "width": 100},
+        {"fieldname": "achievement", "fieldtype": "Percent", "label": _("Achievement %"), "width": 110, "escape_html": 0},
+        {"fieldname": "status", "fieldtype": "Data", "label": _("Status"), "width": 100, "escape_html": 0},
     ]
 
 

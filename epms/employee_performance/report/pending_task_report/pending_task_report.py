@@ -21,8 +21,8 @@ def get_columns():
         {"fieldname": "employee_name", "fieldtype": "Data", "label": _("Employee"), "width": 150},
         {"fieldname": "date", "fieldtype": "Date", "label": _("Date"), "width": 100},
         {"fieldname": "days_overdue", "fieldtype": "Int", "label": _("Days Overdue"), "width": 100},
-        {"fieldname": "priority", "fieldtype": "Data", "label": _("Priority"), "width": 80},
-        {"fieldname": "task_status", "fieldtype": "Data", "label": _("Status"), "width": 100},
+        {"fieldname": "priority", "fieldtype": "Data", "label": _("Priority"), "width": 80, "escape_html": 0},
+        {"fieldname": "task_status", "fieldtype": "Data", "label": _("Status"), "width": 100, "escape_html": 0},
         {"fieldname": "remarks", "fieldtype": "Data", "label": _("Remarks"), "width": 150},
     ]
 

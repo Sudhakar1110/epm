@@ -55,12 +55,14 @@ def get_columns():
             "fieldtype": "Data",
             "label": _("Priority"),
             "width": 80,
+            "escape_html": 0,
         },
         {
             "fieldname": "task_status",
             "fieldtype": "Data",
             "label": _("Status"),
             "width": 100,
+            "escape_html": 0,
         },
         {
             "fieldname": "work_type",
@@ -79,6 +81,7 @@ def get_columns():
             "fieldtype": "Percent",
             "label": _("Completion %"),
             "width": 100,
+            "escape_html": 0,
         },
         {
             "fieldname": "daily_rating",

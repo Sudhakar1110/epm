@@ -72,12 +72,14 @@ def get_columns():
             "fieldtype": "Percent",
             "label": _("Avg Completion %"),
             "width": 110,
+            "escape_html": 0,
         },
         {
             "fieldname": "team_score",
             "fieldtype": "Float",
             "label": _("Team Score"),
             "width": 100,
+            "escape_html": 0,
         },
     ]
 
