@@ -222,3 +222,161 @@
         border: 1px solid #ddd;
     }
 }
+
+/* Report Status Badges */
+
+.epms-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.epms-badge-success {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+
+.epms-badge-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.epms-badge-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+}
+
+.epms-badge-info {
+    background: rgba(17, 78, 255, 0.1);
+    color: #114eff;
+}
+
+.epms-badge-muted {
+    background: rgba(134, 143, 160, 0.12);
+    color: #64748b;
+}
+
+/* Report Progress Bars */
+
+.epms-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.epms-progress-track {
+    flex: 1;
+    height: 8px;
+    background: #e5e8ee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.epms-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.epms-progress-fill.green { background: #16a34a; }
+.epms-progress-fill.yellow { background: #f59e0b; }
+.epms-progress-fill.red { background: #ef4444; }
+.epms-progress-fill.blue { background: #114eff; }
+
+.epms-progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #131d33;
+    min-width: 36px;
+    text-align: right;
+}
+
+/* Report Priority Badges */
+
+.epms-priority {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.epms-priority::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.epms-priority-low { background: rgba(134, 143, 160, 0.1); color: #64748b; }
+.epms-priority-low::before { background: #94a3b8; }
+.epms-priority-medium { background: rgba(17, 78, 255, 0.08); color: #114eff; }
+.epms-priority-medium::before { background: #114eff; }
+.epms-priority-high { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+.epms-priority-high::before { background: #f59e0b; }
+.epms-priority-critical { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+.epms-priority-critical::before { background: #ef4444; }
+
+/* Report Print */
+
+.epms-print-header,
+.epms-print-footer {
+    display: none;
+}
+
+@media print {
+    .epms-print-header {
+        display: flex !important;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 2px solid #114eff;
+        margin-bottom: 16px;
+    }
+
+    .epms-print-logo {
+        width: 42px;
+        height: 42px;
+    }
+
+    .epms-print-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #131d33;
+    }
+
+    .epms-print-subtitle {
+        font-size: 12px;
+        color: #8a94a6;
+    }
+
+    .epms-print-footer {
+        display: block !important;
+        text-align: center;
+        font-size: 11px;
+        color: #8a94a6;
+        padding-top: 20px;
+        border-top: 1px solid #e5e8ee;
+        margin-top: 20px;
+    }
+
+    .epms-badge { border: 1px solid #ccc; }
+    .epms-progress-track { border: 1px solid #ddd; }
+
+    .layout-main-section .page-container,
+    .frappe-control .page-container {
+        padding: 10px !important;
+    }
+
+    .report-wrapper,
+    .page-body {
+        padding: 0 !important;
+    }
+}
