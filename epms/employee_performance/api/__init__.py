@@ -278,6 +278,10 @@ def get_portal_stats():
     teams = frappe.db.count("Team", {"status": "Active"})
     members = frappe.db.count("Team Member Mapping", {"status": "Active"})
     today_perf = frappe.db.count("Daily Performance", {"date": getdate(nowdate()), "docstatus": 1})
+    try:
+        pending_tasks = frappe.db.count("Pending Task", {"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1})
+    except Exception:
+        pending_tasks = 0
     avg_score = frappe.db.get_value(
         "Performance Scorecard",
         {"month": getdate(nowdate()).month, "year": getdate(nowdate()).year, "docstatus": 1},
@@ -286,7 +290,7 @@ def get_portal_stats():
     return {
         "teams": teams or 0,
         "members": members or 0,
-        "pending_tasks": today_perf or 0,
+        "pending_tasks": pending_tasks or 0,
         "avg_score": round(flt(avg_score, 1) if avg_score else 0, 1),
     }
 
@@ -377,7 +381,7 @@ def get_portal_notifications(limit=None):
     portal_routes = {
         "Daily Performance": "/epms/my-day",
         "Performance Scorecard": "/epms/scorecards",
-        "Pending Task": "/epms/tasks",
+        "Pending Task": "/epms/my-day",
     }
 
     for n in notifications:
@@ -935,9 +939,9 @@ def submit_portal_daily_performance(date=None, task_title=None, task_status=None
     me = frappe.session.user
     user_roles = frappe.get_roles(me)
 
-    # Only Founder and Team Leader can submit daily performance
-    if "EPMS Founder" not in user_roles and "EPMS Team Leader" not in user_roles:
-        return {"ok": False, "error": _("Only Team Leaders or Founders can log daily work.")}
+    # All EPMS roles can submit daily performance for themselves
+    if "EPMS Founder" not in user_roles and "EPMS Team Leader" not in user_roles and "EPMS Team Member" not in user_roles:
+        return {"ok": False, "error": _("Only EPMS users can log daily work.")}
 
     task_title = (task_title or "").strip()
 

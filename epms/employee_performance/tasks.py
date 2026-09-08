@@ -400,14 +400,57 @@ def send_email_reports():
 
     recipients = list(set(founders + [t.team_leader for t in team_leaders if t.team_leader]))
 
+    # Gather summary data for the email
+    from frappe.utils import cint, getdate, nowdate, flt
+    now = getdate(nowdate())
+    month, year = cint(now.month), cint(now.year)
+
+    total_teams = frappe.db.count("Team", {"status": "Active"})
+    total_members = frappe.db.count("Team Member Mapping", {"status": "Active"})
+    total_entries = frappe.db.count("Daily Performance", {"date": now, "docstatus": 1})
+    avg_score = frappe.db.get_value(
+        "Performance Scorecard", {"month": month, "year": year, "docstatus": 1}, "avg(overall_score)"
+    )
+
+    top_performers = frappe.get_all(
+        "Performance Scorecard",
+        filters={"month": month, "year": year, "docstatus": 1},
+        fields=["employee_name", "overall_score", "final_grade"],
+        order_by="overall_score desc",
+        limit_page_length=5,
+    )
+
+    rows = ""
+    for p in top_performers:
+        rows += f"<tr><td>{p.get('employee_name','')}</td><td>{p.get('overall_score',0):.1f}</td><td>{p.get('final_grade','')}</td></tr>"
+
+    message = (
+        "<h3>EPMS Weekly Performance Report</h3>"
+        f"<p><strong>Date:</strong> {frappe.utils.formatdate(nowdate(), 'dd MMMM yyyy')}</p>"
+        "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
+        f"<tr><td><strong>Total Teams</strong></td><td>{total_teams}</td></tr>"
+        f"<tr><td><strong>Total Members</strong></td><td>{total_members}</td></tr>"
+        f"<tr><td><strong>Today's Entries</strong></td><td>{total_entries}</td></tr>"
+        f"<tr><td><strong>Avg Score ({month}/{year})</strong></td><td>{round(flt(avg_score) if avg_score else 0, 1)}</td></tr>"
+        "</table>"
+    )
+
+    if rows:
+        message += (
+            "<h4>Top Performers</h4>"
+            "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
+            "<tr><th>Employee</th><th>Score</th><th>Grade</th></tr>"
+            f"{rows}</table>"
+        )
+
+    message += "<p><a href='/epms/reports'>View Full Reports</a></p>"
+
     for user in recipients:
         try:
             frappe.sendmail(
                 recipients=[user],
-                subject="EPMS Weekly Performance Report",
-                message="<h3>Employee Performance Management System - Weekly Report</h3>"
-                        "<p>Please check your workspace for the latest performance data.</p>"
-                        "<p><a href='/app/employee-performance-management'>Open EPMS Workspace</a></p>",
+                subject=f"EPMS Weekly Performance Report - {frappe.utils.formatdate(nowdate(), 'dd MMM yyyy')}",
+                message=message,
             )
         except Exception as e:
             frappe.log_error(f"EPMS Email Error: {str(e)}")

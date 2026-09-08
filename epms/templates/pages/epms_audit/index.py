@@ -1,3 +1,5 @@
+import frappe
+
 from epms.employee_performance.utils import (
     portal_audit_log,
     portal_login_redirect,
@@ -8,6 +10,11 @@ from epms.employee_performance.utils import (
 def get_context(context):
     portal_login_redirect()
     portal_setup_common(context)
+
+    user_roles = frappe.get_roles(frappe.session.user)
+    if "EPMS Founder" not in user_roles and "EPMS Team Leader" not in user_roles:
+        frappe.local.flags.redirect_location = "/epms"
+        raise frappe.Redirect
 
     context.audit_rows = portal_audit_log()
     context.active_page = "audit"

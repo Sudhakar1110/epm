@@ -19,6 +19,6 @@ def get_context(context):
 
     context.team = result["team"]
     context.members = result["members"]
-    context.can_manage = True  # Allow everyone to see manage options
+    context.can_manage = result.get("can_manage", False)
     context.user_candidates = portal_user_candidates()
     context.active_page = "teams"

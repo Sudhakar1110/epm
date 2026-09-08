@@ -7,6 +7,7 @@ from frappe.utils import getdate, nowdate, cint, flt, get_first_day, get_last_da
 class PerformanceScorecard(Document):
     def validate(self):
         self.validate_month_year()
+        self.validate_duplicate()
         self.calculate_scores()
 
     def validate_month_year(self):
@@ -17,6 +18,22 @@ class PerformanceScorecard(Document):
             frappe.throw(_("Invalid month"))
         if self.year and (self.year < 2000 or self.year > 2100):
             frappe.throw(_("Invalid year"))
+
+    def validate_duplicate(self):
+        """Prevent duplicate scorecards for the same employee/month/year."""
+        if not self.employee or not self.month or not self.year:
+            return
+        filters = {
+            "employee": self.employee,
+            "month": self.month,
+            "year": self.year,
+            "docstatus": ["!=", 2],
+        }
+        if self.name:
+            filters["name"] = ["!=", self.name]
+        existing = frappe.db.exists("Performance Scorecard", filters)
+        if existing:
+            frappe.throw(_("A scorecard already exists for {0} for {1}/{2}.").format(self.employee, self.month, self.year))
 
     def calculate_scores(self):
         """Calculate all scores for the scorecard."""
@@ -38,7 +55,16 @@ class PerformanceScorecard(Document):
                 "User", self.employee, "full_name"
             ) or self.employee
 
-        self.total_working_days = date_diff(last_day, first_day) + 1
+        # Count only weekdays (Mon=0 ... Fri=4)
+        total_calendar_days = date_diff(last_day, first_day) + 1
+        total_working_days = 0
+        day = first_day
+        while day <= last_day:
+            if day.weekday() < 5:
+                total_working_days += 1
+            day = add_days(day, 1)
+
+        self.total_working_days = total_working_days or total_calendar_days
 
         performances = frappe.get_all(
             "Daily Performance",
@@ -144,14 +170,23 @@ class PerformanceScorecard(Document):
         return min(score, 100)
 
     def _get_grade(self, score):
-        """Get grade based on score."""
-        if score >= 90:
+        """Get grade based on score using EPMS Settings thresholds."""
+        try:
+            settings = frappe.get_single("EPMS Settings")
+            excellent = float(settings.excellent_threshold or 90)
+            very_good = float(settings.very_good_threshold or 80)
+            good = float(settings.good_threshold or 70)
+            average = float(settings.average_threshold or 60)
+        except Exception:
+            excellent, very_good, good, average = 90, 80, 70, 60
+
+        if score >= excellent:
             return "Excellent"
-        elif score >= 80:
+        elif score >= very_good:
             return "Very Good"
-        elif score >= 70:
+        elif score >= good:
             return "Good"
-        elif score >= 60:
+        elif score >= average:
             return "Average"
         else:
             return "Needs Improvement"

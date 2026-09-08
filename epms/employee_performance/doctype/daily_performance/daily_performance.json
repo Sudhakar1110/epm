@@ -305,8 +305,8 @@
  "is_submittable": 1,
  "links": [
   {
-   "link_doctype": "Pending Task",
-   "link_fieldname": "parent"
+   "link_doctype": "Performance Scorecard",
+   "link_fieldname": "employee"
   }
  ],
  "modified": "2024-01-01 00:00:00.000000",

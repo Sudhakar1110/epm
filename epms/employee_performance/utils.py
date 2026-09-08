@@ -187,14 +187,23 @@ def calculate_attendance_score(employee, month, year):
 
 
 def get_grade(score):
-    """Get grade based on score."""
-    if score >= 90:
+    """Get grade based on score using EPMS Settings thresholds."""
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        excellent = flt(settings.excellent_threshold or 90)
+        very_good = flt(settings.very_good_threshold or 80)
+        good = flt(settings.good_threshold or 70)
+        average = flt(settings.average_threshold or 60)
+    except Exception:
+        excellent, very_good, good, average = 90, 80, 70, 60
+
+    if score >= excellent:
         return "Excellent"
-    elif score >= 80:
+    elif score >= very_good:
         return "Very Good"
-    elif score >= 70:
+    elif score >= good:
         return "Good"
-    elif score >= 60:
+    elif score >= average:
         return "Average"
     else:
         return "Needs Improvement"
@@ -270,10 +279,13 @@ def portal_setup_common(context):
     context.is_team_leader = has_role("EPMS Team Leader")
     context.is_team_member = has_role("EPMS Team Member")
     context.date_label = frappe.utils.formatdate(nowdate(), "EEEE, d MMMM yyyy")
-    context.pending_count = frappe.db.count(
-        "Pending Task",
-        filters={"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1},
-    )
+    try:
+        context.pending_count = frappe.db.count(
+            "Pending Task",
+            filters={"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1},
+        )
+    except Exception:
+        context.pending_count = 0
     context.no_cache = 1
 
 
@@ -376,17 +388,20 @@ def portal_search(query):
         order_by="team_name asc",
         limit_page_length=10,
     )
-    tasks = frappe.get_all(
-        "Pending Task",
-        filters={
-            "docstatus": 1,
-            "current_status": ["in", ["Pending", "In Progress"]],
-            "task": ["like", like],
-        },
-        fields=["name", "task", "employee_name", "team", "current_status"],
-        order_by="expected_completion asc",
-        limit_page_length=10,
-    )
+    try:
+        tasks = frappe.get_all(
+            "Pending Task",
+            filters={
+                "docstatus": 1,
+                "current_status": ["in", ["Pending", "In Progress"]],
+                "task": ["like", like],
+            },
+            fields=["name", "task", "employee_name", "team", "current_status"],
+            order_by="expected_completion asc",
+            limit_page_length=10,
+        )
+    except Exception:
+        tasks = []
     users = frappe.get_all(
         "User",
         filters={"enabled": 1, "full_name": ["like", like]},

@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from frappe.utils import getdate, nowdate, cint, get_first_day, get_last_day
+from frappe.utils import getdate, nowdate, cint, get_first_day, get_last_day, flt
 
 
 def execute(filters=None):
@@ -141,10 +141,3 @@ def get_chart_data(data):
         "type": "bar",
         "colors": ["#5e64ff"],
     }
-
-
-def flt(val):
-    try:
-        return float(val) if val else 0.0
-    except (TypeError, ValueError):
-        return 0.0

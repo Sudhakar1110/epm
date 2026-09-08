@@ -27,6 +27,7 @@ user_data_fields = [
 # Document Events
 doc_events = {
     "Daily Performance": {
+        "before_insert": "epms.employee_performance.doctype.daily_performance.daily_performance.before_insert",
         "on_submit": "epms.employee_performance.doctype.daily_performance.daily_performance.on_submit",
         "on_cancel": "epms.employee_performance.doctype.daily_performance.daily_performance.on_cancel",
         "validate": "epms.employee_performance.doctype.daily_performance.daily_performance.validate",
@@ -135,7 +136,14 @@ fixtures = [
     },
 ]
 
-# Has Permission — disabled; portal access controlled by portal_login_redirect()
+# Has Permission
+has_permission = {
+    "Daily Performance": "epms.employee_performance.doctype.daily_performance.daily_performance.has_permission",
+    "Performance Scorecard": "epms.employee_performance.doctype.performance_scorecard.performance_scorecard.has_permission",
+    "Team": "epms.employee_performance.doctype.team.team.has_permission",
+    "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
+    "Pending Task": "epms.employee_performance.doctype.pending_task.pending_task.has_permission",
+}
 
 # Before Migrate
 before_migrate = "epms.employee_performance.setup.before_migrate"
