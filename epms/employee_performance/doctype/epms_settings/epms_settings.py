@@ -33,3 +33,11 @@ def get_settings():
     """Get EPMS settings."""
     settings = frappe.get_single("EPMS Settings")
     return settings
+
+
+def has_permission(doc, user):
+    """Only EPMS Founder can access EPMS Settings."""
+    if not user:
+        user = frappe.session.user
+    user_roles = frappe.get_roles(user)
+    return "EPMS Founder" in user_roles

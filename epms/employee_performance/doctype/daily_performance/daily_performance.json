@@ -41,9 +41,8 @@
   "subtasks",
   "section_break_attachment",
   "attachment",
-  "section_break_created",
-  "workflow_state",
-  "amended_from"
+   "section_break_created",
+   "amended_from"
  ],
  "fields": [
   {
@@ -280,16 +279,6 @@
   {
    "fieldname": "section_break_created",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "workflow_state",
-   "fieldtype": "Select",
-   "label": "Workflow State",
-   "options": "Draft\nSubmitted\nReviewed",
-   "default": "Draft",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "read_only": 1
   },
   {
    "fieldname": "amended_from",

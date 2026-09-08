@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import getdate, nowdate, cint, flt, add_days
+from frappe.utils import getdate, nowdate, cint, flt
 
 
 class DailyPerformance(Document):

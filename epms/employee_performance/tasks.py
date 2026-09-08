@@ -7,13 +7,18 @@ from datetime import datetime
 def daily_tasks():
     """Run daily tasks."""
     frappe.logger().info("EPMS: Running daily tasks")
-    
+
     # Update pending tasks status
     update_pending_task_statuses()
-    
-    # Send daily reminders to team members
-    send_daily_reminders()
-    
+
+    # Send daily reminders only if enabled in EPMS Settings
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        if settings.send_daily_reminders:
+            send_daily_reminders()
+    except Exception:
+        send_daily_reminders()
+
     frappe.db.commit()
 
 
@@ -97,11 +102,18 @@ def send_late_update_reminders():
 
 def send_weekly_summary():
     """Send weekly summary to founders and team leaders."""
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        if not settings.send_weekly_summary:
+            return
+    except Exception:
+        pass
+
     from frappe.utils import get_week_start, get_week_end
-    
+
     week_start = get_week_start(nowdate())
     week_end = get_week_end(nowdate())
-    
+
     # Get all active teams
     teams = frappe.get_all(
         "Team",
@@ -155,15 +167,21 @@ def send_weekly_summary():
 
 def send_low_performance_alerts():
     """Send alerts for low performance."""
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        threshold = flt(settings.low_performance_threshold or 60)
+    except Exception:
+        threshold = 60
+
     current_month = getdate(nowdate()).month
     current_year = getdate(nowdate()).year
-    
+
     low_performers = frappe.get_all(
         "Performance Scorecard",
         filters={
             "month": current_month,
             "year": current_year,
-            "overall_score": ["<", 60],
+            "overall_score": ["<", threshold],
             "docstatus": 1,
         },
         fields=["employee", "employee_name", "overall_score", "final_grade"],
@@ -206,12 +224,27 @@ def send_low_performance_alerts():
 def generate_monthly_scorecards():
     """Generate monthly scorecards for all employees.
     
+    Respects EPMS Settings: auto_generate_scorecards and scorecard_day.
     Generates for BOTH the previous month (for finalization) and the current month
     (so scoreboards show live data). Skips if a scorecard already exists.
     """
-    frappe.logger().info("EPMS: Generating monthly scorecards")
-    
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        if not settings.auto_generate_scorecards:
+            frappe.logger().info("EPMS: Scorecard auto-generation disabled in Settings")
+            return
+        scorecard_day = cint(settings.scorecard_day or 1)
+    except Exception:
+        scorecard_day = 1
+
     today = getdate(nowdate())
+
+    # Only run on the configured day of the month
+    if today.day != scorecard_day:
+        frappe.logger().info(f"EPMS: Scorecard generation skipped (today={today.day}, configured_day={scorecard_day})")
+        return
+
+    frappe.logger().info("EPMS: Generating monthly scorecards")
     
     # Target months: previous month + current month
     targets = []
@@ -303,9 +336,16 @@ def recalculate_scorecards():
 
 def send_monthly_summary():
     """Send monthly summary to all users."""
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        if not settings.send_monthly_summary:
+            return
+    except Exception:
+        pass
+
     current_month = getdate(nowdate()).month
     current_year = getdate(nowdate()).year
-    
+
     # Get all employees with scorecards
     scorecards = frappe.get_all(
         "Performance Scorecard",
@@ -351,32 +391,6 @@ def send_daily_reminders():
                 subject="Daily Performance Reminder",
                 message="Please submit your daily performance entry for today.",
             )
-
-
-def send_performance_published(employee, scorecard_name):
-    """Notify employee when their scorecard is published."""
-    scorecard = frappe.get_doc("Performance Scorecard", scorecard_name)
-    
-    send_notification(
-        user=employee,
-        subject="Performance Scorecard Published",
-        message=f"Your performance scorecard for {scorecard.month}/{scorecard.year} has been published. Score: {scorecard.overall_score}",
-        reference_doctype="Performance Scorecard",
-        reference_name=scorecard_name,
-    )
-
-
-def send_monthly_score_generated(employee, scorecard_name):
-    """Notify when monthly score is generated."""
-    scorecard = frappe.get_doc("Performance Scorecard", scorecard_name)
-    
-    send_notification(
-        user=employee,
-        subject="Monthly Score Generated",
-        message=f"Your monthly scorecard for {scorecard.month}/{scorecard.year} has been generated.",
-        reference_doctype="Performance Scorecard",
-        reference_name=scorecard_name,
-    )
 
 
 def send_email_reports():

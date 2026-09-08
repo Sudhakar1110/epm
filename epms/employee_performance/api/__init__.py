@@ -322,21 +322,6 @@ def get_portal_scorecards():
 
 
 @frappe.whitelist()
-def get_portal_tasks():
-    """Get pending tasks for portal."""
-    return frappe.get_all(
-        "Pending Task",
-        filters={
-            "current_status": ["in", ["Pending", "In Progress"]],
-            "docstatus": 1,
-        },
-        fields=["task", "employee_name", "expected_completion", "priority", "current_status"],
-        order_by="expected_completion asc",
-        limit_page_length=20,
-    )
-
-
-@frappe.whitelist()
 def get_portal_top_performers():
     """Get top performers for portal dashboard."""
     return frappe.get_all(
@@ -399,19 +384,6 @@ def get_portal_notifications(limit=None):
         "notifications": notifications,
         "unread_count": unread_count or 0,
     }
-
-
-@frappe.whitelist()
-def get_portal_daily_work():
-    """Get today's daily work entries for portal."""
-    today = getdate(nowdate())
-    return frappe.get_all(
-        "Daily Performance",
-        filters={"date": today, "docstatus": 1},
-        fields=["name", "task_title", "employee_name", "team", "daily_rating", "quality_score"],
-        order_by="modified desc",
-        limit_page_length=10,
-    )
 
 
 @frappe.whitelist()
@@ -552,6 +524,7 @@ def create_portal_pending_task(employee=None, task=None, priority=None, expected
             {
                 "doctype": "Pending Task",
                 "employee": employee,
+                "employee_name": frappe.db.get_value("User", employee, "full_name") or employee,
                 "task": task,
                 "priority": priority,
                 "expected_completion": expected_completion_date,
@@ -559,6 +532,15 @@ def create_portal_pending_task(employee=None, task=None, priority=None, expected
                 "remarks": remarks.strip() if remarks else None,
             }
         )
+
+        # Auto-set team from employee's active team membership
+        team = frappe.db.get_value(
+            "Team Member Mapping",
+            {"user": employee, "status": "Active"},
+            "team",
+        )
+        if team:
+            doc.team = team
         
         # Set assigned_date via db_set if provided (it's read-only with default "Today")
         if assigned_date_str:
@@ -1221,6 +1203,14 @@ def import_portal_csv(kind=None, data=None):
                         "current_status": "Pending",
                     }
                 )
+                # Auto-set team from employee's active team membership
+                team = frappe.db.get_value(
+                    "Team Member Mapping",
+                    {"user": emp, "status": "Active"},
+                    "team",
+                )
+                if team:
+                    doc.team = team
                 doc.insert()
                 doc.submit()
                 created += 1

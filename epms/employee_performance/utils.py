@@ -140,52 +140,6 @@ def get_team_summary(team):
     return summary
 
 
-def calculate_productivity_score(tasks_completed, hours_worked, avg_completion_pct):
-    """Calculate productivity score (0-100)."""
-    task_score = min(tasks_completed * 5, 40)
-    hours_score = min(hours_worked * 1.5, 30)
-    completion_score = (avg_completion_pct / 100) * 30
-    return min(task_score + hours_score + completion_score, 100)
-
-
-def calculate_quality_score(avg_rating, avg_quality):
-    """Calculate quality score (0-100)."""
-    rating_score = (avg_rating / 10) * 60
-    quality_score = (avg_quality / 10) * 40
-    return min(rating_score + quality_score, 100)
-
-
-def calculate_attendance_score(employee, month, year):
-    """Calculate attendance score based on performance entries (weekdays only)."""
-    from frappe.utils import get_first_day, get_last_day, add_days
-
-    first_day = get_first_day(f"{year}-{month:02d}-01")
-    last_day = get_last_day(f"{year}-{month:02d}-01")
-
-    # Count only weekdays (Mon=0 ... Fri=4)
-    total_working_days = 0
-    day = first_day
-    while day <= last_day:
-        if day.weekday() < 5:
-            total_working_days += 1
-        day = add_days(day, 1)
-
-    days_with_entries = frappe.db.count(
-        "Daily Performance",
-        filters={
-            "employee": employee,
-            "date": ["between", [first_day, last_day]],
-            "docstatus": 1,
-        },
-    )
-
-    if total_working_days <= 0:
-        return 100
-
-    score = (days_with_entries / total_working_days) * 100
-    return min(score, 100)
-
-
 def get_grade(score):
     """Get grade based on score using EPMS Settings thresholds."""
     try:

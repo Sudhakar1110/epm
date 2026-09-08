@@ -192,10 +192,16 @@ class PerformanceScorecard(Document):
             return "Needs Improvement"
 
     def _get_performance_status(self, score):
-        """Get performance status."""
+        """Get performance status using EPMS Settings threshold."""
+        try:
+            settings = frappe.get_single("EPMS Settings")
+            low_threshold = float(settings.low_performance_threshold or 60)
+        except Exception:
+            low_threshold = 60
+
         if score >= 80:
             return "On Track"
-        elif score >= 60:
+        elif score >= low_threshold:
             return "Needs Attention"
         else:
             return "At Risk"

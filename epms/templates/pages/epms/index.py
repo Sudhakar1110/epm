@@ -30,12 +30,12 @@ def get_context(context):
         except Exception:
             context.active_members = 0
         try:
-            context.pending_tasks = frappe.db.count(
+            context.today_entries = frappe.db.count(
                 "Daily Performance",
                 filters={"docstatus": 1, "date": today},
             )
         except Exception:
-            context.pending_tasks = 0
+            context.today_entries = 0
         try:
             avg_score = frappe.db.get_value(
                 "Performance Scorecard",
@@ -108,7 +108,7 @@ def get_context(context):
         frappe.log_error(frappe.get_traceback() + f"\nError: {str(e)}", "EPMS Dashboard Page")
         context.total_teams = 0
         context.active_members = 0
-        context.pending_tasks = 0
+        context.today_entries = 0
         context.avg_score = 0
         context.month_label = ""
         context.current_year_label = str(getdate(nowdate()).year)

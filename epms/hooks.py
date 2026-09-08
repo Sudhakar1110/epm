@@ -7,7 +7,7 @@ app_license = "MIT"
 
 # Includes
 app_include_css = "/assets/epms/css/epms.css"
-app_include_js = ["/assets/epms/js/epms.js", "/assets/epms/js/epms_report_utils.js"]
+app_include_js = ["/assets/epms/js/epms.js"]
 
 # Dependencies
 required_apps = ["erpnext"]
@@ -143,6 +143,8 @@ has_permission = {
     "Team": "epms.employee_performance.doctype.team.team.has_permission",
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
     "Pending Task": "epms.employee_performance.doctype.pending_task.pending_task.has_permission",
+    "Employee KPI": "epms.employee_performance.doctype.employee_kpi.employee_kpi.has_permission",
+    "EPMS Settings": "epms.employee_performance.doctype.epms_settings.epms_settings.has_permission",
 }
 
 # Before Migrate
@@ -177,11 +179,12 @@ whitelisted_methods = [
     "epms.employee_performance.api.get_portal_notifications",
     "epms.employee_performance.api.set_portal_notifications_read",
     "epms.employee_performance.api.create_portal_team",
-"epms.employee_performance.api.create_portal_scorecard",
+    "epms.employee_performance.api.create_portal_scorecard",
     "epms.employee_performance.api.get_portal_team",
     "epms.employee_performance.api.add_portal_team_member",
     "epms.employee_performance.api.remove_portal_team_member",
-    "epms.employee_performance.api.set_portal_team_leader",    "epms.employee_performance.api.submit_portal_daily_performance",
+    "epms.employee_performance.api.set_portal_team_leader",
+    "epms.employee_performance.api.submit_portal_daily_performance",
     "epms.employee_performance.api.submit_team_member_daily_work",
     "epms.employee_performance.api.update_portal_profile",
     "epms.employee_performance.api.import_portal_csv",
@@ -197,7 +200,7 @@ website_route_rules = [
     {"from_route": "/epms/my-day", "to_route": "epms_my_day", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/teams", "to_route": "epms_teams", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/performance", "to_route": "epms_performance", "defaults": {"allow_guest": 1}},
-{"from_route": "/epms/scorecards", "to_route": "epms_scorecards", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/scorecards", "to_route": "epms_scorecards", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/reports", "to_route": "epms_reports", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/report", "to_route": "epms_report", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/team", "to_route": "epms_team", "defaults": {"allow_guest": 1}},

@@ -55,11 +55,23 @@ def has_permission(doc, user):
     if "EPMS Founder" in user_roles:
         return True
 
+    # Resolve doc — Frappe may pass a string name, dict, or Document
+    if isinstance(doc, str):
+        vals = frappe.db.get_value("Employee KPI", doc, ["employee", "team"], as_dict=True)
+        employee = vals.employee if vals else None
+        team = vals.team if vals else None
+    elif isinstance(doc, dict):
+        employee = doc.get("employee")
+        team = doc.get("team")
+    else:
+        employee = doc.employee
+        team = doc.team
+
     if "EPMS Team Leader" in user_roles:
-        team = frappe.db.get_value("Team", {"team_leader": user}, "name")
-        return doc.team == team
+        tl_team = frappe.db.get_value("Team", {"team_leader": user}, "name")
+        return team == tl_team
 
     if "EPMS Team Member" in user_roles:
-        return doc.employee == user
+        return employee == user
 
     return False
