@@ -14,23 +14,33 @@
     <main class="portal-main">
         <div class="page-wrap">
 
-            <header class="page-head">
+            <header class="page-head page-head-accent">
                 <div>
                     <h1 class="page-title">Profile</h1>
                     <p class="page-subtitle">Your account details.</p>
                 </div>
             </header>
 
-            <div class="card" style="max-width: 560px;">
-                <div class="card-body">
-                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
-                        <div class="avatar avatar-md" style="width:52px; height:52px; font-size:20px;">{{ (profile.full_name or 'U')[:1] }}</div>
-                        <div>
-                            <strong style="font-size:16px; color:var(--navy-dark);">{{ profile.full_name }}</strong>
-                            <div class="row-meta">{{ profile.email }} · {{ profile.roles }}</div>
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar avatar avatar-lg">{{ (profile.full_name or 'U')[:1] }}</div>
+                    <div class="profile-info">
+                        <h2 class="profile-name">{{ profile.full_name }}</h2>
+                        <p class="profile-email">{{ profile.email }}</p>
+                        <div class="profile-roles">
+                            {% for role in profile.role_list %}
+                            <span class="badge b-blue">{{ role }}</span>
+                            {% endfor %}
                         </div>
                     </div>
+                </div>
+            </div>
 
+            <div class="card" style="max-width: 560px;">
+                <div class="card-head">
+                    <h3>Account Settings</h3>
+                </div>
+                <div class="card-body">
                     <form id="profile-form" novalidate>
                         <div class="field">
                             <label for="profile-name">Full name</label>
