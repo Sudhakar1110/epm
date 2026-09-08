@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Employee Performance Management\",\"level\":4,\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Member Mapping\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Daily Performance\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending Task\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Performance Scorecard\",\"col\":3}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"DocTypes\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "content": "[{\"type\":\"header\",\"data\":{\"text\":\"Employee Performance Management\",\"level\":4,\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Member Mapping\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Daily Performance\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Performance Scorecard\",\"col\":3}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"DocTypes\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "custom_blocks": [],
  "doctype": "Workspace",
  "for_user": "",
@@ -14,7 +14,6 @@
   {"type": "Link", "link_type": "DocType", "link_to": "Team", "label": "Teams", "onboard": 1},
   {"type": "Link", "link_type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members", "onboard": 1},
   {"type": "Link", "link_type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance", "onboard": 1},
-  {"type": "Link", "link_type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks", "onboard": 1},
   {"type": "Link", "link_type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards", "onboard": 1},
   {"type": "Card Break", "label": "Reports"},
   {"type": "Link", "link_type": "Report", "link_to": "Daily Performance Report", "label": "Daily Performance Report", "is_query_report": 1, "onboard": 1},
@@ -37,7 +36,6 @@
   {"type": "DocType", "link_to": "Team", "label": "Teams"},
   {"type": "DocType", "link_to": "Team Member Mapping", "label": "Team Members"},
   {"type": "DocType", "link_to": "Daily Performance", "label": "Daily Performance"},
-  {"type": "DocType", "link_to": "Pending Task", "label": "Pending Tasks"},
   {"type": "DocType", "link_to": "Performance Scorecard", "label": "Scorecards"}
  ],
  "title": "Employee Performance Management"
