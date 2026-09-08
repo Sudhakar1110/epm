@@ -74,11 +74,12 @@ class DailyPerformance(Document):
             self.employee_name = full_name or self.employee
 
     def calculate_computed_fields(self):
-        """Calculate computed fields."""
-        if self.task_status == "Completed":
-            self.completion_percentage = 100
-        elif self.task_status == "Pending":
-            self.completion_percentage = 0
+        """Set default completion if not already provided."""
+        if self.completion_percentage is None:
+            if self.task_status == "Completed":
+                self.completion_percentage = 100
+            elif self.task_status == "Pending":
+                self.completion_percentage = 0
 
     def on_submit(self):
         """On document submit."""
@@ -178,26 +179,22 @@ class DailyPerformance(Document):
 
 def before_insert(doc, method):
     """Before Daily Performance insert."""
-    doc.created_by = frappe.session.user
     if not doc.performance_id:
         doc.performance_id = frappe.utils.now_datetime().strftime("PERF-%Y%m%d%H%M%S-") + str(frappe.utils.now_datetime().microsecond // 1000).zfill(3)
 
 
 def validate(doc, method):
-    """Validate Daily Performance."""
+    """Validate Daily Performance — class method handles all validation."""
     pass
 
 
 def on_submit(doc, method):
-    """On Daily Performance submit — create/update scorecard instantly."""
-    try:
-        doc.ensure_scorecard()
-    except Exception:
-        frappe.log_error(frappe.get_traceback(), "EPMS Ensure Scorecard on Submit")
+    """On Daily Performance submit — class method handles scorecard + timeline + notification."""
+    pass
 
 
 def on_cancel(doc, method):
-    """On Daily Performance cancel."""
+    """On Daily Performance cancel — class method handles timeline entry."""
     pass
 
 

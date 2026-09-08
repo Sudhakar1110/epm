@@ -246,7 +246,7 @@ class PerformanceScorecard(Document):
 
 
 def on_submit(doc, method):
-    """On Performance Scorecard submit."""
+    """On Performance Scorecard submit — class method handles timeline + notification."""
     pass
 
 

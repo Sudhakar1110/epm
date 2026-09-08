@@ -111,20 +111,19 @@ def send_weekly_summary():
     
     for team in teams:
         # Calculate team weekly stats
-        stats = frappe.db.get_value(
-            "Daily Performance",
-            {
-                "team": team.name,
-                "date": ["between", [week_start, week_end]],
-                "docstatus": 1,
-            },
-            [
-                "count(name) as total_entries",
-                "avg(daily_rating) as avg_rating",
-                "sum(actual_hours) as total_hours",
-            ],
+        stats_rows = frappe.db.sql(
+            """
+            SELECT
+                count(name) as total_entries,
+                avg(daily_rating) as avg_rating,
+                sum(actual_hours) as total_hours
+            FROM `tabDaily Performance`
+            WHERE team = %s AND date BETWEEN %s AND %s AND docstatus = 1
+            """,
+            (team.name, week_start, week_end),
             as_dict=True,
         )
+        stats = stats_rows[0] if stats_rows else None
         
         # Send to team leader
         if team.team_leader:

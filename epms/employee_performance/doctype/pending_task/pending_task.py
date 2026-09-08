@@ -31,6 +31,16 @@ def has_permission(doc, user):
     user_roles = frappe.get_roles(user)
     if "EPMS Founder" in user_roles:
         return True
+
+    # Resolve doc — Frappe may pass a string name, dict, or Document
+    if isinstance(doc, str):
+        vals = frappe.db.get_value("Pending Task", doc, "employee", as_dict=False)
+        employee = vals
+    elif isinstance(doc, dict):
+        employee = doc.get("employee")
+    else:
+        employee = doc.employee
+
     if "EPMS Team Leader" in user_roles:
         team = frappe.db.get_value("Team", {"team_leader": user}, "name")
         if team:
@@ -39,8 +49,9 @@ def has_permission(doc, user):
                 filters={"team": team, "status": "Active"},
                 pluck="user",
             )
-            if doc.employee in team_members or doc.employee == user:
+            if employee in team_members or employee == user:
                 return True
-    if doc.employee == user:
+
+    if employee == user:
         return True
     return False

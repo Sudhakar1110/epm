@@ -10,11 +10,14 @@ def get_context(context):
     portal_login_redirect()
     portal_setup_common(context)
 
-    user = frappe.get_doc("User", frappe.session.user)
-    context.profile = {
-        "name": user.name,
-        "full_name": user.full_name or user.name,
-        "email": user.email or "",
-        "roles": ", ".join(frappe.get_roles(frappe.session.user)[:5]) or "—",
-    }
+    try:
+        user = frappe.get_doc("User", frappe.session.user)
+        context.profile = {
+            "name": user.name,
+            "full_name": user.full_name or user.name,
+            "email": user.email or "",
+            "roles": ", ".join(frappe.get_roles(frappe.session.user)[:5]) or "\u2014",
+        }
+    except Exception:
+        context.profile = {"name": "", "full_name": "", "email": "", "roles": ""}
     context.active_page = "profile"

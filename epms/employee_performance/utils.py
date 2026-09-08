@@ -211,9 +211,15 @@ def get_grade(score):
 
 def get_performance_status(score):
     """Get performance status based on score."""
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        low_threshold = flt(settings.low_performance_threshold or 60)
+    except Exception:
+        low_threshold = 60
+
     if score >= 80:
         return "On Track"
-    elif score >= 60:
+    elif score >= low_threshold:
         return "Needs Attention"
     else:
         return "At Risk"
@@ -491,7 +497,7 @@ def portal_audit_log(limit=60):
         rows = frappe.get_all(
             "Version",
             filters={"ref_doctype": ["in", doctypes]},
-            fields=["name", "ref_doctype", "modified_by", "creation", "owner"],
+            fields=["name", "ref_doctype", "docname", "modified_by", "creation", "owner"],
             order_by="creation desc",
             limit_page_length=limit,
         )
@@ -501,14 +507,7 @@ def portal_audit_log(limit=60):
     
     out = []
     for r in rows:
-        # Try to get docname from name field (Version name format: DOCTYPE-YYYY-MM-DD-HHMMSS-XXXXXX)
-        ref_docname = "-"
-        try:
-            # Version name format: TabDoctype-YYYY-MM-DD-HHMMSS-Random
-            # The docname is usually not stored directly, so we use name as reference
-            ref_docname = r.get("name", "-")
-        except Exception:
-            pass
+        ref_docname = r.get("docname") or r.get("name", "-")
         
         # Try to get changed fields from docchanges if available
         changed_fields = "updated"

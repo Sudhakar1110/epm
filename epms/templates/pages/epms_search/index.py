@@ -11,9 +11,15 @@ def get_context(context):
     portal_login_redirect()
     portal_setup_common(context)
 
-    context.query = frappe.form_dict.get("q") or ""
-    result = portal_search(context.query)
-    context.teams = result["teams"]
-    context.tasks = result["tasks"]
-    context.users = result["users"]
+    try:
+        context.query = frappe.form_dict.get("q") or ""
+        result = portal_search(context.query)
+        context.teams = result["teams"]
+        context.tasks = result["tasks"]
+        context.users = result["users"]
+    except Exception:
+        context.query = ""
+        context.teams = []
+        context.tasks = []
+        context.users = []
     context.active_page = "dashboard"

@@ -10,5 +10,8 @@ def get_context(context):
     portal_login_redirect()
     portal_setup_common(context)
 
-    context.can_import = "EPMS Founder" in frappe.get_roles(frappe.session.user)
+    try:
+        context.can_import = "EPMS Founder" in frappe.get_roles(frappe.session.user)
+    except Exception:
+        context.can_import = False
     context.active_page = "import"

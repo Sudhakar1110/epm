@@ -68,7 +68,7 @@ def get_monthly_scorecard(employee, month=None, year=None):
     scorecard = frappe.db.get_value(
         "Performance Scorecard",
         {
-            "employee": cint(employee) if employee else frappe.session.user,
+            "employee": employee or frappe.session.user,
             "month": cint(month),
             "year": cint(year),
         },
@@ -775,14 +775,22 @@ def get_portal_team(team=None):
     else:
         info["leader_name"] = ""
 
+    user = frappe.session.user
+    user_roles = frappe.get_roles(user)
+
+    # Filter members based on role
+    member_filters = {"team": team, "status": "Active"}
+    if "EPMS Team Member" in user_roles and "EPMS Founder" not in user_roles and "EPMS Team Leader" not in user_roles:
+        # Team Members can only see themselves
+        member_filters["user"] = user
+
     members = frappe.get_all(
         "Team Member Mapping",
-        filters={"team": team, "status": "Active"},
+        filters=member_filters,
         fields=["name", "user", "employee_name", "designation", "joining_date"],
         order_by="employee_name asc",
     )
 
-    user = frappe.session.user
     return {
         "ok": True,
         "team": info,
