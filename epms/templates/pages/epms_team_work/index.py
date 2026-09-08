@@ -13,6 +13,13 @@ def get_context(context):
         portal_login_redirect()
         portal_setup_common(context)
 
+        user = frappe.session.user
+        user_roles = frappe.get_roles(user)
+
+        if "EPMS Founder" in user_roles:
+            frappe.local.flags.redirect_location = "/epms"
+            raise frappe.Redirect
+
         context.today = str(nowdate())
         context.today_label = frappe.utils.formatdate(nowdate(), "EEEE, d MMMM yyyy")
         context.current_month = getdate(nowdate()).month
@@ -23,14 +30,7 @@ def get_context(context):
         user = frappe.session.user
         user_roles = frappe.get_roles(user)
 
-        if "EPMS Founder" in user_roles:
-            teams = frappe.get_all(
-                "Team",
-                filters={"status": "Active"},
-                fields=["name", "team_name"],
-                order_by="team_name asc",
-            )
-        elif "EPMS Team Leader" in user_roles:
+        if "EPMS Team Leader" in user_roles:
             teams = frappe.get_all(
                 "Team",
                 filters={"team_leader": user, "status": "Active"},
@@ -96,7 +96,7 @@ def get_context(context):
             except Exception:
                 pass
 
-        context.can_submit = "EPMS Team Leader" in user_roles or "EPMS Founder" in user_roles
+        context.can_submit = "EPMS Team Leader" in user_roles
         context.active_page = "team-work"
     except Exception as e:
         frappe.log_error(frappe.get_traceback() + f"\nError: {str(e)}", "EPMS Team Work Page")
