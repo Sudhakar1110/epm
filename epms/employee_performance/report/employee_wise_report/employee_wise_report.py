@@ -8,6 +8,16 @@ def execute(filters=None):
     if not filters:
         filters = {}
 
+    if filters.get("month") and filters.get("year"):
+        import calendar
+        from frappe.utils import cint
+
+        month = cint(filters["month"])
+        year = cint(filters["year"])
+        last_day = calendar.monthrange(year, month)[1]
+        filters["date_from"] = f"{year}-{month:02d}-01"
+        filters["date_to"] = f"{year}-{month:02d}-{last_day:02d}"
+
     columns = get_columns()
     data = get_data(filters)
     chart = get_chart_data(data)

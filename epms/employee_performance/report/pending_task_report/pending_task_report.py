@@ -1,11 +1,19 @@
 import frappe
 from frappe import _
-from frappe.utils import getdate, nowdate, date_diff
+from frappe.utils import getdate, nowdate, date_diff, cint
 
 
 def execute(filters=None):
     if not filters:
         filters = {}
+
+    if filters.get("month") and filters.get("year"):
+        import calendar
+        month = cint(filters["month"])
+        year = cint(filters["year"])
+        last_day = calendar.monthrange(year, month)[1]
+        filters["date_from"] = f"{year}-{month:02d}-01"
+        filters["date_to"] = f"{year}-{month:02d}-{last_day:02d}"
 
     columns = get_columns()
     data = get_data(filters)
@@ -32,6 +40,14 @@ def get_data(filters):
     dp_conditions = {"docstatus": 1}
     if filters.get("employee"):
         dp_conditions["employee"] = filters["employee"]
+    if filters.get("team"):
+        dp_conditions["team"] = filters["team"]
+    if filters.get("date_from") and filters.get("date_to"):
+        dp_conditions["date"] = ["between", [filters["date_from"], filters["date_to"]]]
+    elif filters.get("date_from"):
+        dp_conditions["date"] = [">=", filters["date_from"]]
+    elif filters.get("date_to"):
+        dp_conditions["date"] = ["<=", filters["date_to"]]
 
     daily_performances = frappe.get_all(
         "Daily Performance",

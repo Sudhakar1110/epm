@@ -1,12 +1,20 @@
 import frappe
 from frappe import _
-from frappe.utils import getdate, nowdate
+from frappe.utils import getdate, nowdate, cint
 
 
 def execute(filters=None):
     """Execute Daily Summary Report - all employees in one view."""
     if not filters:
         filters = {}
+
+    if filters.get("month") and filters.get("year"):
+        import calendar
+        month = cint(filters["month"])
+        year = cint(filters["year"])
+        last_day = calendar.monthrange(year, month)[1]
+        filters["date_from"] = f"{year}-{month:02d}-01"
+        filters["date_to"] = f"{year}-{month:02d}-{last_day:02d}"
 
     columns = get_columns()
     data = get_data(filters)
@@ -33,19 +41,31 @@ def get_columns():
 
 def get_data(filters):
     """Get report data."""
-    conditions = "dp.docstatus = 1"
+    conditions = ["dp.docstatus = 1"]
+    params = []
 
-    date = filters.get("date")
-    if not date:
-        date = getdate(nowdate())
-
-    conditions += f" AND dp.date = '{date}'"
+    if filters.get("date_from") and filters.get("date_to"):
+        conditions.append("dp.date BETWEEN %s AND %s")
+        params.extend([filters["date_from"], filters["date_to"]])
+    elif filters.get("date_from"):
+        conditions.append("dp.date >= %s")
+        params.append(filters["date_from"])
+    elif filters.get("date_to"):
+        conditions.append("dp.date <= %s")
+        params.append(filters["date_to"])
+    else:
+        conditions.append("dp.date = %s")
+        params.append(getdate(nowdate()))
 
     if filters.get("team"):
-        conditions += f" AND dp.team = '{filters['team']}'"
+        conditions.append("dp.team = %s")
+        params.append(filters["team"])
 
     if filters.get("employee"):
-        conditions += f" AND dp.employee = '{filters['employee']}'"
+        conditions.append("dp.employee = %s")
+        params.append(filters["employee"])
+
+    where_clause = " AND ".join(conditions)
 
     data = frappe.db.sql(
         f"""
@@ -61,10 +81,11 @@ def get_data(filters):
             ROUND(SUM(dp.actual_hours), 2) as total_hours,
             ROUND(AVG(dp.completion_percentage), 2) as avg_completion
         FROM `tabDaily Performance` dp
-        WHERE {conditions}
+        WHERE {where_clause}
         GROUP BY dp.employee, dp.team
         ORDER BY avg_rating DESC
         """,
+        tuple(params),
         as_dict=True,
     )
 
