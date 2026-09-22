@@ -87,6 +87,14 @@
 
         {# ===== FOUNDER ONLY ===== #}
         {% if is_founder %}
+        <a href="/epms/holiday" class="nav-item {% if active_page == 'holiday' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Update Holiday</span>
+        </a>
+        {% endif %}
+
+        {# ===== FOUNDER ONLY ===== #}
+        {% if is_founder %}
         <a href="/epms/import" class="nav-item {% if active_page == 'import' %}active{% endif %}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             <span>Import</span>

@@ -143,6 +143,7 @@ has_permission = {
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
     "Employee KPI": "epms.employee_performance.doctype.employee_kpi.employee_kpi.has_permission",
     "EPMS Settings": "epms.employee_performance.doctype.epms_settings.epms_settings.has_permission",
+    "Holiday": "epms.employee_performance.doctype.holiday.holiday.has_permission",
 }
 
 # Before Migrate
@@ -190,6 +191,9 @@ whitelisted_methods = [
     "epms.employee_performance.api.export_portal_scorecards_csv",
     "epms.employee_performance.api.export_portal_report_csv",
     "epms.employee_performance.api.generate_team_scorecards",
+    "epms.employee_performance.api.get_portal_holidays",
+    "epms.employee_performance.api.save_portal_holiday",
+    "epms.employee_performance.api.delete_portal_holiday",
 ]
 
 # Website
@@ -212,5 +216,6 @@ website_route_rules = [
     {"from_route": "/epms/import", "to_route": "epms_import", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/settings", "to_route": "epms_settings", "defaults": {"allow_guest": 1}},
     {"from_route": "/epms/audit", "to_route": "epms_audit", "defaults": {"allow_guest": 1}},
+    {"from_route": "/epms/holiday", "to_route": "epms_holiday", "defaults": {"allow_guest": 1}},
     {"from_route": "/favicon.ico", "to_route": "epms", "defaults": {"allow_guest": 1}},
 ]

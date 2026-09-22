@@ -44,7 +44,7 @@
                         <div class="cal-cell {% if day in holiday_days %}cal-holiday{% elif day in weekend_days %}cal-weekend{% endif %} {% if day == today_day and month == today_month and year == today_year %}cal-today{% endif %}">
                             <span class="cal-day">{{ day }}</span>
                             {% if day in holiday_days %}
-                            <span class="cal-task cal-task-holiday"><span class="cal-task-title">Holiday</span></span>
+                            <span class="cal-task cal-task-holiday"><span class="cal-task-title">{{ holiday_names.get(day, 'Holiday') }}</span></span>
                             {% endif %}
                             {% for t in by_day.get(day|string, []) %}
                             <a class="cal-task cal-task-{{ (t.priority or 'medium')|lower }}" href="/epms/my-day?date={{ year }}-{{ '%02d'|format(month) }}-{{ '%02d'|format(day) }}" title="{{ t.task_title }} — {{ t.employee_name }}">

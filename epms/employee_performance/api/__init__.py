@@ -1093,6 +1093,103 @@ def _csv_text(headers, rows):
     return "\n".join(lines)
 
 
+# ------------------------------------------------------------
+# Holiday management (founder) — visible on the calendar for all
+# ------------------------------------------------------------
+
+@frappe.whitelist()
+def get_portal_holidays(month=None, year=None):
+    """Holidays for a month/year (or all when no month/year given)."""
+    try:
+        filters = {}
+        if month and year:
+            month = cint(month)
+            year = cint(year)
+            filters["holiday_date"] = ["between", [f"{year}-{month:02d}-01", frappe.utils.get_last_day(f"{year}-{month:02d}-01")]]
+        rows = frappe.get_all(
+            "Holiday",
+            filters=filters,
+            fields=["name", "holiday_date", "holiday_name", "description"],
+            order_by="holiday_date asc",
+        )
+        for r in rows:
+            r["holiday_date"] = str(r.get("holiday_date") or "")
+        return {"ok": True, "holidays": rows}
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "EPMS Get Portal Holidays")
+        return {"ok": False, "holidays": [], "error": _("Could not load holidays.")}
+
+
+@frappe.whitelist()
+def save_portal_holiday(name=None, holiday_date=None, holiday_name=None, description=None):
+    """Create or update a holiday (founder only)."""
+    if not _is_founder():
+        return {"ok": False, "error": _("Only EPMS Founder can manage holidays.")}
+
+    holiday_date = (holiday_date or "").strip()
+    holiday_name = (holiday_name or "").strip()
+
+    if not holiday_date:
+        return {"ok": False, "error": _("Holiday date is required.")}
+    if not holiday_name:
+        return {"ok": False, "error": _("Holiday name is required.")}
+
+    try:
+        getdate(holiday_date)  # validate
+    except Exception:
+        return {"ok": False, "error": _("Invalid holiday date.")}
+
+    try:
+        name = (name or "").strip()
+        if name and frappe.db.exists("Holiday", name):
+            doc = frappe.get_doc("Holiday", name)
+            doc.holiday_date = holiday_date
+            doc.holiday_name = holiday_name
+            doc.description = description or ""
+            doc.save(ignore_permissions=True)
+        else:
+            doc = frappe.get_doc({
+                "doctype": "Holiday",
+                "holiday_date": holiday_date,
+                "holiday_name": holiday_name,
+                "description": description or "",
+            }).insert(ignore_permissions=True)
+        frappe.db.commit()
+        return {"ok": True, "name": doc.name}
+    except frappe.ValidationError as e:
+        frappe.db.rollback()
+        return {"ok": False, "error": str(e).replace("[", "").replace("]", "").strip() or _("Could not save holiday.")}
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "EPMS Save Portal Holiday")
+        return {"ok": False, "error": _("Could not save holiday. An unexpected error occurred.")}
+
+
+@frappe.whitelist()
+def delete_portal_holiday(name=None):
+    """Delete a holiday (founder only)."""
+    if not _is_founder():
+        return {"ok": False, "error": _("Only EPMS Founder can manage holidays.")}
+
+    name = (name or "").strip()
+    if not name:
+        return {"ok": False, "error": _("Holiday record is required.")}
+
+    try:
+        if not frappe.db.exists("Holiday", name):
+            return {"ok": False, "error": _("Holiday not found.")}
+        frappe.delete_doc("Holiday", name, force=True, ignore_permissions=True)
+        frappe.db.commit()
+        return {"ok": True}
+    except frappe.ValidationError as e:
+        frappe.db.rollback()
+        return {"ok": False, "error": str(e).replace("[", "").replace("]", "").strip() or _("Could not delete holiday.")}
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "EPMS Delete Portal Holiday")
+        return {"ok": False, "error": _("Could not delete holiday. An unexpected error occurred.")}
+
+
 @frappe.whitelist()
 def export_portal_scorecards_csv(month=None, year=None, team=None):
     """CSV export of the filtered scorecard list."""

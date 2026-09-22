@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Holiday · EPMS Portal</title>
+    <link rel="icon" type="image/png" href="/assets/epms/images/favicon.png">
+    <link rel="stylesheet" href="/assets/epms/css/epms_portal.css">
+</head>
+<body class="portal-body">
+<div class="portal-shell">
+    {% include "templates/epms_sidebar.html" %}
+
+    <main class="portal-main">
+        <div class="page-wrap">
+
+            <header class="page-head page-head-accent">
+                <div>
+                    <h1 class="page-title">Update Holiday</h1>
+                    <p class="page-subtitle">Add or update holidays. They appear on the calendar for everyone.</p>
+                </div>
+            </header>
+
+            {% if not can_manage %}
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon icon-amber">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    </div>
+                    <p>Only EPMS Founder can update holidays.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="grid-2 holiday-grid">
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Add / Update Holiday</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="holiday-form" novalidate>
+                            <input type="hidden" id="holiday-name-id" value="">
+                            <div class="field">
+                                <label for="holiday-date">Holiday date</label>
+                                <input id="holiday-date" type="date" required>
+                            </div>
+                            <div class="field">
+                                <label for="holiday-name">Holiday name</label>
+                                <input id="holiday-name" type="text" maxlength="140" placeholder="e.g. Deepavali, Pongal…" required>
+                            </div>
+                            <div class="field">
+                                <label for="holiday-desc">Description <span class="opt">(optional)</span></label>
+                                <textarea id="holiday-desc" rows="3" maxlength="500"></textarea>
+                            </div>
+                            <p class="form-msg" id="holiday-msg" hidden></p>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="holiday-submit">Save holiday</button>
+                                <button type="button" class="btn btn-outline" id="holiday-clear" hidden>Cancel edit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Holidays this month</h3>
+                        <span class="chip" id="holiday-count">0</span>
+                    </div>
+                    <div class="card-body pad-sm">
+                        <div class="field" style="margin-bottom:12px;">
+                            <input id="holiday-month" type="month">
+                        </div>
+                        <div id="holiday-list">
+                            <div class="empty">
+                                <div class="empty-icon icon-teal">
+                                    <svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
+                                <p>No holidays added yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+
+{% if can_manage %}
+<script>
+(function () {
+    var form = document.getElementById('holiday-form');
+    var msg = document.getElementById('holiday-msg');
+    var submitBtn = document.getElementById('holiday-submit');
+    var clearBtn = document.getElementById('holiday-clear');
+    var idField = document.getElementById('holiday-name-id');
+    var dateField = document.getElementById('holiday-date');
+    var nameField = document.getElementById('holiday-name');
+    var descField = document.getElementById('holiday-desc');
+    var listEl = document.getElementById('holiday-list');
+    var countEl = document.getElementById('holiday-count');
+    var monthField = document.getElementById('holiday-month');
+    if (!form || !msg || !listEl) return;
+
+    function readCookie(n) {
+        var m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function showMsg(t, ok) {
+        msg.textContent = t;
+        msg.hidden = !t;
+        msg.style.background = ok ? 'var(--green-soft)' : '';
+        msg.style.color = ok ? '#0e9f6e' : '';
+    }
+
+    var state = { holidays: [], month: '' };
+
+    function currentMonth() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    function load() {
+        var m = state.month || currentMonth();
+        var parts = m.split('-');
+        fetch('/api/method/epms.employee_performance.api.get_portal_holidays?month=' + parts[1] + '&year=' + parts[0]).then(function (r) {
+            return r.json();
+        }).then(function (res) {
+            var d = res && res.message;
+            if (!d || !d.ok) { listEl.innerHTML = '<div class="empty"><p>Could not load holidays.</p></div>'; return; }
+            state.holidays = d.holidays || [];
+            render();
+        }).catch(function () {
+            listEl.innerHTML = '<div class="empty"><p>Could not load holidays.</p></div>';
+        });
+    }
+
+    function render() {
+        if (countEl) countEl.textContent = state.holidays.length;
+        if (!state.holidays.length) {
+            listEl.innerHTML = '<div class="empty"><div class="empty-icon icon-teal"><svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div><p>No holidays in this month.</p></div>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < state.holidays.length; i++) {
+            var h = state.holidays[i];
+            html += '<div class="row-item">' +
+                '<div class="avatar avatar-sm avatar-tone-' + (i % 6) + '">' + esc(String(h.holiday_name || 'H').charAt(0)) + '</div>' +
+                '<div class="row-main">' +
+                '<span class="row-title">' + esc(h.holiday_name) + '</span>' +
+                '<div class="row-meta">' + esc(h.holiday_date) + (h.description ? ' · ' + esc(h.description) : '') + '</div>' +
+                '</div>' +
+                '<div class="row-right right-col">' +
+                '<button type="button" class="btn btn-sm btn-outline" data-edit="' + esc(h.name) + '">Edit</button>' +
+                '<button type="button" class="btn btn-sm btn-danger-soft" data-del="' + esc(h.name) + '">Delete</button>' +
+                '</div>' +
+                '</div>';
+        }
+        listEl.innerHTML = html;
+    }
+
+    listEl.addEventListener('click', function (e) {
+        var editBtn = e.target.closest('[data-edit]');
+        var delBtn = e.target.closest('[data-del]');
+        if (editBtn) {
+            var h = null;
+            for (var i = 0; i < state.holidays.length; i++) {
+                if (state.holidays[i].name === editBtn.getAttribute('data-edit')) { h = state.holidays[i]; break; }
+            }
+            if (!h) return;
+            idField.value = h.name;
+            dateField.value = h.holiday_date;
+            nameField.value = h.holiday_name;
+            descField.value = h.description || '';
+            submitBtn.textContent = 'Update holiday';
+            clearBtn.hidden = false;
+            showMsg('');
+            dateField.focus();
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (delBtn) {
+            var name = delBtn.getAttribute('data-del');
+            if (!window.confirm('Delete this holiday?')) return;
+            fetch('/api/method/epms.employee_performance.api.delete_portal_holiday?name=' + encodeURIComponent(name), {
+                method: 'POST',
+                headers: { 'X-Frappe-CSRF-Token': readCookie('csrf_token') }
+            }).then(function (r) { return r.json(); }).then(function (res) {
+                if (res.message && res.message.ok) {
+                    if (window.epmsToast) window.epmsToast('Holiday deleted.', 'success', 3000);
+                    load();
+                } else {
+                    showMsg(res.message && res.message.error ? res.message.error : 'Could not delete holiday.', false);
+                }
+            }).catch(function () { showMsg('Could not delete holiday.', false); });
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var d = dateField.value;
+        var n = nameField.value.trim();
+        if (!d) { showMsg('Please enter a holiday date.', false); dateField.focus(); return; }
+        if (!n) { showMsg('Please enter a holiday name.', false); nameField.focus(); return; }
+
+        submitBtn.disabled = true;
+        showMsg('Saving…');
+
+        var qs = 'holiday_date=' + encodeURIComponent(d) +
+            '&holiday_name=' + encodeURIComponent(n) +
+            '&description=' + encodeURIComponent(descField.value.trim());
+        if (idField.value) qs += '&name=' + encodeURIComponent(idField.value);
+
+        fetch('/api/method/epms.employee_performance.api.save_portal_holiday?' + qs, {
+            method: 'POST',
+            headers: { 'X-Frappe-CSRF-Token': readCookie('csrf_token') }
+        }).then(function (r) {
+            return r.json().then(function (d2) { return { httpOk: r.ok, data: d2 }; })
+                .catch(function () { return { httpOk: r.ok, data: {} }; });
+        }).then(function (res) {
+            var m = res.data && res.data.message;
+            submitBtn.disabled = false;
+            if (m && m.ok) {
+                showMsg('Holiday saved.', true);
+                if (window.epmsToast) window.epmsToast('Holiday saved.', 'success', 3000);
+                resetForm();
+                load();
+            } else {
+                showMsg(m && m.error ? m.error : 'Could not save holiday.', false);
+            }
+        }).catch(function () {
+            submitBtn.disabled = false;
+            showMsg('Could not save holiday.', false);
+        });
+    });
+
+    clearBtn.addEventListener('click', function () {
+        resetForm();
+    });
+
+    function resetForm() {
+        idField.value = '';
+        dateField.value = '';
+        nameField.value = '';
+        descField.value = '';
+        submitBtn.textContent = 'Save holiday';
+        clearBtn.hidden = true;
+        showMsg('');
+    }
+
+    monthField.addEventListener('change', function () {
+        state.month = monthField.value;
+        load();
+    });
+
+    if (monthField) {
+        var d = new Date();
+        monthField.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    }
+
+    load();
+})();
+</script>
+{% endif %}
+
+<script src="/assets/epms/js/epms_ui.js"></script>
+</body>
+</html>

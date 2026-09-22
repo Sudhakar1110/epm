@@ -76,6 +76,27 @@ def get_context(context):
         elif wd == 5 and sat_holiday:  # Saturday holiday if setting enabled
             holiday_days.add(d)
             weekend_days.add(d)
+
+    # Custom holidays from the Holiday doctype
+    holiday_names = {}
+    try:
+        first = f"{year}-{month:02d}-01"
+        last = frappe.utils.get_last_day(first)
+        custom = frappe.get_all(
+            "Holiday",
+            filters={"holiday_date": ["between", [first, last]]},
+            fields=["holiday_date", "holiday_name"],
+        )
+        for h in custom:
+            try:
+                d = int(str(h.get("holiday_date") or "")[-2:].lstrip("0") or "1")
+            except (TypeError, ValueError):
+                continue
+            holiday_days.add(d)
+            holiday_names[d] = h.get("holiday_name") or "Holiday"
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "EPMS Calendar Holidays Error")
+    context.holiday_names = holiday_names
     context.weekend_days = weekend_days
     context.holiday_days = holiday_days
 
