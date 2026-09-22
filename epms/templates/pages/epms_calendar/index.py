@@ -77,13 +77,13 @@ def get_context(context):
             holiday_days.add(d)
             weekend_days.add(d)
 
-    # Custom holidays from the Holiday doctype
+    # Custom holidays from the EPMS Holiday doctype
     holiday_names = {}
     try:
         first = f"{year}-{month:02d}-01"
         last = frappe.utils.get_last_day(first)
         custom = frappe.get_all(
-            "Holiday",
+            "EPMS Holiday",
             filters={"holiday_date": ["between", [first, last]]},
             fields=["holiday_date", "holiday_name"],
         )

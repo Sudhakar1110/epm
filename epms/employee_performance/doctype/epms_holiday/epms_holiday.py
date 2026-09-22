@@ -3,13 +3,13 @@ from frappe import _
 from frappe.model.document import Document
 
 
-class Holiday(Document):
+class EPMSHoliday(Document):
     def validate(self):
         self.validate_duplicate_date()
 
     def validate_duplicate_date(self):
         existing = frappe.db.exists(
-            "Holiday",
+            "EPMS Holiday",
             {
                 "holiday_date": self.holiday_date,
                 "name": ["!=", self.name],
@@ -22,7 +22,7 @@ class Holiday(Document):
 
 
 def has_permission(doc, user=None):
-    """Custom permission check for Holiday.
+    """Custom permission check for EPMS Holiday.
 
     Founder manages holidays; everyone else with a role can read
     (so the calendar can show them)."""

@@ -1107,7 +1107,7 @@ def get_portal_holidays(month=None, year=None):
             year = cint(year)
             filters["holiday_date"] = ["between", [f"{year}-{month:02d}-01", frappe.utils.get_last_day(f"{year}-{month:02d}-01")]]
         rows = frappe.get_all(
-            "Holiday",
+            "EPMS Holiday",
             filters=filters,
             fields=["name", "holiday_date", "holiday_name", "description"],
             order_by="holiday_date asc",
@@ -1141,15 +1141,15 @@ def save_portal_holiday(name=None, holiday_date=None, holiday_name=None, descrip
 
     try:
         name = (name or "").strip()
-        if name and frappe.db.exists("Holiday", name):
-            doc = frappe.get_doc("Holiday", name)
+        if name and frappe.db.exists("EPMS Holiday", name):
+            doc = frappe.get_doc("EPMS Holiday", name)
             doc.holiday_date = holiday_date
             doc.holiday_name = holiday_name
             doc.description = description or ""
             doc.save(ignore_permissions=True)
         else:
             doc = frappe.get_doc({
-                "doctype": "Holiday",
+                "doctype": "EPMS Holiday",
                 "holiday_date": holiday_date,
                 "holiday_name": holiday_name,
                 "description": description or "",
@@ -1176,9 +1176,9 @@ def delete_portal_holiday(name=None):
         return {"ok": False, "error": _("Holiday record is required.")}
 
     try:
-        if not frappe.db.exists("Holiday", name):
+        if not frappe.db.exists("EPMS Holiday", name):
             return {"ok": False, "error": _("Holiday not found.")}
-        frappe.delete_doc("Holiday", name, force=True, ignore_permissions=True)
+        frappe.delete_doc("EPMS Holiday", name, force=True, ignore_permissions=True)
         frappe.db.commit()
         return {"ok": True}
     except frappe.ValidationError as e:

@@ -143,7 +143,7 @@ has_permission = {
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
     "Employee KPI": "epms.employee_performance.doctype.employee_kpi.employee_kpi.has_permission",
     "EPMS Settings": "epms.employee_performance.doctype.epms_settings.epms_settings.has_permission",
-    "Holiday": "epms.employee_performance.doctype.holiday.holiday.has_permission",
+    "EPMS Holiday": "epms.employee_performance.doctype.epms_holiday.epms_holiday.has_permission",
 }
 
 # Before Migrate
