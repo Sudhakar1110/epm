@@ -559,9 +559,23 @@ def portal_run_report(slug, filters=None):
     if not report:
         return None
 
+    f = dict(filters or {})
+
+    # Reports that use date_from/date_to: auto-convert month/year into date range
+    date_based_reports = [
+        "daily-performance", "daily-summary", "pending-task",
+        "employee-wise", "team-wise",
+    ]
+    if slug in date_based_reports and f.get("month") and f.get("year"):
+        from frappe.utils import get_first_day, get_last_day
+        first = get_first_day(f"{int(f['year'])}-{int(f['month']):02d}-01")
+        last = get_last_day(f"{int(f['year'])}-{int(f['month']):02d}-01")
+        f.setdefault("date_from", first)
+        f.setdefault("date_to", last)
+
     module = "epms.employee_performance.report.{folder}.{folder}".format(folder=report["folder"])
     try:
-        columns, data, _message, _chart = frappe.get_attr(module + ".execute")(filters or {})
+        columns, data, _message, _chart = frappe.get_attr(module + ".execute")(f)
     except Exception:
         frappe.log_error(f"EPMS Portal Report Error: {slug}", "epms")
         return None

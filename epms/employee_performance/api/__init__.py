@@ -1307,10 +1307,14 @@ def export_portal_scorecards_csv(month=None, year=None, team=None):
 
 
 @frappe.whitelist()
-def export_portal_report_csv(slug=None, month=None, year=None, team=None):
+def export_portal_report_csv(slug=None, report=None, month=None, year=None, team=None,
+                            date_from=None, date_to=None, employee=None, priority=None,
+                            task_status=None, show_completed=None, grade=None,
+                            threshold=None, limit=None):
     """CSV export of a portal script report (with optional filters)."""
     try:
         from epms.employee_performance.utils import portal_run_report
+        slug = slug or report or ""
         filters = {}
         if month:
             filters["month"] = cint(month)
@@ -1318,7 +1322,25 @@ def export_portal_report_csv(slug=None, month=None, year=None, team=None):
             filters["year"] = cint(year)
         if team:
             filters["team"] = team
-        result = portal_run_report(slug or "", filters)
+        if date_from:
+            filters["date_from"] = date_from
+        if date_to:
+            filters["date_to"] = date_to
+        if employee:
+            filters["employee"] = employee
+        if priority:
+            filters["priority"] = priority
+        if task_status:
+            filters["task_status"] = task_status
+        if show_completed:
+            filters["show_completed"] = cint(show_completed)
+        if grade:
+            filters["grade"] = grade
+        if threshold:
+            filters["threshold"] = cint(threshold)
+        if limit:
+            filters["limit"] = cint(limit)
+        result = portal_run_report(slug, filters)
         if not result:
             return ""
         headers = [c.get("label") or c.get("fieldname") or "" for c in result["columns"]]
