@@ -71,11 +71,11 @@
             {% elif rows %}
             <div class="table-card">
                 <div class="table-scroll">
-                    <table class="table">
+                    <table class="table" data-report="{{ report_slug }}">
                         <thead>
                             <tr>
                                 {% for col in columns %}
-                                <th>{{ col.label }}</th>
+                                <th data-fieldname="{{ col.fieldname }}">{{ col.label }}</th>
                                 {% endfor %}
                             </tr>
                         </thead>
@@ -83,7 +83,7 @@
                             {% for row in rows %}
                             <tr>
                                 {% for col in columns %}
-                                <td>{{ row[col.fieldname] | e }}</td>
+                                <td data-fieldname="{{ col.fieldname }}" data-raw="{{ row[col.fieldname] | e }}">{{ row[col.fieldname] | e }}</td>
                                 {% endfor %}
                             </tr>
                             {% endfor %}
@@ -107,26 +107,59 @@
 </div>
 
 <script>
-(function () {
-    var btn = document.getElementById('epms-export-csv');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-        var qs = window.location.search || '';
-        var url = '/api/method/epms.employee_performance.api.export_portal_report_csv' + qs;
-        fetch(url).then(function (r) { return r.json(); }).then(function (res) {
-            var csv = res && res.message;
-            if (!csv) { alert('No data to export.'); return; }
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            var a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'report.csv';
+function epms_badge(v){if(!v)return'';var s=String(v).toLowerCase(),c='epms-badge-info';if(['on track','excellent','very good','completed','a+','a','b+','b','gold','silver'].indexOf(s)>-1)c='epms-badge-success';else if(['needs attention','good','average','in progress','c','d'].indexOf(s)>-1)c='epms-badge-warning';else if(['at risk','needs improvement','blocked','f','fail'].indexOf(s)>-1)c='epms-badge-danger';else if(['pending'].indexOf(s)>-1)c='epms-badge-muted';return'<span class="epms-badge '+c+'">'+v+'</span>';}
+function epms_progress(val){if(val===null||val===undefined||val==='')return'';var pct=parseFloat(String(val).replace('%',''))||0,c='blue';if(pct>=80)c='green';else if(pct>=60)c='yellow';else c='red';return'<div class="epms-progress"><div class="epms-progress-track"><div class="epms-progress-fill '+c+'" style="width:'+Math.min(pct,100)+'%"></div></div><span class="epms-progress-label">'+pct.toFixed(1)+'%</span></div>';}
+function epms_priority(v){if(!v)return'';var s=String(v).toLowerCase(),c='epms-priority-medium';if(s==='low')c='epms-priority-low';else if(s==='medium')c='epms-priority-medium';else if(s==='high')c='epms-priority-high';else if(s==='critical')c='epms-priority-critical';return'<span class="epms-priority '+c+'">'+v+'</span>';}
+function epms_score(v){if(v===null||v===undefined||v==='')return'0';var n=parseFloat(v)||0,c='epms-badge-success';if(n<60)c='epms-badge-danger';else if(n<80)c='epms-badge-warning';return'<span class="epms-badge '+c+'">'+n.toFixed(1)+'</span>';}
+
+var EPMS_FORMAT_MAP={
+    'daily-performance':{priority:epms_priority,task_status:epms_badge,completion_percentage:epms_progress},
+    'pending-task':{priority:epms_priority,task_status:epms_badge},
+    'monthly-performance':{completed_percentage:epms_progress,overall_score:epms_score,final_grade:epms_badge,performance_status:epms_badge},
+    'monthly-kpi':{achievement:epms_progress,status:epms_badge},
+    'leaderboard':{overall_score:epms_score,final_grade:epms_badge,badge:epms_badge},
+    'top-performers':{overall_score:epms_score,final_grade:epms_badge},
+    'low-performers':{overall_score:epms_score,final_grade:epms_badge,performance_status:epms_badge},
+    'daily-summary':{avg_completion:epms_progress},
+    'employee-wise':{avg_completion:epms_progress,latest_score:epms_score,latest_grade:epms_badge},
+    'team-wise':{avg_completion:epms_progress,team_score:epms_score}
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+    var slug=document.querySelector('.table[data-report]');
+    if(!slug)return;
+    var rpt=slug.getAttribute('data-report');
+    var spec=EPMS_FORMAT_MAP[rpt]||{};
+    var keys=Object.keys(spec);
+    if(!keys.length)return;
+    slug.querySelectorAll('tbody tr').forEach(function(tr){
+        tr.querySelectorAll('td').forEach(function(td){
+            var fn=td.getAttribute('data-fieldname');
+            if(spec[fn]){
+                var raw=td.getAttribute('data-raw')||td.textContent.trim();
+                td.innerHTML=spec[fn](raw);
+            }
+        });
+    });
+
+    var btn=document.getElementById('epms-export-csv');
+    if(btn){btn.addEventListener('click',function(){
+        var qs=window.location.search||'';
+        var url='/api/method/epms.employee_performance.api.export_portal_report_csv'+qs;
+        fetch(url).then(function(r){return r.json();}).then(function(res){
+            var csv=res&&res.message;
+            if(!csv){alert('No data to export.');return;}
+            var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+            var a=document.createElement('a');
+            a.href=URL.createObjectURL(blob);
+            a.download=rpt+'.csv';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
-        }).catch(function () { alert('Export failed. Please try again.'); });
-    });
-})();
+        }).catch(function(){alert('Export failed. Please try again.');});
+    });}
+});
 </script>
 </body>
 </html>
