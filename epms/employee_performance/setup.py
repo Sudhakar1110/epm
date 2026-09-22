@@ -49,36 +49,45 @@ def remove_deleted_records():
 
 
 def _purge_stale_records():
-    """Hard-delete stale records by name using raw SQL (survives dependent-row failures)."""
-    stale_by_doctype = {
-        "Report": ["Pending Task Report"],
-        "Number Card": ["Pending Tasks Count"],
-        "Notification": ["Pending Task Reminder"],
-        "Kanban Board": ["Pending Task Kanban"],
-    }
-    for doctype, names in stale_by_doctype.items():
-        for name in names:
+    """Hard-delete stale records by name using raw SQL (survives dependent-row failures).
+    Returns dict {doctype: rows_remaining} for verification."""
+    stale_like = "%Pending Task%"
+    counts = {}
+    for doctype in ["Report", "Number Card", "Notification", "Kanban Board"]:
+        count = "?"
+        try:
+            frappe.db.sql("DELETE FROM `tab{0}` WHERE `name` LIKE %s".format(doctype), stale_like)
+            count = frappe.db.sql("SELECT COUNT(*) FROM `tab{0}` WHERE `name` LIKE %s".format(doctype), stale_like)[0][0]
+            frappe.clear_doctype_cache(doctype)
+        except Exception as e:
+            count = "ERR: {0}".format(e)
+        counts[doctype] = count
+    # Drop Custom DocPerm/Workspace rows that reference the dead modules
+    for dead in ["Pending Task Report", "Pending Tasks Count", "Pending Task Reminder", "Pending Task Kanban"]:
+        for table in ["tabCustom DocPerm", "tabWorkspace Link", "tabWorkspace Shortcut",
+                      "tabWorkspace Quick List", "tabWorkspace Number Card", "tabWorkspace Chart"]:
             try:
-                frappe.db.sql("DELETE FROM `tab{0}` WHERE `name` = %s".format(doctype), name)
-                frappe.clear_doctype_cache(doctype)
+                frappe.db.sql("DELETE FROM `{0}` WHERE `link_to` = %s OR `number_card` = %s OR `chart` = %s OR `parent` = %s".format(table), (dead, dead, dead, dead))
             except Exception:
                 pass
-    # Drop Custom Report/Permission rows that reference the dead modules
-    for dead in ["Pending Task Report", "Pending Tasks Count", "Pending Task Reminder", "Pending Task Kanban"]:
         try:
-            frappe.db.sql("DELETE FROM `tabCustom DocPerm` WHERE `parent` = %s", dead)
+            frappe.db.sql("DELETE FROM `tabReport` WHERE `name` = %s OR `ref_doctype` = %s", (dead, dead))
         except Exception:
             pass
     frappe.db.commit()
     frappe.clear_cache()
+    return counts
 
 
 def fix_stale_records_now():
     """Run: bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_stale_records_now"""
     print("\n=== EPMS Stale Records Cleanup ===")
-    _purge_stale_records()
-    print("   Deleted Pending Task Report / Pending Tasks Count / Pending Task Reminder / Pending Task Kanban")
-    print("   Cache cleared. Reload the desk and reopen the Pending Task Report.\n")
+    counts = _purge_stale_records()
+    print("   Remaining rows (should be 0):")
+    for doctype, count in counts.items():
+        print("     {0}: {1}".format(doctype, count))
+    print("   Removed sidebar shortcuts and dashboard links to them.")
+    print("   Cache cleared. Reload the desk (Ctrl+Shift+R).\n")
 
 
 def clean_broken_workspaces():
