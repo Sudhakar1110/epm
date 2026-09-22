@@ -2087,39 +2087,6 @@ small { font-size: 0.72em; font-weight: 600; color: inherit; opacity: 0.7; }
 .table th.sort-desc::after { content: '\25BC'; opacity: 0.9; color: var(--blue); }
 
 /* ============================================================
-   COLLAPSIBLE SIDEBAR
-   ============================================================ */
-.sidebar-collapse-toggle {
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.15s;
-    position: absolute;
-    top: 14px;
-    right: 12px;
-}
-.sidebar-collapse-toggle:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-.sidebar.collapsed { width: 64px; }
-.sidebar.collapsed .sidebar-head-text,
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .sidebar-search,
-.sidebar.collapsed .sidebar-foot span,
-.sidebar.collapsed .nav-item span,
-.sidebar.collapsed .sidebar-collapse-toggle { display: none; }
-.sidebar.collapsed .nav-item { justify-content: center; padding: 10px; }
-.sidebar.collapsed .nav-item svg { margin: 0; }
-.sidebar.collapsed + .portal-main { margin-left: 64px; }
-
-/* ============================================================
    EMPTY STATE ILLUSTRATIONS
    ============================================================ */
 .empty-state {

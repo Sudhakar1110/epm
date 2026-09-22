@@ -171,32 +171,6 @@
   }
 
   /* ================================================================
-     6. COLLAPSIBLE SIDEBAR
-     ================================================================ */
-  function initCollapsibleSidebar() {
-    var sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
-
-    // Add toggle button
-    var btn = document.createElement('button');
-    btn.className = 'sidebar-collapse-toggle';
-    btn.innerHTML = '\u00AB';
-    btn.title = 'Collapse sidebar';
-    sidebar.style.position = 'relative';
-    sidebar.appendChild(btn);
-
-    var saved = localStorage.getItem('epms-sidebar-collapsed');
-    if (saved === 'true') { sidebar.classList.add('collapsed'); btn.innerHTML = '\u00BB'; }
-
-    btn.addEventListener('click', function () {
-      var collapsed = sidebar.classList.toggle('collapsed');
-      localStorage.setItem('epms-sidebar-collapsed', collapsed);
-      btn.innerHTML = collapsed ? '\u00BB' : '\u00AB';
-      btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-    });
-  }
-
-  /* ================================================================
      7. ANIMATED NUMBER COUNTERS
      ================================================================ */
   function initCounters() {
@@ -285,7 +259,6 @@
     initDarkMode();
     initSearchPalette();
     initSortableTables();
-    initCollapsibleSidebar();
     initCounters();
     initExpandableRows();
     initAutoSave();
