@@ -81,7 +81,7 @@
                                         <div class="avatar avatar-sm avatar-tone-{{ loop.index % 6 }}">{{ (s.employee_name or '?')[:1] }}</div>
                                         <div>
                                             <a class="table-title" href="/epms/scorecard?name={{ s.name }}">{{ s.employee_name or 'Unnamed' }}</a>
-                                            <div class="cell-sub">{{ s.tasks_completed or 0 }} done · {{ s.pending_tasks or 0 }} pending</div>
+                                            <div class="cell-sub">{{ s.tasks_completed or 0 }} done</div>
                                         </div>
                                     </div>
                                 </td>

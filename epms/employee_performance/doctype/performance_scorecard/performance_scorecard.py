@@ -89,11 +89,7 @@ class PerformanceScorecard(Document):
         self.tasks_completed = sum(
             1 for p in performances if p.task_status == "Completed"
         )
-        self.pending_tasks = sum(
-            1 for p in performances if p.task_status != "Completed"
-        )
-
-        total_tasks = self.tasks_completed + self.pending_tasks
+        total_tasks = self.tasks_completed
         self.completed_percentage = (
             (self.tasks_completed / total_tasks * 100) if total_tasks > 0 else 0
         )
@@ -209,7 +205,6 @@ class PerformanceScorecard(Document):
     def set_zero_scores(self):
         """Set all scores to zero when no data."""
         self.tasks_completed = 0
-        self.pending_tasks = 0
         self.completed_percentage = 0
         self.average_rating = 0
         self.average_quality = 0

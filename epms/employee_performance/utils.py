@@ -89,7 +89,6 @@ def get_employee_performance_summary(employee, month=None, year=None):
             "final_grade",
             "performance_status",
             "tasks_completed",
-            "pending_tasks",
             "average_rating",
             "average_quality",
         ],
@@ -239,13 +238,6 @@ def portal_setup_common(context):
     context.is_team_leader = has_role("EPMS Team Leader")
     context.is_team_member = has_role("EPMS Team Member")
     context.date_label = frappe.utils.formatdate(nowdate(), "EEEE, d MMMM yyyy")
-    try:
-        context.pending_count = frappe.db.count(
-            "Pending Task",
-            filters={"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1},
-        )
-    except Exception:
-        context.pending_count = 0
     context.no_cache = 1
 
 
@@ -318,7 +310,6 @@ def portal_current_scorecards(order_by="overall_score desc", limit=None, month=N
             "productivity_score",
             "quality_score",
             "tasks_completed",
-            "pending_tasks",
         ],
         order_by=order_by,
     )
@@ -348,20 +339,7 @@ def portal_search(query):
         order_by="team_name asc",
         limit_page_length=10,
     )
-    try:
-        tasks = frappe.get_all(
-            "Pending Task",
-            filters={
-                "docstatus": 1,
-                "current_status": ["in", ["Pending", "In Progress"]],
-                "task": ["like", like],
-            },
-            fields=["name", "task", "employee_name", "team", "current_status"],
-            order_by="expected_completion asc",
-            limit_page_length=10,
-        )
-    except Exception:
-        tasks = []
+    tasks = []
     users = frappe.get_all(
         "User",
         filters={"enabled": 1, "full_name": ["like", like]},
@@ -444,7 +422,7 @@ def portal_audit_log(limit=60):
     Handles different Frappe versions where Version doctype may have
     different fields (ref_docname, docchanges may not exist).
     """
-    doctypes = ["Team", "Team Member Mapping", "Pending Task", "Daily Performance", "Performance Scorecard"]
+    doctypes = ["Team", "Team Member Mapping", "Daily Performance", "Performance Scorecard"]
     
     # Get Version records with minimal fields that always exist
     try:
@@ -524,7 +502,6 @@ PORTAL_REPORTS = [
     {"name": "Monthly Performance Report", "slug": "monthly-performance", "folder": "monthly_performance_report", "description": "Monthly performance overview and trends"},
     {"name": "Employee Wise Report", "slug": "employee-wise", "folder": "employee_wise_report", "description": "Performance data filtered by employee"},
     {"name": "Team Wise Report", "slug": "team-wise", "folder": "team_wise_report", "description": "Team-level performance comparison"},
-    {"name": "Pending Task Report", "slug": "pending-task", "folder": "pending_task_report", "description": "Overview of pending tasks and deadlines"},
     {"name": "Top Performers", "slug": "top-performers", "folder": "top_performers", "description": "Ranked list of the highest performers"},
     {"name": "Low Performers", "slug": "low-performers", "folder": "low_performers", "description": "Employees who may need improvement support"},
     {"name": "Monthly KPI Report", "slug": "monthly-kpi", "folder": "monthly_kpi_report", "description": "Key performance indicators by month"},
@@ -563,7 +540,7 @@ def portal_run_report(slug, filters=None):
 
     # Reports that use date_from/date_to: auto-convert month/year into date range
     date_based_reports = [
-        "daily-performance", "daily-summary", "pending-task",
+        "daily-performance", "daily-summary",
         "employee-wise", "team-wise",
     ]
     if slug in date_based_reports and f.get("month") and f.get("year"):

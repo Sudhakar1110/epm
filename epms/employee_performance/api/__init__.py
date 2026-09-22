@@ -53,7 +53,6 @@ def get_employee_performance(employee, month=None, year=None):
     return {
         "scorecard": scorecard,
         "daily_performances": daily_performances,
-        "pending_tasks": [],
     }
 
 
@@ -102,7 +101,7 @@ def get_team_performance(team, month=None, year=None):
                 "month": cint(month),
                 "year": cint(year),
             },
-            ["overall_score", "final_grade", "tasks_completed", "pending_tasks"],
+            ["overall_score", "final_grade", "tasks_completed"],
             as_dict=True,
         )
 
@@ -113,7 +112,6 @@ def get_team_performance(team, month=None, year=None):
                 "score": scorecard.overall_score if scorecard else 0,
                 "grade": scorecard.final_grade if scorecard else "N/A",
                 "tasks_completed": scorecard.tasks_completed if scorecard else 0,
-                "pending_tasks": scorecard.pending_tasks if scorecard else 0,
             }
         )
 
@@ -278,10 +276,6 @@ def get_portal_stats():
     teams = frappe.db.count("Team", {"status": "Active"})
     members = frappe.db.count("Team Member Mapping", {"status": "Active"})
     today_perf = frappe.db.count("Daily Performance", {"date": getdate(nowdate()), "docstatus": 1})
-    try:
-        pending_tasks = frappe.db.count("Pending Task", {"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1})
-    except Exception:
-        pending_tasks = 0
     avg_score = frappe.db.get_value(
         "Performance Scorecard",
         {"month": getdate(nowdate()).month, "year": getdate(nowdate()).year, "docstatus": 1},
@@ -290,7 +284,6 @@ def get_portal_stats():
     return {
         "teams": teams or 0,
         "members": members or 0,
-        "pending_tasks": pending_tasks or 0,
         "avg_score": round(flt(avg_score, 1) if avg_score else 0, 1),
     }
 
@@ -366,7 +359,6 @@ def get_portal_notifications(limit=None):
     portal_routes = {
         "Daily Performance": "/epms/my-day",
         "Performance Scorecard": "/epms/scorecards",
-        "Pending Task": "/epms/my-day",
     }
 
     for n in notifications:
@@ -462,119 +454,6 @@ def create_portal_team(team_name=None, team_leader=None, description=None):
         frappe.db.rollback()
         frappe.log_error(frappe.get_traceback(), "EPMS Create Portal Team")
         return {"ok": False, "error": _("Could not create the team. An unexpected error occurred (see Error Log \"EPMS Create Portal Team\").")}
-
-
-@frappe.whitelist()
-def create_portal_pending_task(employee=None, task=None, priority=None, expected_completion=None, assigned_date=None, remarks=None):
-    """Create + submit a Pending Task from the portal (shows up on the desk too).
-    Only EPMS Founder and EPMS Team Leader can create tasks.
-    """
-    me = frappe.session.user
-    user_roles = frappe.get_roles(me)
-
-    # Permission check: only founder or team leader can create tasks
-    if "EPMS Founder" not in user_roles and "EPMS Team Leader" not in user_roles:
-        return {"ok": False, "error": _("Only Team Lead or Founder can create tasks.")}
-
-    employee = (employee or "").strip()
-    task = (task or "").strip()
-    expected_completion = (expected_completion or "").strip()
-
-    if not employee:
-        return {"ok": False, "error": _("Please choose an employee.")}
-    if not task:
-        return {"ok": False, "error": _("Please enter a task.")}
-    if not expected_completion:
-        return {"ok": False, "error": _("Please set the expected completion date.")}
-
-    # Convert date string to date object for Frappe
-    try:
-        expected_completion_date = getdate(expected_completion)
-    except Exception:
-        return {"ok": False, "error": _("Invalid date format for expected completion.")}
-
-    priority = (priority or "").strip() or "Medium"
-    if priority not in ("Low", "Medium", "High", "Critical"):
-        return {"ok": False, "error": _("Invalid priority.")}
-
-    try:
-        frappe.log_error(f"EPMS Create Portal Task - Input: employee={employee}, task={task[:50] if task else None}, priority={priority}, expected_completion={expected_completion}, user={me}, roles={user_roles}", "EPMS Create Portal Task Debug")
-        
-        if not frappe.db.exists("User", employee):
-            frappe.log_error(f"EPMS Create Portal Task - User not found: {employee}", "EPMS Create Portal Task")
-            return {"ok": False, "error": _("The selected employee does not exist.")}
-
-        # Check if team leader is assigning task to their team member (custom permission check)
-        if "EPMS Team Leader" in user_roles and "EPMS Founder" not in user_roles:
-            team = frappe.db.get_value("Team", {"team_leader": me}, "name")
-            if team:
-                team_members = frappe.get_all(
-                    "Team Member Mapping",
-                    filters={"team": team, "status": "Active"},
-                    pluck="user",
-                )
-                if employee not in team_members:
-                    frappe.log_error(f"EPMS Create Portal Task - Employee {employee} not in team leader's team", "EPMS Create Portal Task")
-                    return {"ok": False, "error": _("You can only assign tasks to your team members.")}
-
-        # Build doc with proper date objects
-        assigned_date_str = assigned_date.strip() if assigned_date else None
-        
-        doc = frappe.get_doc(
-            {
-                "doctype": "Pending Task",
-                "employee": employee,
-                "employee_name": frappe.db.get_value("User", employee, "full_name") or employee,
-                "task": task,
-                "priority": priority,
-                "expected_completion": expected_completion_date,
-                "current_status": "Pending",
-                "remarks": remarks.strip() if remarks else None,
-            }
-        )
-
-        # Auto-set team from employee's active team membership
-        team = frappe.db.get_value(
-            "Team Member Mapping",
-            {"user": employee, "status": "Active"},
-            "team",
-        )
-        if team:
-            doc.team = team
-        
-        # Set assigned_date via db_set if provided (it's read-only with default "Today")
-        if assigned_date_str:
-            try:
-                assigned_date_obj = getdate(assigned_date_str)
-                doc.db_set("assigned_date", assigned_date_obj)
-            except Exception:
-                pass  # Ignore if we can't set it, will use default "Today"
-
-        # Insert with ignore_permissions since we already checked roles above
-        doc.insert(ignore_permissions=True)
-        
-        # Submit with ignore_permissions as well
-        doc.submit(ignore_permissions=True)
-        frappe.db.commit()
-        frappe.log_error(f"EPMS Create Portal Task - Success: {doc.name}", "EPMS Create Portal Task")
-        return {"ok": True, "name": doc.name}
-    except frappe.ValidationError as e:
-        frappe.db.rollback()
-        message = str(e).replace("[", "").replace("]", "").strip()
-        frappe.log_error(f"EPMS Create Portal Task - ValidationError: {message}", "EPMS Create Portal Task")
-        return {"ok": False, "error": message or _("Could not create the task. Please check the details.")}
-    except Exception as e:
-        frappe.db.rollback()
-        error_msg = str(e) if e else "Unknown error"
-        error_type = type(e).__name__ if e else "Unknown"
-        frappe.log_error(frappe.get_traceback() + f"\nError type: {error_type}\nOriginal error: {error_msg}", "EPMS Create Portal Task")
-        # Try to get more details from the exception
-        error_details = {
-            "message": error_msg,
-            "type": error_type,
-            "args": getattr(e, 'args', []),
-        }
-        return {"ok": False, "error": f"Could not create the task. {error_msg[:250]}"}
 
 
 @frappe.whitelist()
@@ -885,45 +764,6 @@ def set_portal_team_leader(team=None, team_leader=None):
 
 
 @frappe.whitelist()
-def update_portal_task(name=None, current_status=None, remarks=None, completion_date=None):
-    """Update a task's status/remarks/completion date from the portal."""
-    name = (name or "").strip()
-    if not name or not frappe.db.exists("Pending Task", name):
-        return {"ok": False, "error": _("Task not found.")}
-
-    allowed = ("Pending", "In Progress", "Completed", "Blocked")
-    if current_status and current_status not in allowed:
-        return {"ok": False, "error": _("Invalid status.")}
-
-    try:
-        doc = frappe.get_doc("Pending Task", name)
-        me = frappe.session.user
-        team = frappe.db.get_value("Team Member Mapping", {"user": doc.employee, "status": "Active"}, "team")
-        is_owner = doc.employee == me
-        is_leader = bool(team and _leader_of_team(team, me))
-        if not (_is_founder(me) or is_owner or is_leader):
-            return {"ok": False, "error": _("Not permitted to update this task.")}
-
-        if current_status:
-            doc.db_set("current_status", current_status)
-        if remarks is not None:
-            doc.db_set("remarks", (remarks or "").strip() or None)
-        if completion_date is not None:
-            doc.db_set("completion_date", (completion_date or "").strip() or None)
-        if current_status == "Completed":
-            doc.db_set("completion_date", (completion_date or "").strip() or str(getdate(nowdate())))
-        frappe.db.commit()
-        return {"ok": True, "name": doc.name}
-    except frappe.ValidationError as e:
-        frappe.db.rollback()
-        return {"ok": False, "error": str(e).replace("[", "").replace("]", "").strip() or _("Could not update the task.")}
-    except Exception:
-        frappe.db.rollback()
-        frappe.log_error(frappe.get_traceback(), "EPMS Update Portal Task")
-        return {"ok": False, "error": _("Could not update the task. An unexpected error occurred.")}
-
-
-@frappe.whitelist()
 def submit_portal_daily_performance(date=None, task_title=None, task_status=None, priority=None, work_type=None, expected_hours=None, actual_hours=None, completion_percentage=None, daily_rating=None, quality_score=None, remarks=None, challenges=None, next_day_plan=None):
     """Submit today's (or a past date's) daily performance entry for the current user."""
     me = frappe.session.user
@@ -1123,13 +963,13 @@ def update_portal_profile(full_name=None, new_password=None):
 
 @frappe.whitelist()
 def import_portal_csv(kind=None, data=None):
-    """Bulk import teams, users or tasks from pasted CSV text (founder only)."""
+    """Bulk import teams or users from pasted CSV text (founder only)."""
     if not _is_founder():
         return {"ok": False, "error": _("Only EPMS Founder can import.")}
 
     kind = (kind or "").strip()
     data = (data or "").strip()
-    if kind not in ("teams", "users", "tasks"):
+    if kind not in ("teams", "users"):
         return {"ok": False, "error": _("Invalid import type.")}
     if not data:
         return {"ok": False, "error": _("Paste some CSV data first.")}
@@ -1182,37 +1022,6 @@ def import_portal_csv(kind=None, data=None):
                     }
                 ).insert(ignore_permissions=True)
                 user.add_roles("EPMS Team Member")
-                created += 1
-            elif kind == "tasks":
-                if len(parts) < 3 or not parts[0] or not parts[1] or not parts[2]:
-                    errors.append(f"row {i}: employee, task and due date are required")
-                    continue
-                emp, task, due = parts[0], parts[1], parts[2]
-                priority = parts[3] if len(parts) > 3 and parts[3] else "Medium"
-                if not frappe.db.exists("User", emp):
-                    errors.append(f"row {i}: employee {emp} not found")
-                    continue
-                doc = frappe.get_doc(
-                    {
-                        "doctype": "Pending Task",
-                        "employee": emp,
-                        "employee_name": frappe.db.get_value("User", emp, "full_name") or emp,
-                        "task": task,
-                        "priority": priority,
-                        "expected_completion": due,
-                        "current_status": "Pending",
-                    }
-                )
-                # Auto-set team from employee's active team membership
-                team = frappe.db.get_value(
-                    "Team Member Mapping",
-                    {"user": emp, "status": "Active"},
-                    "team",
-                )
-                if team:
-                    doc.team = team
-                doc.insert()
-                doc.submit()
                 created += 1
         except frappe.ValidationError as e:
             frappe.db.rollback()

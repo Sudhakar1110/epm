@@ -114,7 +114,7 @@ function epms_score(v){if(v===null||v===undefined||v==='')return'0';var n=parseF
 
 var EPMS_FORMAT_MAP={
     'daily-performance':{priority:epms_priority,task_status:epms_badge,completion_percentage:epms_progress},
-    'pending-task':{priority:epms_priority,task_status:epms_badge},
+
     'monthly-performance':{completed_percentage:epms_progress,overall_score:epms_score,final_grade:epms_badge,performance_status:epms_badge},
     'monthly-kpi':{achievement:epms_progress,status:epms_badge},
     'leaderboard':{overall_score:epms_score,final_grade:epms_badge,badge:epms_badge},

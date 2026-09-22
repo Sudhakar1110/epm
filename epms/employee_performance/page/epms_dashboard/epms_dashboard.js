@@ -58,8 +58,6 @@ function render_founder_dashboard(data) {
     html += '<div class="col-md-3"><div class="card text-white bg-primary mb-3"><div class="card-body"><h5 class="card-title">Total Employees</h5><h2 class="card-text">' + (data.total_employees || 0) + '</h2></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-white bg-success mb-3"><div class="card-body"><h5 class="card-title">Total Teams</h5><h2 class="card-text">' + (data.total_teams || 0) + '</h2></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-white bg-info mb-3"><div class="card-body"><h5 class="card-title">Tasks Today</h5><h2 class="card-text">' + (data.tasks_today || 0) + '</h2></div></div></div>';
-    html += '<div class="col-md-3"><div class="card text-white bg-warning mb-3"><div class="card-body"><h5 class="card-title">Pending Tasks</h5><h2 class="card-text">' + (data.pending_tasks || 0) + '</h2></div></div></div>';
-
     html += '</div>';
     return html;
 }
@@ -68,7 +66,6 @@ function render_team_leader_dashboard(data) {
     var html = '';
 
     html += '<div class="col-md-3"><div class="card text-white bg-primary mb-3"><div class="card-body"><h5 class="card-title">Today\'s Tasks</h5><h2 class="card-text">' + (data.today_tasks || 0) + '</h2></div></div></div>';
-    html += '<div class="col-md-3"><div class="card text-white bg-warning mb-3"><div class="card-body"><h5 class="card-title">Pending Tasks</h5><h2 class="card-text">' + (data.pending_tasks || 0) + '</h2></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-white bg-success mb-3"><div class="card-body"><h5 class="card-title">Completed Tasks</h5><h2 class="card-text">' + (data.completed_tasks || 0) + '</h2></div></div></div>';
     html += '<div class="col-md-3"><div class="card text-white bg-info mb-3"><div class="card-body"><h5 class="card-title">Team Score</h5><h2 class="card-text">' + (data.team_score || 0) + '</h2></div></div></div>';
 

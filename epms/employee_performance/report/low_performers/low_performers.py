@@ -68,12 +68,6 @@ def get_columns():
             "width": 110,
         },
         {
-            "fieldname": "pending_tasks",
-            "fieldtype": "Int",
-            "label": _("Pending Tasks"),
-            "width": 100,
-        },
-        {
             "fieldname": "performance_status",
             "fieldtype": "Data",
             "label": _("Status"),
@@ -110,7 +104,6 @@ def get_data(filters):
             "quality_score",
             "attendance_score",
             "tasks_completed",
-            "pending_tasks",
             "performance_status",
         ],
         order_by="overall_score asc",

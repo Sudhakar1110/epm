@@ -45,7 +45,6 @@ scheduler_events = {
     "daily": [
         "epms.employee_performance.tasks.daily_tasks",
         "epms.employee_performance.tasks.generate_monthly_scorecards",
-        "epms.employee_performance.tasks.send_pending_task_reminders",
         "epms.employee_performance.tasks.send_late_update_reminders",
     ],
     "daily_long": [
@@ -142,7 +141,6 @@ has_permission = {
     "Performance Scorecard": "epms.employee_performance.doctype.performance_scorecard.performance_scorecard.has_permission",
     "Team": "epms.employee_performance.doctype.team.team.has_permission",
     "Team Member Mapping": "epms.employee_performance.doctype.team_member_mapping.team_member_mapping.has_permission",
-    "Pending Task": "epms.employee_performance.doctype.pending_task.pending_task.has_permission",
     "Employee KPI": "epms.employee_performance.doctype.employee_kpi.employee_kpi.has_permission",
     "EPMS Settings": "epms.employee_performance.doctype.epms_settings.epms_settings.has_permission",
 }

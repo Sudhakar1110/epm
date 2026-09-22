@@ -29,14 +29,6 @@ def get_founder_dashboard():
     tasks_today = frappe.db.count(
         "Daily Performance", {"date": today, "docstatus": 1}
     )
-    pending_tasks = frappe.db.count(
-        "Pending Task",
-        {"current_status": ["in", ["Pending", "In Progress"]], "docstatus": 1},
-    )
-    blocked_tasks = frappe.db.count(
-        "Pending Task", {"current_status": "Blocked", "docstatus": 1}
-    )
-
     # Average performance
     avg_performance = frappe.db.get_value(
         "Performance Scorecard",
@@ -66,8 +58,6 @@ def get_founder_dashboard():
         "total_employees": total_employees,
         "total_teams": total_teams,
         "tasks_today": tasks_today,
-        "pending_tasks": pending_tasks,
-        "blocked_tasks": blocked_tasks,
         "avg_performance": round(avg_performance or 0, 2),
         "top_performer": top_performer[0] if top_performer else None,
         "lowest_performer": lowest_performer[0] if lowest_performer else None,
@@ -90,21 +80,6 @@ def get_team_leader_dashboard():
     # Stats
     today_tasks = frappe.db.count(
         "Daily Performance", {"team": team, "date": today, "docstatus": 1}
-    )
-    pending_tasks = frappe.db.count(
-        "Pending Task",
-        {
-            "employee": [
-                "in",
-                frappe.get_all(
-                    "Team Member Mapping",
-                    {"team": team, "status": "Active"},
-                    pluck="user",
-                ),
-            ],
-            "current_status": ["in", ["Pending", "In Progress"]],
-            "docstatus": 1,
-        },
     )
     completed_tasks = frappe.db.count(
         "Daily Performance",
@@ -140,7 +115,6 @@ def get_team_leader_dashboard():
 
     return {
         "today_tasks": today_tasks,
-        "pending_tasks": pending_tasks,
         "completed_tasks": completed_tasks,
         "team_score": round(team_score or 0, 2),
         "top_performer": top_performer[0] if top_performer else None,
@@ -168,7 +142,7 @@ def get_employee_dashboard():
     scorecard = frappe.db.get_value(
         "Performance Scorecard",
         {"employee": user, "month": current_month, "year": current_year, "docstatus": 1},
-        ["overall_score", "final_grade", "tasks_completed", "pending_tasks"],
+        ["overall_score", "final_grade", "tasks_completed"],
         as_dict=True,
     )
 

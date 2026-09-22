@@ -8,9 +8,6 @@ def daily_tasks():
     """Run daily tasks."""
     frappe.logger().info("EPMS: Running daily tasks")
 
-    # Update pending tasks status
-    update_pending_task_statuses()
-
     # Send daily reminders only if enabled in EPMS Settings
     try:
         settings = frappe.get_single("EPMS Settings")
@@ -21,53 +18,6 @@ def daily_tasks():
 
     frappe.db.commit()
 
-
-def update_pending_task_statuses():
-    """Update statuses of pending tasks."""
-    today = getdate(nowdate())
-    
-    # Get overdue tasks
-    overdue_tasks = frappe.get_all(
-        "Pending Task",
-        filters={
-            "expected_completion": ["<", today],
-            "current_status": ["in", ["Pending", "In Progress"]],
-            "docstatus": 1,
-        },
-        fields=["name", "employee", "employee_name", "task"],
-    )
-    
-    for task in overdue_tasks:
-        frappe.get_doc("Pending Task", task.name).db_set(
-            "current_status", "Blocked", update_modified=True
-        )
-        frappe.logger().info(f"EPMS: Task {task.name} marked as overdue")
-
-
-def send_pending_task_reminders():
-    """Send reminders for pending tasks."""
-    today = getdate(nowdate())
-    tomorrow = add_days(today, 1)
-    
-    # Get tasks due tomorrow
-    tasks_due_tomorrow = frappe.get_all(
-        "Pending Task",
-        filters={
-            "expected_completion": tomorrow,
-            "current_status": ["in", ["Pending", "In Progress"]],
-            "docstatus": 1,
-        },
-        fields=["name", "employee", "employee_name", "task", "priority"],
-    )
-    
-    for task in tasks_due_tomorrow:
-        send_notification(
-            user=task.employee,
-            subject=f"Reminder: Task Due Tomorrow - {task.task}",
-            message=f"Your task '{task.task}' is due tomorrow. Priority: {task.priority}",
-            reference_doctype="Pending Task",
-            reference_name=task.name,
-        )
 
 
 def send_late_update_reminders():

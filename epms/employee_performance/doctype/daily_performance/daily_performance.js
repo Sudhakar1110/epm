@@ -139,7 +139,3 @@ frappe.ui.form.on('Daily Performance', {
     }
 });
 
-// Child table events for Pending Tasks
-frappe.ui.form.on('Pending Task', {
-    // No additional events needed for child table
-});

@@ -56,12 +56,6 @@ def get_columns():
             "width": 110,
         },
         {
-            "fieldname": "pending_tasks",
-            "fieldtype": "Int",
-            "label": _("Pending Tasks"),
-            "width": 100,
-        },
-        {
             "fieldname": "completed_percentage",
             "fieldtype": "Percent",
             "label": _("Completion %"),
@@ -141,7 +135,6 @@ def get_data(filters):
             "year",
             "total_working_days",
             "tasks_completed",
-            "pending_tasks",
             "completed_percentage",
             "average_rating",
             "productivity_score",
