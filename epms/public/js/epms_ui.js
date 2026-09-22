@@ -119,9 +119,8 @@
     }
   };
 
-  // Override window.alert to use toast
-  window._originalAlert = window.alert;
-  window.alert = function (msg) { window.epmsToast(msg, 'info', 5000); };
+  // Expose toast as an alternative to alert (do NOT override window.alert — it breaks Frappe)
+  window.epmsAlert = function (msg) { window.epmsToast(msg, 'info', 5000); };
 
   /* ================================================================
      4. SKELETON LOADING (utility)
