@@ -135,12 +135,12 @@
 <div class="modal-mask" id="log-work-modal">
     <div class="modal-card modal-wide" role="dialog" aria-modal="true" aria-labelledby="log-work-title">
         <div class="modal-head">
-            <strong id="log-work-title">Log Daily Work</strong>
+            <strong id="log-work-title">Log Daily Work <span class="draft-indicator">Draft saved</span></strong>
             <button type="button" class="modal-x" id="log-work-close" title="Close" aria-label="Close">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
         </div>
-        <form id="log-work-form" novalidate>
+        <form id="log-work-form" novalidate data-autosave="log-work">
             <div class="modal-body">
                 <div class="field">
                     <label for="lw-member">Member</label>

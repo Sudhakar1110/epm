@@ -7,7 +7,7 @@ app_license = "MIT"
 
 # Includes
 app_include_css = "/assets/epms/css/epms.css"
-app_include_js = ["/assets/epms/js/epms.js"]
+app_include_js = ["/assets/epms/js/epms.js", "/assets/epms/js/epms_ui.js"]
 
 # Dependencies
 required_apps = ["erpnext"]

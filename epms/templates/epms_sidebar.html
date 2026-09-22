@@ -7,18 +7,23 @@
                 <span>Performance Portal</span>
             </span>
         </a>
-        <div class="bell-wrap">
-            <button type="button" class="icon-btn bell" id="epms-bell" title="Notifications" aria-haspopup="true" aria-expanded="false">
-                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-                <span class="bell-dot" id="epms-bell-dot" hidden></span>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <button type="button" class="theme-toggle" title="Toggle dark mode">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             </button>
+            <div class="bell-wrap">
+                <button type="button" class="icon-btn bell" id="epms-bell" title="Notifications" aria-haspopup="true" aria-expanded="false">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <span class="bell-dot" id="epms-bell-dot" hidden></span>
+                </button>
 
-            <div class="bell-pop" id="epms-bell-pop">
-                <div class="bell-pop-head">
-                    <strong>Notifications</strong>
-                    <button type="button" class="bell-pop-mark" id="epms-bell-mark">Mark all read</button>
+                <div class="bell-pop" id="epms-bell-pop">
+                    <div class="bell-pop-head">
+                        <strong>Notifications</strong>
+                        <button type="button" class="bell-pop-mark" id="epms-bell-mark">Mark all read</button>
+                    </div>
+                    <div class="bell-pop-list" id="epms-bell-list"></div>
                 </div>
-                <div class="bell-pop-list" id="epms-bell-list"></div>
             </div>
         </div>
     </div>
@@ -124,11 +129,27 @@
     </div>
 </aside>
 
+<!-- Command Palette (Ctrl+K) -->
+<div class="search-palette-mask">
+    <div class="search-palette">
+        <input type="text" class="search-palette-input" placeholder="Search pages..." autocomplete="off">
+        <div class="search-palette-results"></div>
+        <div class="search-palette-hint">
+            <kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate
+            <kbd>Enter</kbd> Open
+            <kbd>Esc</kbd> Close
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container"></div>
+
 <script>
 document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        var el = document.querySelector('.search-field input');
+        var el = document.querySelector('.search-palette-input');
         if (el) el.focus();
     }
 });

@@ -35,7 +35,7 @@
                     </div>
                     <div class="stat-info">
                         <span class="stat-label">Total Members</span>
-                        <span class="stat-value">{{ total_members }}</span>
+                        <span class="stat-value" data-count="{{ total_members }}">{{ total_members }}</span>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -44,7 +44,7 @@
                     </div>
                     <div class="stat-info">
                         <span class="stat-label">Logged Today</span>
-                        <span class="stat-value">{{ logged_count }}</span>
+                        <span class="stat-value" data-count="{{ logged_count }}">{{ logged_count }}</span>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -53,7 +53,7 @@
                     </div>
                     <div class="stat-info">
                         <span class="stat-label">Pending</span>
-                        <span class="stat-value">{{ pending_count }}</span>
+                        <span class="stat-value" data-count="{{ pending_count }}">{{ pending_count }}</span>
                     </div>
                 </div>
             </div>
