@@ -14,6 +14,7 @@ def before_migrate():
     """Clean broken data and ensure Module Def exists before migration."""
     try:
         clean_broken_workspaces()
+        remove_deleted_records()
         create_module_def()
         frappe.db.commit()
     except Exception:
@@ -40,6 +41,31 @@ def after_migrate():
         frappe.db.commit()
     except Exception:
         pass
+
+
+def remove_deleted_records():
+    """Remove Report, Number Card, Notification, Kanban Board records for deleted modules."""
+    for name in ["Pending Task Report"]:
+        try:
+            frappe.delete_doc("Report", name, force=True, ignore_permissions=True)
+        except Exception:
+            pass
+    for name in ["Pending Tasks Count"]:
+        try:
+            frappe.delete_doc("Number Card", name, force=True, ignore_permissions=True)
+        except Exception:
+            pass
+    for name in ["Pending Task Reminder"]:
+        try:
+            frappe.delete_doc("Notification", name, force=True, ignore_permissions=True)
+        except Exception:
+            pass
+    for name in ["Pending Task Kanban"]:
+        try:
+            frappe.delete_doc("Kanban Board", name, force=True, ignore_permissions=True)
+        except Exception:
+            pass
+    frappe.db.commit()
 
 
 def clean_broken_workspaces():
