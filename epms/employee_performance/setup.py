@@ -45,27 +45,40 @@ def after_migrate():
 
 def remove_deleted_records():
     """Remove Report, Number Card, Notification, Kanban Board records for deleted modules."""
-    for name in ["Pending Task Report"]:
+    _purge_stale_records()
+
+
+def _purge_stale_records():
+    """Hard-delete stale records by name using raw SQL (survives dependent-row failures)."""
+    stale_by_doctype = {
+        "Report": ["Pending Task Report"],
+        "Number Card": ["Pending Tasks Count"],
+        "Notification": ["Pending Task Reminder"],
+        "Kanban Board": ["Pending Task Kanban"],
+    }
+    for doctype, names in stale_by_doctype.items():
+        for name in names:
+            try:
+                frappe.db.sql("DELETE FROM `tab{0}` WHERE `name` = %s".format(doctype), name)
+                frappe.clear_doctype_cache(doctype)
+            except Exception:
+                pass
+    # Drop Custom Report/Permission rows that reference the dead modules
+    for dead in ["Pending Task Report", "Pending Tasks Count", "Pending Task Reminder", "Pending Task Kanban"]:
         try:
-            frappe.delete_doc("Report", name, force=True, ignore_permissions=True)
-        except Exception:
-            pass
-    for name in ["Pending Tasks Count"]:
-        try:
-            frappe.delete_doc("Number Card", name, force=True, ignore_permissions=True)
-        except Exception:
-            pass
-    for name in ["Pending Task Reminder"]:
-        try:
-            frappe.delete_doc("Notification", name, force=True, ignore_permissions=True)
-        except Exception:
-            pass
-    for name in ["Pending Task Kanban"]:
-        try:
-            frappe.delete_doc("Kanban Board", name, force=True, ignore_permissions=True)
+            frappe.db.sql("DELETE FROM `tabCustom DocPerm` WHERE `parent` = %s", dead)
         except Exception:
             pass
     frappe.db.commit()
+    frappe.clear_cache()
+
+
+def fix_stale_records_now():
+    """Run: bench --site epms.ogascale.com execute epms.employee_performance.setup.fix_stale_records_now"""
+    print("\n=== EPMS Stale Records Cleanup ===")
+    _purge_stale_records()
+    print("   Deleted Pending Task Report / Pending Tasks Count / Pending Task Reminder / Pending Task Kanban")
+    print("   Cache cleared. Reload the desk and reopen the Pending Task Report.\n")
 
 
 def clean_broken_workspaces():
