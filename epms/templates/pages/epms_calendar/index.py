@@ -60,10 +60,23 @@ def get_context(context):
     context.today_year = getdate(nowdate()).year
 
     weekend_days = set()
+    holiday_days = set()
+    try:
+        settings = frappe.get_single("EPMS Settings")
+        sat_holiday = bool(settings.saturday_is_holiday)
+    except Exception:
+        sat_holiday = False
+
     for d in range(1, context.last_day + 1):
         dt = getdate(f"{year}-{month:02d}-{d:02d}")
-        if dt.weekday() >= 5:
+        wd = dt.weekday()
+        if wd == 6:  # Sunday always holiday
+            holiday_days.add(d)
+            weekend_days.add(d)
+        elif wd == 5 and sat_holiday:  # Saturday holiday if setting enabled
+            holiday_days.add(d)
             weekend_days.add(d)
     context.weekend_days = weekend_days
+    context.holiday_days = holiday_days
 
     context.today_url = f"/epms/calendar?month={context.today_month}&year={context.today_year}"

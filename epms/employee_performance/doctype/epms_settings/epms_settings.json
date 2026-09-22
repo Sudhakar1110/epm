@@ -4,11 +4,13 @@
  "creation": "2024-01-01 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": [
-  "general_settings",
-  "auto_generate_scorecards",
-  "scorecard_day",
-  "notification_settings",
+  "field_order": [
+   "general_settings",
+   "auto_generate_scorecards",
+   "scorecard_day",
+   "holiday_settings",
+   "saturday_is_holiday",
+   "notification_settings",
   "send_daily_reminders",
   "send_weekly_summary",
   "send_monthly_summary",
@@ -37,10 +39,22 @@
    "fieldtype": "Int",
    "label": "Scorecard Generation Day (1-28)",
    "max": 28,
-   "min": 1
-  },
-  {
-   "fieldname": "notification_settings",
+    "min": 1
+   },
+   {
+    "fieldname": "holiday_settings",
+    "fieldtype": "Section Break",
+    "label": "Holiday Settings"
+   },
+   {
+    "default": "0",
+    "fieldname": "saturday_is_holiday",
+    "fieldtype": "Check",
+    "label": "Saturday is a Holiday",
+    "description": "If checked, Saturday will be treated as a non-working day. Sunday is always a holiday."
+   },
+   {
+    "fieldname": "notification_settings",
    "fieldtype": "Section Break",
    "label": "Notification Settings"
   },

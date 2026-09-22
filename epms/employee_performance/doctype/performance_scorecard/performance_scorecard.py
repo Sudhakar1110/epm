@@ -55,16 +55,26 @@ class PerformanceScorecard(Document):
                 "User", self.employee, "full_name"
             ) or self.employee
 
-        # Count only weekdays (Mon=0 ... Fri=4)
+        # Count working days: Mon-Fri always, Saturday only if NOT holiday
+        try:
+            settings = frappe.get_single("EPMS Settings")
+            sat_holiday = bool(settings.saturday_is_holiday)
+        except Exception:
+            sat_holiday = False
+
         total_calendar_days = date_diff(last_day, first_day) + 1
         total_working_days = 0
         day = first_day
         while day <= last_day:
-            if day.weekday() < 5:
+            wd = day.weekday()
+            if wd < 5:
+                total_working_days += 1
+            elif wd == 5 and not sat_holiday:
                 total_working_days += 1
             day = add_days(day, 1)
 
         self.total_working_days = total_working_days or total_calendar_days
+        self.holidays_count = total_calendar_days - total_working_days
 
         performances = frappe.get_all(
             "Daily Performance",
@@ -141,7 +151,7 @@ class PerformanceScorecard(Document):
         return min(rating_score + quality_score, 100)
 
     def _calculate_attendance_score(self, first_day, last_day):
-        """Calculate attendance score based on working days (Mon-Fri) only."""
+        """Calculate attendance score — Sunday always holiday, Saturday if setting enabled."""
         days_with_entries = frappe.db.count(
             "Daily Performance",
             filters={
@@ -151,12 +161,22 @@ class PerformanceScorecard(Document):
             },
         )
 
-        # Count only weekdays (Mon=0 ... Fri=4)
+        # Count working days excluding Sundays and (optionally) Saturdays
+        try:
+            settings = frappe.get_single("EPMS Settings")
+            sat_holiday = bool(settings.saturday_is_holiday)
+        except Exception:
+            sat_holiday = False
+
         total_working_days = 0
         day = first_day
         while day <= last_day:
-            if day.weekday() < 5:
+            wd = day.weekday()
+            if wd < 5:  # Mon-Fri always working
                 total_working_days += 1
+            elif wd == 5 and not sat_holiday:  # Saturday working only if NOT holiday
+                total_working_days += 1
+            # wd == 6 (Sunday) always skipped
             day = add_days(day, 1)
 
         if total_working_days <= 0:

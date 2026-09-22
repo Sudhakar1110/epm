@@ -50,6 +50,12 @@ def get_columns():
             "width": 100,
         },
         {
+            "fieldname": "holidays_count",
+            "fieldtype": "Int",
+            "label": _("Holidays"),
+            "width": 80,
+        },
+        {
             "fieldname": "tasks_completed",
             "fieldtype": "Int",
             "label": _("Tasks Completed"),
@@ -134,6 +140,7 @@ def get_data(filters):
             "month",
             "year",
             "total_working_days",
+            "holidays_count",
             "tasks_completed",
             "completed_percentage",
             "average_rating",

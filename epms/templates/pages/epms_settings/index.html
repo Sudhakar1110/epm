@@ -46,6 +46,10 @@
                             <input id="set-day" type="number" min="1" max="28" value="{{ settings.scorecard_day }}" required>
                         </div>
 
+                        <p class="section-note" style="margin-top:18px;">Holiday Settings</p>
+                        <label class="switch-row"><input type="checkbox" id="set-sat-holiday" {% if settings.saturday_is_holiday %}checked{% endif %}> Saturday is a Holiday</label>
+                        <p style="font-size:11px;color:var(--gray-400);margin-top:-8px;margin-bottom:12px;">Sunday is always a holiday. Enable this to also treat Saturday as non-working.</p>
+
                         <p class="section-note" style="margin-top:18px;">Thresholds</p>
                         <div class="threshold-grid">
                             <div class="field"><label for="set-low">Low performance &lt;</label><input id="set-low" type="number" value="{{ settings.low_performance_threshold }}" required></div>
@@ -91,6 +95,7 @@
             '&send_daily_reminders=' + chk('set-daily') +
             '&send_weekly_summary=' + chk('set-weekly') +
             '&send_monthly_summary=' + chk('set-monthly') +
+            '&saturday_is_holiday=' + chk('set-sat-holiday') +
             '&scorecard_day=' + encodeURIComponent(document.getElementById('set-day').value) +
             '&low_performance_threshold=' + encodeURIComponent(document.getElementById('set-low').value) +
             '&excellent_threshold=' + encodeURIComponent(document.getElementById('set-exc').value) +

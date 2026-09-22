@@ -13,7 +13,8 @@
   "year",
   "section_break_stats",
   "total_working_days",
-  "tasks_completed",
+   "holidays_count",
+   "tasks_completed",
   "pending_tasks",
   "completed_percentage",
   "section_break_scores",
@@ -84,12 +85,19 @@
    "fieldname": "total_working_days",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Total Working Days",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "tasks_completed",
+    "label": "Total Working Days",
+    "read_only": 1
+   },
+   {
+    "default": "0",
+    "fieldname": "holidays_count",
+    "fieldtype": "Int",
+    "label": "Holidays",
+    "read_only": 1
+   },
+   {
+    "default": "0",
+    "fieldname": "tasks_completed",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "Tasks Completed",

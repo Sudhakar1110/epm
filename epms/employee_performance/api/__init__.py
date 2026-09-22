@@ -1035,7 +1035,7 @@ def import_portal_csv(kind=None, data=None):
 
 
 @frappe.whitelist()
-def portal_save_settings(auto_generate_scorecards=None, scorecard_day=None, send_daily_reminders=None, send_weekly_summary=None, send_monthly_summary=None, low_performance_threshold=None, excellent_threshold=None, very_good_threshold=None, good_threshold=None, average_threshold=None):
+def portal_save_settings(auto_generate_scorecards=None, scorecard_day=None, send_daily_reminders=None, send_weekly_summary=None, send_monthly_summary=None, low_performance_threshold=None, excellent_threshold=None, very_good_threshold=None, good_threshold=None, average_threshold=None, saturday_is_holiday=None):
     """Save EPMS Settings from the portal (founder only)."""
     if not _is_founder():
         return {"ok": False, "error": _("Only EPMS Founder can update settings.")}
@@ -1050,6 +1050,7 @@ def portal_save_settings(auto_generate_scorecards=None, scorecard_day=None, send
             "send_daily_reminders": send_daily_reminders,
             "send_weekly_summary": send_weekly_summary,
             "send_monthly_summary": send_monthly_summary,
+            "saturday_is_holiday": saturday_is_holiday,
         }
         for k, v in checks.items():
             if v is not None:
