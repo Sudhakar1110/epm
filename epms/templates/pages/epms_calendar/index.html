@@ -41,17 +41,25 @@
                         <div class="cal-cell cal-blank"></div>
                         {% endfor %}
                         {% for day in range(1, last_day + 1) %}
+                        {% set day_tasks = by_day.get(day|string, []) %}
                         <div class="cal-cell {% if day in holiday_days %}cal-holiday{% elif day in weekend_days %}cal-weekend{% endif %} {% if day == today_day and month == today_month and year == today_year %}cal-today{% endif %}">
-                            <span class="cal-day">{{ day }}</span>
-                            {% if day in holiday_days %}
-                            <span class="cal-task cal-task-holiday"><span class="cal-task-title">{{ holiday_names.get(day, 'Holiday') }}</span></span>
-                            {% endif %}
-                            {% for t in by_day.get(day|string, []) %}
-                            <a class="cal-task cal-task-{{ (t.priority or 'medium')|lower }}" href="/epms/my-day?date={{ year }}-{{ '%02d'|format(month) }}-{{ '%02d'|format(day) }}" title="{{ t.task_title }} — {{ t.employee_name }}">
-                                <span class="cal-task-title">{{ t.task_title }}</span>
-                                <span class="cal-task-emp">{{ t.employee_name }}</span>
-                            </a>
-                            {% endfor %}
+                            <div class="cal-cell-top">
+                                <span class="cal-day {% if day == today_day and month == today_month and year == today_year %}cal-day-today{% endif %}">{{ day }}</span>
+                                {% if day in holiday_days %}
+                                <span class="cal-flag cal-flag-holiday">{{ holiday_names.get(day, 'Holiday') }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="cal-tasks">
+                                {% for t in day_tasks[:3] %}
+                                <a class="cal-task cal-task-{{ (t.priority or 'medium')|lower }}" href="/epms/my-day?date={{ year }}-{{ '%02d'|format(month) }}-{{ '%02d'|format(day) }}" title="{{ t.task_title }} — {{ t.employee_name }}">
+                                    <span class="cal-task-title">{{ t.task_title }}</span>
+                                    <span class="cal-task-emp">{{ t.employee_name }}</span>
+                                </a>
+                                {% endfor %}
+                                {% if day_tasks|length > 3 %}
+                                <span class="cal-more">+{{ day_tasks|length - 3 }} more</span>
+                                {% endif %}
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
