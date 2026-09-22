@@ -294,6 +294,65 @@ All portal API endpoints are whitelisted and require authentication:
 
 ---
 
+## Planned Enhancements
+
+New features that can be added without changing existing behaviour — each fits the current doctype / portal / report / scheduler / settings patterns.
+
+### New Doctypes
+| Doctype | Notes |
+|---------|-------|
+| Leave / Absence Request | Submittable, links to Team + Employee, feeds attendance score |
+| Goal (OKR) | Goals linked to a scorecard, with weekly progress |
+| Feedback / 360 Review | Peer &amp; manager ratings per employee |
+| Performance Appraisal Cycle | Dated cycles with start/end, linked scorecards |
+| Incentive / Bonus Calculator | Monthly performance-based incentive calc |
+| Attachment Doc | Supporting documents for Daily Performance / tasks |
+
+### New Portal Pages
+| URL | Description |
+|-----|-------------|
+| `/epms/goals` | OKR / goal tracking page |
+| `/epms/leave` | Leave application page |
+| `/epms/feedback` | Submit &amp; view feedback |
+| `/epms/my-team` | Team Leader's own team overview |
+| `/epms/appraisals` | Appraisal cycle page |
+| `/epms/payslip-summary` | Performance-based pay preview |
+
+### New Reports
+| Report | Data Source |
+|--------|-------------|
+| Leave / Attendance Report | Leave + Daily Performance markers |
+| Utilization Report | Expected vs actual hours |
+| Team Comparison Trend | Scorecards across multiple months |
+| On-time Completion Report | Due vs completed dates |
+| Extra Hours Report | Actual hours over expected |
+| Rating Trend Report | Per-employee rating over months |
+
+### New API Endpoints
+- `get_portal_goals`, `submit_portal_goal`
+- `apply_portal_leave`, `approve_portal_leave`
+- `get_portal_feedback`, `submit_portal_feedback`
+- `get_employee_scorecard_trend`
+
+### New Scheduler Jobs
+- Daily overdue / leave alerts
+- Weekly goal-progress reminders
+- Monthly appraisal reminders
+
+### Page &amp; Settings Enhancements
+- Team filter on all existing report viewers
+- Calendar to also show leave + holidays together
+- My Day: "promote challenges into Pending Tasks" button
+- Leaderboard YoY comparison tab
+- Configurable per-role hours target
+- Configurable notification templates
+- Module enable/disable flags for goals, leave, feedback
+- Bulk CSV export for all reports
+- Dashboard download as image/PDF
+- Data pruning job to archive old Daily Performance entries
+
+---
+
 ## Notes
 
 - Requires ERPNext (`required_apps = ["erpnext"]`).
